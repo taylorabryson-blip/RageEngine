@@ -152,7 +152,7 @@ namespace RageEngine
                 float u = Mathf.Clamp01(t / (MocapOutTime(s.punchType) * tempo));
                 float w = u * u * (3f - 2f * u);
                 p = Pose(PunchMocap.Sample(outP, u)) + fix * w + fwd * ((s.punchType == PunchType.Jab ? 0.06f : 0.16f) * w);      // punch THROUGH the target
-                Guard("shoulder", () => MoveShoulder28(s, sh, fwd, right * mx, w));
+                Guard("shoulder", () => MoveShoulder28(s, sh.position, fwd, right * mx, w));
                 if (u >= 1f) { s.punchPhase = 3; s.punchT = now; Guard("shoulder", () => DriveShoulder28(s, false)); }
             }
             else
@@ -229,7 +229,7 @@ namespace RageEngine
             {
                 if (s.shoulderAnchor == null) s.shoulderAnchor = new GameObject("RageEngine_Shoulder").transform;
                 var sh = Shoulder(s.creature, s.punchSide, out _);
-                s.shoulderAnchor.position = sh; s.shoulderSide = s.punchSide; s.shoulderOn = true;
+                s.shoulderAnchor.position = sh != null ? sh.position : s.creature.transform.position; s.shoulderSide = s.punchSide; s.shoulderOn = true;
                 ik.SetShoulderAnchor(s.punchSide, s.shoulderAnchor); ik.SetShoulderState(s.punchSide, true, false); ik.SetShoulderWeight(s.punchSide, 0.85f, 0f);
             }
             else if (s.shoulderOn)
