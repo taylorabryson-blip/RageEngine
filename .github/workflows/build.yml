@@ -1,0 +1,49 @@
+name: Build Rage Engine
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: build
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Compile
+        id: compile
+        run: |
+          set -o pipefail
+          dotnet build build/RageEngine.csproj -c Release -o out -clp:NoSummary 2>&1 | tee build.log
+      - name: Package the mod
+        if: success()
+        run: |
+          VER=$(grep -oP 'Version = "\K[0-9.]+' src/RageEngine/RageEngineScript.cs)
+          echo "VER=$VER" >> $GITHUB_ENV
+          mkdir -p dist/RageEngine
+          cp -r mod/RageEngine/. dist/RageEngine/
+          cp out/RageEngine.dll dist/RageEngine/
+          sed -i "s/\"ModVersion\": \"[^\"]*\"/\"ModVersion\": \"$VER\"/" dist/RageEngine/manifest.json
+          cd dist && zip -qr ../RageEngine-$VER.zip RageEngine && cd ..
+          ls -la RageEngine-$VER.zip
+      - name: Publish release (download this on the Quest)
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest --yes --cleanup-tag || true
+          gh release create latest RageEngine-$VER.zip --title "Rage Engine $VER" --notes "Download RageEngine-$VER.zip, then install it with Mobile VR Station (Mods > Blade & Sorcery Nomad) or copy the RageEngine folder into Android/data/com.Warpfrog.BladeAndSorcery/files/Mods." --latest
+      - name: Keep the build log on the ci-log branch
+        if: always()
+        run: |
+          git config user.name "rage-engine-ci"; git config user.email "ci@users.noreply.github.com"
+          mkdir -p /tmp/log && cp build.log /tmp/log/ 2>/dev/null || echo "no log" > /tmp/log/build.log
+          echo "${{ job.status }} $(date -u) $GITHUB_SHA" > /tmp/log/status.txt
+          [ -f out/RageEngine.dll ] && cp out/RageEngine.dll /tmp/log/ || true
+          git checkout --orphan ci-log && git rm -rqf . && cp /tmp/log/* . && git add -A && git commit -qm "build log $GITHUB_SHA" && git push -f origin ci-log
