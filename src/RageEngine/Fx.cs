@@ -57,7 +57,7 @@ namespace RageEngine
         }
 
         /// Minimal RIFF/WAVE reader: PCM 16-bit or IEEE float 32-bit, any channel count.
-        static AudioClip FromWav(byte[] d, string name)
+        internal static AudioClip FromWav(byte[] d, string name)
         {
             if (d.Length < 44 || d[0] != 'R' || d[8] != 'W') return null;
             int p = 12, channels = 1, rate = 44100, bits = 16, fmt = 1; int dataPos = -1, dataLen = 0;

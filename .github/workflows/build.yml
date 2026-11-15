@@ -32,6 +32,29 @@ jobs:
           sed -i "s/\"ModVersion\": \"[^\"]*\"/\"ModVersion\": \"$VER\"/" dist/RageEngine/manifest.json
           cd dist && zip -qr ../RageEngine-$VER.zip RageEngine && cd ..
           ls -la RageEngine-$VER.zip
+      - name: Music and ambience (real recordings, fetched at build time)
+        if: success()
+        run: |
+          sudo apt-get install -y -qq ffmpeg > /dev/null
+          M=dist/RageEngine/Music; A=dist/RageEngine/Ambience; mkdir -p $M $A /tmp/au
+          get() { curl -fsSL --retry 2 -o "$2" "$1" || curl -fsSL --retry 2 -o "$2" "$3"; }
+          IC=https://incompetech.com/music/royalty-free/mp3-royaltyfree; AX=http://aux.incompetech.com/music/royalty-free/mp3-royaltyfree
+          i=0
+          for t in "Bossa Antigua" "Lobby Time" "Smooth Lovin" "Jazz Brunch" "Local Forecast - Slower"; do
+            u=$(echo "$t" | sed 's/ /%20/g'); i=$((i+1))
+            if get "$IC/$u.mp3" /tmp/au/l$i.mp3 "$AX/$u.mp3"; then
+              ffmpeg -loglevel error -y -i /tmp/au/l$i.mp3 -ac 1 -ar 32000 -af loudnorm=I=-20:TP=-2 -c:a libvorbis -q:a 2 "$M/lounge_$i.ogg" && echo "$t Kevin MacLeod (incompetech.com) - Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/" >> /tmp/au/credits.txt
+            else echo "MISSING music: $t" | tee -a build.log; fi
+          done
+          if get "$IC/Local%20Forecast%20-%20Elevator.mp3" /tmp/au/el.mp3 "$AX/Local%20Forecast%20-%20Elevator.mp3"; then
+            ffmpeg -loglevel error -y -i /tmp/au/el.mp3 -ac 1 -ar 32000 -af "loudnorm=I=-20:TP=-2,lowpass=f=4500,highpass=f=180" -c:a libvorbis -q:a 2 "$M/elevator.ogg" && echo "Local Forecast - Elevator Kevin MacLeod (incompetech.com) - Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/" >> /tmp/au/credits.txt
+          else echo "MISSING music: elevator" | tee -a build.log; fi
+          if get https://opengameart.org/sites/default/files/wind-01.ogg /tmp/au/wind.ogg https://opengameart.org/sites/default/files/wind-01_0.ogg; then
+            ffmpeg -loglevel error -y -i /tmp/au/wind.ogg -ac 1 -ar 32000 -c:a libvorbis -q:a 3 "$A/wind.ogg" && echo "Wind loop: created by Jonathan Shaw (InspectorJ) https://freesound.org/people/InspectorJ/sounds/376415/ , loop by AntumDeluge https://opengameart.org/node/101110 - CC-BY 3.0" >> /tmp/au/credits.txt
+          else echo "MISSING ambience: wind" | tee -a build.log; fi
+          { echo; echo "# Map music and ambience (downloaded at build time)"; sed 's/^/- /' /tmp/au/credits.txt; } >> dist/RageEngine/SOUND_CREDITS.md
+          ls -la $M $A | tee -a build.log
+          cd dist && rm -f ../RageEngine-$VER.zip && zip -qr ../RageEngine-$VER.zip RageEngine && cd .. && ls -la RageEngine-$VER.zip | tee -a build.log
       - name: Publish release (download this on the Quest)
         if: success()
         env:

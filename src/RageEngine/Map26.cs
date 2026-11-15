@@ -131,6 +131,7 @@ namespace RageEngine
             Physics.SyncTransforms();
             pl.Teleport(map26Origin + map26Start + Vector3.up * 0.1f, Quaternion.Euler(0f, map26Yaw, 0f), false, true);
             Guard("map.night", ApplyEnv28);
+            Guard("lounge", StartLounge28);
             Debug.Log($"[RageEngine] map: you're at {map26Built} ({map26Origin + map26Start})");
         }
 
@@ -140,6 +141,7 @@ namespace RageEngine
             if (!map26In || pl == null) return;
             map26In = false;
             Guard("map.night.off", RestoreEnv28);
+            Guard("lounge.off", StopLounge28);
             pl.Teleport(map26Return, map26ReturnRot, false, true);
             Debug.Log("[RageEngine] map: back in the level");
         }
@@ -162,6 +164,8 @@ namespace RageEngine
                 var data = PickSoldier(out int tableFaction);
                 if (data == null) { Debug.Log("[RageEngine] map: no creature data in the catalog"); return; }
                 Vector3 pos = map26Origin + pts[Random.Range(0, pts.Count)] + new Vector3(Random.Range(-0.8f, 0.8f), 0f, Random.Range(-0.8f, 0.8f));
+                var lift = LiftArrival28(i);                                         // the first two come up in the elevator
+                if (lift.HasValue) pos = lift.Value;
                 Vector3 look = pc.transform.position - pos; look.y = 0f;
                 float rotY = look.sqrMagnitude > 0.01f ? Quaternion.LookRotation(look).eulerAngles.y : 0f;
                 int faction = tableFaction >= 0 && tableFaction != 2 ? tableFaction : data.factionId != 2 && data.factionId >= 0 ? data.factionId : hostile;
@@ -173,6 +177,7 @@ namespace RageEngine
                     if (cr == null) return;
                     Guard("map.faction", () => { if (faction >= 0 && faction != 2) cr.SetFaction(faction); });
                     if (kind == 3) QueueMixed(cr);
+                    QueueSuit28(cr);
                     if (comp >= 0) pendingSoldiers.Add(new PendingSoldier { c = cr, at = Time.time + 1.2f, comp = comp });
                     Debug.Log($"[RageEngine] map enemy: {id} (faction {faction}){(comp >= 0 ? " - " + CompName[comp] : "")}");
                 });
@@ -183,6 +188,7 @@ namespace RageEngine
         void TickMap26()
         {
             if (map26In) Guard("clouds", DriftClouds28);
+            Guard("lounge", TickLounge28);
             float now = Time.time;
             if (now < map26NextCheck) return;
             map26NextCheck = now + 0.5f;
@@ -190,6 +196,7 @@ namespace RageEngine
             {
                 if (map26Nav.Count > 0) { foreach (var n in map26Nav) Guard("nav.remove", () => n.Remove()); map26Nav.Clear(); }
                 if (map26In || env28Saved) Guard("map.night.off", RestoreEnv28);
+                Guard("lounge.off", ResetLounge28);
                 map26In = false; map26Built = null;
                 return;
             }
@@ -286,7 +293,7 @@ namespace RageEngine
             foreach (var n in map26Nav) Guard("nav.remove", () => n.Remove());
             map26Nav.Clear(); map26Spawns.Clear();
             int def = GroundLayer26(out string layerWhy);
-            ResetEnv28();
+            ResetEnv28(); ResetLounge28();
             mapMats26.Clear(); texOk26 = texMiss26 = 0; map26KillY = -20f; map26LookBuilt = mapLook;
             var items26 = new List<KeyValuePair<string, Vector3>>();
             map26Origin = new Vector3(Mathf.Round(playerPos.x), Mathf.Round(playerPos.y) + 300f, Mathf.Round(playerPos.z));
@@ -372,6 +379,7 @@ namespace RageEngine
                         }
                         case "K": map26KillY = PF(p[1]); break;
                         case "SKY": case "FOG": case "AMB": case "CLOUD": case "C": ParseEnv28(p); break;
+                        case "MUSIC": case "AMBIENT": case "E": case "DRESS": ParseLounge28(p); break;
                         case "I": items26.Add(new KeyValuePair<string, Vector3>(p[1], new Vector3(PF(p[2]), PF(p[3]), PF(p[4])))); break;
                         case "S": map26Spawns.Add(new Vector3(PF(p[1]), PF(p[2]), PF(p[3]))); break;
                         case "T": map26Start = new Vector3(PF(p[1]), PF(p[2]) + 0.15f, PF(p[3])); map26Yaw = PF(p[4]); break;
@@ -411,6 +419,7 @@ namespace RageEngine
                 }
             }
             Guard("map.env", () => BuildEnv28(root.transform));
+            Guard("map.lounge", () => BuildLounge28(root.transform));
             map26Root = root; map26Built = name;
             Physics.SyncTransforms();
             // weapons lying around the place
