@@ -40,13 +40,16 @@ namespace RageEngine
         {
             switch (p[0])
             {
-                case "SKY": env28Sky = p[1].ToLowerInvariant(); break;
-                case "FOG": env28HasFog = true; env28FogCol = new Color(PF(p[1]), PF(p[2]), PF(p[3])); env28FogDen = PF(p[4]); break;
-                case "AMB": env28HasAmb = true; env28Amb = new Color(PF(p[1]), PF(p[2]), PF(p[3])); break;
+                case "SKY": if (Application.platform == RuntimePlatform.Android) break;   // 0.32: sky dome hid the map on Quest
+                    env28Sky = p[1].ToLowerInvariant(); break;
+                // 0.32: no fog, no dark ambient, no night tints - on Quest they turned the whole map into a dark blue
+                // silhouette (lit surfaces with almost no light, then blue fog on top). The level's own lighting is used.
+                case "FOG": break;
+                case "AMB": break;
                 case "CLOUD":
                     env28CloudSpecs.Add(new CloudSpec28 { tex = p[1].ToLowerInvariant(), centre = new Vector3(PF(p[2]), PF(p[3]), PF(p[4])), size = PF(p[5]), tile = PF(p[6]), alpha = PF(p[7]), drift = new Vector2(PF(p[8]), PF(p[9])) });
                     break;
-                case "C": env28Tints[p[1].ToLowerInvariant()] = new Color(PF(p[2]), PF(p[3]), PF(p[4])); break;
+                case "C": break;
             }
         }
 
@@ -63,7 +66,7 @@ namespace RageEngine
                 {
                     var m = DonorCopy26(d, tex, Color.white, 1f, col);
                     if (m.HasProperty("_Cull")) m.SetFloat("_Cull", 0f);
-                    if (m.HasProperty("_EmissionColor") && m.HasProperty("_EmissionMap")) { m.EnableKeyword("_EMISSION"); m.SetTexture("_EmissionMap", tex); m.SetColor("_EmissionColor", Color.white * 0.8f); }
+                    if (m.HasProperty("_EmissionColor") && m.HasProperty("_EmissionMap")) { if (m.IsKeywordEnabled("_EMISSION")) { m.SetTexture("_EmissionMap", tex); m.SetColor("_EmissionColor", Color.white * 0.8f); } }
                     return m;
                 }
             }
