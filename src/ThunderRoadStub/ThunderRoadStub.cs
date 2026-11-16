@@ -59,7 +59,20 @@ namespace ThunderRoad
         public Type type;
         public void SpawnAsync(Action<Item> callback, Vector3? position = null, Quaternion? rotation = null, Transform parent = null, bool pooled = true, List<ContentCustomData> customDataList = null, Item.Owner owner = Item.Owner.None) { }
     }
-    public class LevelData : CatalogData { public class Mode { } }
+    public class LevelData : CatalogData { public class Mode { } public string name; }
+    public class Module
+    {
+        protected Module() { }
+        public virtual System.Collections.IEnumerator OnLoadCoroutine() { yield break; }
+        public virtual void Update() { }
+        public virtual void OnUnload() { }
+    }
+    public class LevelModule : Module
+    {
+        public Level level;
+        public virtual System.Collections.IEnumerator OnPlayerSpawnCoroutine() { yield break; }
+    }
+    public class Level : MonoBehaviour { public static Level current; public LevelData data; }
     public class EffectData : CatalogData
     {
         public EffectInstance Spawn(Transform parent, bool pooled = true, ColliderGroup colliderGroup = null, bool fromPlayer = false) => null;

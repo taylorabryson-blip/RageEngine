@@ -84,12 +84,8 @@ namespace RageEngine
         public static ModOptionString[] mapLooks = { new ModOptionString("Auto", null, "0"), new ModOptionString("Game shader (lit)", null, "1"), new ModOptionString("Flat colours", null, "2") };
         public static ModOptionString[] mapGo = { new ModOptionString("Go", null, "go") };
 
-        [ModOptionCategory(CM, 12), ModOptionOrder(0)]
-        [ModOption("Place", "Which Rage Engine map to build. It is built in the sky above the level you're in - load any level first (Sandbox works).", valueSourceName = nameof(mapNames), defaultValueIndex = 0)]
         public static string mapName = "Skybar";
         public static string mapLook = "0";
-        [ModOptionButton, ModOptionCategory(CM, 12), ModOptionOrder(1)]
-        [ModOption("Go there", "Builds the place (first time) and puts you at its front door.", valueSourceName = nameof(mapGo), saveValue = false)]
         public static void MapGoButton(string _) => Guard("map.go", () => instance?.MapGo());
         [ModOptionCategory(CM, 12), ModOptionOrder(2)]
         [ModOption("Enemies per wave", "How many come when you press Spawn enemies.", valueSourceName = nameof(mapWaveSizes), defaultValueIndex = 0)]
@@ -98,10 +94,8 @@ namespace RageEngine
         [ModOption("Enemy type", "Normal enemies, super soldiers (random super serum), or a mix.", valueSourceName = nameof(mapWaveKinds), defaultValueIndex = 0)]
         public static string mapWaveKind = "0";
         [ModOptionButton, ModOptionCategory(CM, 12), ModOptionOrder(4)]
-        [ModOption("Spawn enemies there", "Enemies appear at the map's spawn points (parking lot, back lot, inside, roof) and come for you.", valueSourceName = nameof(mapGo), saveValue = false)]
+        [ModOption("Spawn a wave now", "In a Rage Engine level (Skybar, Rage Burger, Red Room Diner - pick them from the game's level list): enemies come from the map's spawn points.", valueSourceName = nameof(mapGo), saveValue = false)]
         public static void MapWaveButton(string _) => Guard("map.wave", () => instance?.MapWave());
-        [ModOptionButton, ModOptionCategory(CM, 12), ModOptionOrder(5)]
-        [ModOption("Leave", "Back to where you were in the level.", valueSourceName = nameof(mapGo), saveValue = false)]
         public static void MapLeaveButton(string _) => Guard("map.leave", () => instance?.MapLeave());
 
         static GameObject map26Root; static string map26Built;
@@ -194,6 +188,7 @@ namespace RageEngine
             Guard("lounge", TickLounge28);
             Guard("hostile", TickHostile28);
             Guard("qol", TickQol29);
+            Guard("level", TickLevel29);
             float now = Time.time;
             if (now < map26NextCheck) return;
             map26NextCheck = now + 0.5f;
