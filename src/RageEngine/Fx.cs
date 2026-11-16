@@ -12,7 +12,8 @@ namespace RageEngine
     internal static class Sfx
     {
         static readonly Dictionary<string, List<AudioClip>> clips = new Dictionary<string, List<AudioClip>>();
-        const int MaxVoices = 14;
+        static int MaxVoices => RageEngineScript.PerfVoices;
+        static bool Allowed(string key) => RageEngineScript.modVoices || !(key.StartsWith("NRE_Scream") || key.StartsWith("NRE_Pain") || key.StartsWith("NRE_Breath") || key.StartsWith("NRE_DeathGasp"));
         static readonly List<AudioSource> live = new List<AudioSource>();
         static readonly Dictionary<string, List<int>> bags = new Dictionary<string, List<int>>();
         static readonly Dictionary<string, int> lastPlayed = new Dictionary<string, int>();
@@ -90,7 +91,7 @@ namespace RageEngine
         /// One-shot at a world position (for hits where the body part may move away).
         public static void PlayAt(string key, Vector3 pos, float volume)
         {
-            if (!RageEngineScript.modSfx || !clips.TryGetValue(key, out var list) || list.Count == 0) return;
+            if (!RageEngineScript.modSfx || !Allowed(key) || !clips.TryGetValue(key, out var list) || list.Count == 0) return;
             RageEngineScript.Guard("sound", () =>
             {
                 var go = new GameObject("RageEngine_SFX");
@@ -105,7 +106,7 @@ namespace RageEngine
 
         public static void Play(string key, Transform at, float volume, float pitchMul)
         {
-            if (at == null || !RageEngineScript.modSfx || !clips.TryGetValue(key, out var list) || list.Count == 0) return;
+            if (at == null || !RageEngineScript.modSfx || !Allowed(key) || !clips.TryGetValue(key, out var list) || list.Count == 0) return;
             RageEngineScript.Guard("sound", () =>
             {
                 // 0.16: voice cap + shuffle bag (every variant plays once before any repeats; never the same twice in a row)
@@ -169,6 +170,7 @@ namespace RageEngine
 
         public static GameObject Attach(RagdollPart part, Vector3 point, Vector3 outward, string model = null)
         {
+            if (RageEngineScript.bareHit34 || !RageEngineScript.bonesOut) return null;          // 0.34: punches and kicks don't push bones out
             if (material == null) material = Mats.MakeTextured(TexGen.Bone(), TexGen.BoneNormal(), Color.white, 0.4f, false);
             if (outward.sqrMagnitude < 1e-4f) outward = part.transform.forward;
             outward.Normalize();

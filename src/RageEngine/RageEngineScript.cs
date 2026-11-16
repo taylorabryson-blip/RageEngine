@@ -10,7 +10,7 @@ namespace RageEngine
 {
     public sealed partial class RageEngineScript : ThunderScript
     {
-        public const string Version = "0.33";
+        public const string Version = "0.34";
         const int MaxTracked = 20;
         const float ScanInterval = 0.5f;
         const float TickInterval = 0.05f;
@@ -210,7 +210,7 @@ namespace RageEngine
                 if (m.active && m.creature != null) Guard("antifall", () => GuardKnockdown(m));
                 if (m.active && m.creature != null) Guard("handwatch", () => HandWatchdog(m));
                 if (m.active && m.creature != null && now < m.followUntil && now >= m.heldUntil) Guard("follow", () => FollowBody(m));
-                if (m.active && m.creature != null && m.punchPhase != 0 && !m.shocked) Guard("punch", () => TickPunch(m));
+                if (fistFighting && m.active && m.creature != null && m.punchPhase != 0 && !m.shocked) Guard("punch", () => TickPunch(m));
             }
             Guard("ikwatch", IkWatchdog);                                                  // 0.22: map-centre fix
             Guard("rage", TickRageMoment);
@@ -301,6 +301,8 @@ namespace RageEngine
         void Track(Creature c)
         {
             NpcState s = null;
+            int active = 0; for (int i = 0; i < MaxTracked; i++) if (pool[i].active) active++;
+            if (active >= PerfTracked) return;                                         // 0.34: performance mode
             for (int i = 0; i < MaxTracked; i++) if (!pool[i].active) { s = pool[i]; break; }
             if (s == null) return;
             Reset(s);
@@ -309,7 +311,7 @@ namespace RageEngine
             s.personality = personalitiesEnabled ? Personality.Pick(UnityEngine.Random.value) : Personality.All[0];
             s.brave = UnityEngine.Random.value < s.personality.bravery;
             float glassChance = s.personality.type == PersonalityType.Nervous ? 0.25f : s.personality.type == PersonalityType.Aggressive ? 0.05f : 0.12f;
-            s.glassJaw = UnityEngine.Random.value < glassChance * glassJawChance;
+            s.glassJaw = false;                                                       // 0.34: nobody drops from one punch
             s.toughness = s.glassJaw ? 0.55f : UnityEngine.Random.Range(0.9f, 1.5f)
                           * (s.personality.type == PersonalityType.Aggressive || s.personality.type == PersonalityType.Confident ? 1.2f : 1f) * npcToughness;
             // 0.16: individual physical profile (no player sliders - every NPC is different)
@@ -514,6 +516,7 @@ namespace RageEngine
             if (part == null || part.ragdoll == null) return;
             var c = part.ragdoll.creature;
             lastHandled = hit;
+            ClassifyHit34(hit);
             if (!TryGet(c, out var s) || s.knockedOutUntil > 0f) return;
             var t = part.type;
             float severity = HitSeverity(hit);

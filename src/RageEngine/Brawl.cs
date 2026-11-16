@@ -78,6 +78,7 @@ namespace RageEngine
         // ---------------- knockout ----------------
         void Knockout(NpcState s, Vector3 dir, bool byPlayer)
         {
+            if (!knockouts) return;                                                       // 0.34: switch
             var c = s.creature;
             if (s.knockedOut || c.isKilled) return;
             if (TankShrug(s, "a knockout blow")) return;

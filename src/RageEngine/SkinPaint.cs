@@ -22,7 +22,7 @@ namespace RageEngine
         static readonly List<Vector2> uv = new List<Vector2>();
         static readonly List<int> tris = new List<int>();
         static readonly Dictionary<SkinnedMeshRenderer, Mesh> bake = new Dictionary<SkinnedMeshRenderer, Mesh>();
-        const int MaxPaintedNpcs = 6;
+        static int MaxPaintedNpcs => RageEngineScript.PerfPainted;
 
         static Material Stamp()
         {
@@ -42,6 +42,7 @@ namespace RageEngine
         public static bool Paint(Creature c, Vector3 point, float radius, Color col, Texture2D brush, bool cloth = false, float rot = 0f)
         {
             if (c == null || brush == null || Stamp() == null) return false;
+            if (!RageEngineScript.bruiseMarks && brush == TexGen.Bruise()) return false;          // 0.34: bruise circles off by default
             if (!painted.ContainsKey(c) && painted.Count >= MaxPaintedNpcs) return false;
             SkinnedMeshRenderer best = null; Vector2 bestUv = default; float bestD = 0.06f * 0.06f; Mesh bestMesh = null;
             foreach (var r in c.GetComponentsInChildren<SkinnedMeshRenderer>())

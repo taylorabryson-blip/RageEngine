@@ -106,9 +106,9 @@ namespace RageEngine
         /// From HandleHit: low on HP and still taking a beating -> lights out.
         void MaybePassOut(NpcState s, CollisionInstance hit, float severity)
         {
-            if (!passOut || s.passedOut || s.creature.isKilled || Tank(s) || severity < 0.6f) return;
+            if (!passOut || !knockouts || s.passedOut || s.creature.isKilled || Tank(s) || severity < 0.6f) return;
             if (hit.damageStruct.damageType != DamageType.Blunt) return;
-            if (HpFrac(s.creature) > 0.25f || Random.value > 0.3f) return;
+            if (HpFrac(s.creature) > 0.12f || Random.value > 0.15f / Tough33(s)) return;
             Guard("passout.heal", () => s.creature.Heal(s.creature.maxHealth * 0.1f));
             PassOut(s, hit.impactVelocity, "beaten down");
         }
@@ -135,7 +135,7 @@ namespace RageEngine
                 return false;
             }
             // an ordinary man beaten to death sometimes just passes out
-            if (passOut && !s.passedOut && !s.dismembered && hit != null && hit.damageStruct.damageType == DamageType.Blunt && !headHit && Random.value < 0.3f)
+            if (passOut && knockouts && !s.passedOut && !s.dismembered && hit != null && hit.damageStruct.damageType == DamageType.Blunt && !headHit && Random.value < 0.3f)
             {
                 Revive(s, Mathf.Max(12f, victim.maxHealth * 0.15f));
                 Vector3 dir = hit.impactVelocity;

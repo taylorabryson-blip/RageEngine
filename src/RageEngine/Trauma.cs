@@ -25,7 +25,7 @@ namespace RageEngine
         /// Screams (game voice). Rate-limited unless forced.
         internal static void Scream(NpcState s, bool force)
         {
-            if (!screaming || s.creature == null) return;
+            if (!screaming || !modVoices || s.creature == null || Silent(s)) return;
             if (!force && Time.time < s.nextScream) return;
             s.nextScream = Time.time + Random.Range(2.5f, 4.5f);
             // real recorded voices (male/female); the game's own dialog only if those didn't load

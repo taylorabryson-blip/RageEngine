@@ -63,6 +63,7 @@ namespace RageEngine
         void TickFisticuffs(NpcState s)
         {
             var c = s.creature;
+            if (!fistFighting) { ReleaseGuard(s); DropPhantom(s); return; }
             if (c.isKilled || s.fleeing || c.ragdoll == null || c.brain == null || c.brain.instance == null || !c.brain.instance.isActive)
             { ReleaseGuard(s); DropPhantom(s); return; }
             HookPlayerFists();

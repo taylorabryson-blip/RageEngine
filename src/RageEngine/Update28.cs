@@ -119,12 +119,12 @@ namespace RageEngine
                 }
             }
             // ---- gut
-            if (Has(t, RagdollPart.Type.Torso) && severity >= 0.6f && !tank)
+            if (Has(t, RagdollPart.Type.Torso) && (severity >= 0.6f || projectileHit34) && !tank)
             {
                 var chest = ChestPart(c) ?? part;
                 if (Vector3.Dot(p - chest.transform.position, c.transform.up) < -0.05f && Vector3.Dot(p - chest.transform.position, c.transform.forward) > -0.05f)
                 {
-                    s.gutShots += Mathf.Min(severity, 2f);
+                    s.gutShots += projectileHit34 ? 4f : Mathf.Min(severity, 2f);          // 0.34: a shot to the gut makes him throw up
                     if (s.gutShots >= 4f && Time.time >= s.nextVomit) Vomit(s);
                 }
             }

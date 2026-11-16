@@ -187,7 +187,7 @@ namespace RageEngine
             if (mat == null) return null;
             if (!Physics.Raycast(from + Vector3.up * 0.1f, Vector3.down, out var hit, 3f, ~0, QueryTriggerInteraction.Ignore)) return null;
             if (hit.rigidbody != null && !hit.rigidbody.isKinematic) return null;                  // not on bodies / props
-            while (bloodDecals.Count > 0 && (bloodDecals.Count >= 70 || bloodDecals[0] == null)) { if (bloodDecals[0] != null) Object.Destroy(bloodDecals[0]); bloodDecals.RemoveAt(0); }
+            while (bloodDecals.Count > 0 && (bloodDecals.Count >= PerfDecals || bloodDecals[0] == null)) { if (bloodDecals[0] != null) Object.Destroy(bloodDecals[0]); bloodDecals.RemoveAt(0); }
             var go = new GameObject("RageEngine_BloodDecal");
             go.transform.position = hit.point + hit.normal * 0.004f;
             go.transform.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal) * Quaternion.Euler(0f, Random.Range(0f, 360f), 0f);
@@ -256,7 +256,7 @@ namespace RageEngine
                     if (rpp == null || rpp.ragdoll != s.creature.ragdoll) { onFloor = true; break; }
                 }
             if (onFloor) blow *= 1.6f;
-            if (blow < 12f) return false;
+            if (blow < 12f || projectileHit34 || !faceCave) return false;
             float before = s.skull;
             s.skull -= blow;
             Vector3 p = hit.contactPoint;
@@ -296,9 +296,10 @@ namespace RageEngine
             if (c != null && c.ragdoll != null) bodyCols.AddRange(c.ragdoll.GetComponentsInChildren<Collider>());
             for (int i = 0; i < count; i++)
             {
+                if (!faceCave && (prefix.StartsWith("RE_Skull") || prefix.StartsWith("RE_Brain") || prefix.StartsWith("RE_Jaw") || prefix.StartsWith("RE_Tooth") || prefix.StartsWith("RE_Eyeball"))) return;
                 Mesh m = BoneModels.Get(prefix) ?? BoneModels.Get(prefix + "_" + Random.Range(1, 7)) ?? BoneModels.Get(prefix + "_1");
                 if (m == null) return;
-                while (goreModels.Count > 0 && (goreModels.Count >= 60 || goreModels[0] == null)) { if (goreModels[0] != null) Object.Destroy(goreModels[0]); goreModels.RemoveAt(0); }
+                while (goreModels.Count > 0 && (goreModels.Count >= PerfGorePieces || goreModels[0] == null)) { if (goreModels[0] != null) Object.Destroy(goreModels[0]); goreModels.RemoveAt(0); }
                 var go = new GameObject("RageEngine_GorePiece");
                 go.transform.position = point + Random.insideUnitSphere * 0.03f;
                 go.transform.rotation = Random.rotation;

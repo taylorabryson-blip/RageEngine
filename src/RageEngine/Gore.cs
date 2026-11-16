@@ -313,6 +313,7 @@ namespace RageEngine
         // ---------------- head crush ----------------
         void CrushHead(NpcState s, RagdollPart head, Vector3 point, Vector3 dir, float severity)
         {
+            if (!faceCave || projectileHit34) return;                                // 0.34: no head crush from one shot, none at all when switched off
             var c = s.creature;
             s.headCrushed = true;
             s.finalKill = true; s.dying = false; s.onAdrenaline = false; s.noGasp = true;

@@ -45,7 +45,7 @@ namespace RageEngine
         /// From BreakHand: individual finger bones through the skin.
         void FingerBones(NpcState s, RagdollPart handPart, Vector3 point, float severity)
         {
-            if (!bonesOut || s.fingersOut >= 8) return;
+            if (!bonesOut || bareHit34 || s.fingersOut >= 8) return;
             var c = s.creature;
             var hand = handPart as RagdollHand;
             Vector3 centre = handPart.transform.position;
@@ -83,7 +83,7 @@ namespace RageEngine
         /// From BluntTorso when a rib goes: rib ends through the chest wall.
         void RibsPoke(NpcState s, RagdollPart part, Vector3 point, float severity)
         {
-            if (!bonesOut || s.ribsOut >= 3) return;
+            if (!bonesOut || bareHit34 || s.ribsOut >= 3) return;
             var c = s.creature;
             s.ribsOut++;
             Vector3 outward = Vector3.ProjectOnPlane(point - part.transform.position, c.transform.up);
@@ -110,11 +110,11 @@ namespace RageEngine
         /// From HandleHit: every blunt hit to the head. Accumulates and dents the real mesh, three stages.
         void FaceCave(NpcState s, RagdollPart head, Vector3 point, float severity, CollisionInstance hit)
         {
-            if (!faceCave || severity < 0.5f) return;
+            if (!faceCave || projectileHit34 || severity < 0.5f) return;
             var c = s.creature;
             float now = Time.time;
             s.faceDmg += Mathf.Min(severity, 2.5f);
-            if (now < s.nextFaceCave || severity < 0.7f || s.faceDmg < 1.5f) return;
+            if (now < s.nextFaceCave || severity < 0.7f || s.faceDmg < 3f) return;
             s.nextFaceCave = now + 0.25f;
             Transform bone = head.meshBone != null ? head.meshBone : head.bone != null ? head.bone.mesh : null;
             if (bone == null) return;

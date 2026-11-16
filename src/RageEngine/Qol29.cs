@@ -116,6 +116,7 @@ namespace RageEngine
             if (now < nextQol29) return;
             nextQol29 = now + 1f;
             shockDeaths = bleedOutKills = knockoutKills = toxinsKill = injuriesKill;
+            bonesOut = bonesOutOpt; faceCave = faceCaveOpt;
             ApplyStyle29();
             var pc = Player.local != null ? Player.local.creature : null;
             if (pc == null) return;
@@ -132,6 +133,7 @@ namespace RageEngine
 
             // bodies fade
             float fade = 0f; float.TryParse(bodiesFade, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out fade);
+            if (PerfBodyFade > 0f && (fade <= 0f || fade > PerfBodyFade)) fade = PerfBodyFade;
             if (fade <= 0f) { deadSince29.Clear(); return; }
             foreach (var c in Creature.allActive)
             {
