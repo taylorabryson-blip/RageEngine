@@ -17,8 +17,6 @@ namespace RageEngine
         [ModOptionCategory(C9, 9), ModOptionOrder(40)]
         [ModOption("Downed NPCs keep fighting", "ON: an NPC on the ground swings at your legs and crawls after you instead of just lying there.", defaultValueIndex = 1)]
         public static bool groundFight = true;
-        [ModOptionCategory(CX, 7), ModOptionOrder(20)]
-        [ModOption("Super soldier durability", "ON: NPCs on a super serum are tanks - blunt hits barely move them, no neck snaps, almost no knockouts.", defaultValueIndex = 1)]
         public static bool superTank = true;
 
         /// On a super serum right now?

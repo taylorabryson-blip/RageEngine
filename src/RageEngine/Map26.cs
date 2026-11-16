@@ -87,8 +87,6 @@ namespace RageEngine
         [ModOptionCategory(CM, 12), ModOptionOrder(0)]
         [ModOption("Place", "Which Rage Engine map to build. It is built in the sky above the level you're in - load any level first (Sandbox works).", valueSourceName = nameof(mapNames), defaultValueIndex = 0)]
         public static string mapName = "Skybar";
-        [ModOptionCategory(CM, 12), ModOptionOrder(6)]
-        [ModOption("Map look", "If the map shows up grey / untextured, try another setting, then Leave and Go there again. Auto = plain textured surfaces that always show.", valueSourceName = nameof(mapLooks), defaultValueIndex = 0)]
         public static string mapLook = "0";
         [ModOptionButton, ModOptionCategory(CM, 12), ModOptionOrder(1)]
         [ModOption("Go there", "Builds the place (first time) and puts you at its front door.", valueSourceName = nameof(mapGo), saveValue = false)]
@@ -161,6 +159,7 @@ namespace RageEngine
             Vector3 me = pc.transform.position - map26Origin;
             pts.RemoveAll(p => (p - me).sqrMagnitude < 16f);
             if (pts.Count == 0) pts.AddRange(map26Spawns);
+            NoteWave29("map");
             Notify($"Wave: {n} enemies incoming (faction {FactionName28(hostile)})");
             for (int i = 0; i < n; i++)
             {
@@ -194,6 +193,7 @@ namespace RageEngine
             if (map26In) Guard("clouds", DriftClouds28);
             Guard("lounge", TickLounge28);
             Guard("hostile", TickHostile28);
+            Guard("qol", TickQol29);
             float now = Time.time;
             if (now < map26NextCheck) return;
             map26NextCheck = now + 0.5f;

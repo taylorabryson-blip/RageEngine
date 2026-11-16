@@ -21,12 +21,7 @@ namespace RageEngine
         [ModOption("Map music", "Volume of the music in the maps (0 = off).", defaultValueIndex = 5)]
         [ModOptionSlider, ModOptionFloatValues(0f, 1f, 0.1f)]
         public static float mapMusic = 0.5f;
-        [ModOptionCategory(CM, 12), ModOptionOrder(8)]
-        [ModOption("Map ambience", "Volume of the city and wind sounds in the maps (0 = off).", defaultValueIndex = 7)]
-        [ModOptionSlider, ModOptionFloatValues(0f, 1f, 0.1f)]
         public static float mapAmbience = 0.7f;
-        [ModOptionCategory(CM, 12), ModOptionOrder(9)]
-        [ModOption("Suits in the Skybar", "ON: NPCs who come to the Skybar wear dark suits.", defaultValueIndex = 1)]
         public static bool mapSuits = true;
 
         sealed class Speaker28 { public Vector3 pos; public float vol; public AudioSource src; }

@@ -59,7 +59,7 @@ namespace RageEngine
         public static float bioIntensity = 1f;
         public static bool bioVisuals = true;
         public static bool bioRecovery = true;
-        [ModOptionCategory(CB, 6), ModOptionOrder(11)] [ModOption("Status indicators", "A small coloured marker above an affected NPC's head.", defaultValueIndex = 1)] public static bool bioIndicators = true;
+        public static bool bioIndicators = true;
 
         public static bool xNight = true;
         public static bool xHero = true;
@@ -76,7 +76,6 @@ namespace RageEngine
         public static float xLastStandAt = 0.2f;
         public static bool xVisuals = true;
         public static bool xScaling = false;
-        [ModOptionCategory(CX, 7), ModOptionOrder(18)] [ModOption("Enhanced NPCs in waves", "Chance a spawned NPC already carries a super serum.", defaultValueIndex = 0)] [ModOptionSlider, ModOptionFloatValues(0f, 0.5f, 0.05f)]
         public static float xSpawnChance = 0f;
 
         static bool CompAllowed(Comp c)

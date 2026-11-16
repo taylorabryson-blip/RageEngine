@@ -39,8 +39,6 @@ namespace RageEngine
             new ModOptionString("Persistent - named NPCs keep it", null, "Persistent"),
         };
 
-        [ModOptionCategory(CP, 3), ModOptionOrder(0)]
-        [ModOption("Pressure Points", "Critical injury zones: torso, abdomen, neck, shoulders, arms and legs build up damage and progressively shut down what that part of the body can do.", defaultValueIndex = 1)]
         public static bool ppEnabled = true;
 
         public static string ppSeverity = "Severe";

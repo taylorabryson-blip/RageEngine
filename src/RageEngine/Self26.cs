@@ -12,8 +12,6 @@ namespace RageEngine
 {
     public sealed partial class RageEngineScript
     {
-        [ModOptionCategory(CB, 6), ModOptionOrder(4)]
-        [ModOption("Inject yourself", "ON: needle against your own body + trigger injects YOU. Super serums buff you, the nasty serums hurt.", defaultValueIndex = 1)]
         public static bool selfInject = true;
 
         // regen HP/s, damage shrugged (0-1), move speed, hit power, damage/s

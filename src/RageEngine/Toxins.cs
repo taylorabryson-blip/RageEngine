@@ -32,8 +32,6 @@ namespace RageEngine
             new Color(0.35f, 0.95f, 0.15f), new Color(1f, 0.08f, 0.05f), new Color(0.92f, 0.95f, 1f),
         };
 
-        [ModOptionCategory(CD, 2), ModOptionOrder(6)]
-        [ModOption("Toxins can kill", "ON: neurotoxin suffocates, acid eats them, paralytic stops their breathing. OFF: they collapse and the toxin wears off.", defaultValueIndex = 1)]
         public static bool toxinsKill = true;
 
         // 0.25.1: coat buttons removed from the menu - use the toxin oils / toxin daggers in the item book

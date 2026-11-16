@@ -72,6 +72,7 @@ namespace RageEngine
         /// Sets the faction now and once more after the creature has finished loading.
         internal static void MakeHostile28(Creature cr, int faction)
         {
+            NoteEnemy29(cr);
             if (cr == null || faction < 0 || faction == 2) return;
             Guard("hostile.now", () => cr.SetFaction(faction));
             hostile28.Add(new Hostile28 { c = cr, faction = faction, at = Time.time + 1.5f });

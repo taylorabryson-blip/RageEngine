@@ -56,8 +56,6 @@ namespace RageEngine
         [ModOption("Fair fights", "ON: some NPCs see you barehanded and throw their weapon away to fight you with fists. OFF (default): they keep their weapons.", defaultValueIndex = 0)]
         public static bool fairFights = false;
 
-        [ModOptionCategory(C0, 0), ModOptionOrder(5)]
-        [ModOption("Leave deaths to other mods", "Turn on if you use a death mod (e.g. Realistic Deaths): Rage Engine stops reviving NPCs (dying moments, adrenaline, surviving dismemberment) and stops shock deaths. Realistic Deaths is detected automatically.", defaultValueIndex = 0)]
         public static bool leaveDeathsToOtherMods = false;
 
         // ---------------- fisticuffs ----------------

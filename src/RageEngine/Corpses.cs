@@ -12,8 +12,6 @@ namespace RageEngine
 {
     public sealed partial class RageEngineScript
     {
-        [ModOptionCategory(C0, 0), ModOptionOrder(40)]
-        [ModOption("NPCs walk around bodies", "ON: bodies on the floor become obstacles, so NPCs path around them instead of running into them and tripping.", defaultValueIndex = 1)]
         public static bool corpseAvoid = true;
 
         sealed class CorpseBlock { public GameObject go; public NavMeshObstacle obs; public Vector3 at; }

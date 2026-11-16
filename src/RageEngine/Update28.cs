@@ -28,8 +28,6 @@ namespace RageEngine
         [ModOptionCategory(C9, 9), ModOptionOrder(42)]
         [ModOption("NPCs pull a knife", "ON: about half the NPCs carry a short blade and pull it when they've lost their weapon and you're close.", defaultValueIndex = 1)]
         public static bool pullKnife = true;
-        [ModOptionCategory(C8, 8), ModOptionOrder(51)]
-        [ModOption("Back of the head is vital", "ON: blunt hits to the back of the head daze twice as fast, and enough of them kill.", defaultValueIndex = 1)]
         public static bool occiputVital = true;
         [ModOptionCategory(C0, 0), ModOptionOrder(45)]
         [ModOption("Remember cheats", "ON: free climb, fall damage, infinite focus / imbue and invincibility are saved and put back next time you play.", defaultValueIndex = 1)]
@@ -55,13 +53,13 @@ namespace RageEngine
                 if (speed > 5f && Time.time >= s.nextShrugLog) { s.nextShrugLog = Time.time + 1f; Log($"{WhoIs(s)}: your punch {speed:0.0} m/s -> +{extra:0} damage (HP {c.currentHealth:0}/{c.maxHealth:0})"); }
             }
             severity *= 1f + 0.05f * Mathf.Clamp(speed - 6f, 0f, 4f);
-            if (speed >= 10f) s.powerHitAt = Time.time;                                 // a real power shot may put him down
+            if (speed >= 10f * Mathf.Sqrt(stayOnFeet)) s.powerHitAt = Time.time;                                 // a real power shot may put him down
             // the finisher: a real haymaker to the head of a hurt man
             if (!tank && head && speed >= 9f && !c.isKilled && !s.knockedOut)
             {
                 float hp = HpFrac(c);
                 if (hp <= 0.08f) { s.finalKill = true; Log($"{WhoIs(s)}: haymaker ({speed:0.0} m/s) - lights out for good"); Guard("kill", () => c.Kill()); }
-                else if (hp <= 0.15f && Random.value < 0.4f) { AllowFall(s, 3f); Knockout(s, hit.impactVelocity, true); }
+                else if (hp <= 0.15f && Random.value < 0.4f / stayOnFeet) { AllowFall(s, 3f); Knockout(s, hit.impactVelocity, true); }
             }
             return severity;
         }
@@ -293,11 +291,7 @@ namespace RageEngine
         }
 
         public static ModOptionString[] mixedSizes = { new ModOptionString("5", null, "5"), new ModOptionString("3", null, "3"), new ModOptionString("8", null, "8") };
-        [ModOptionCategory(C0, 0), ModOptionOrder(46)]
-        [ModOption("Mixed wave size", "How many enemies the mixed-toughness wave spawns.", valueSourceName = nameof(mixedSizes), defaultValueIndex = 0)]
         public static string mixedSize = "5";
-        [ModOptionButton, ModOptionCategory(C0, 0), ModOptionOrder(47)]
-        [ModOption("Spawn mixed-toughness wave", "Enemies in front of you, each with a different amount of HP (60 to 1500) and size - feel the difference.", valueSourceName = nameof(mapGo), saveValue = false)]
         public static void MixedWaveButton(string _) => Guard("mixedwave", () => instance?.SpawnMixedWave());
 
         void SpawnMixedWave()
@@ -307,6 +301,7 @@ namespace RageEngine
             int n = 5; int.TryParse(mixedSize, out n); n = Mathf.Clamp(n, 1, 8);
             LogFactions();
             int hostile = HostileFaction();
+            NoteWave29("mixed");
             Notify($"Mixed wave: {n} enemies (faction {FactionName28(hostile)})");
             Vector3 fwd = Vector3.ProjectOnPlane(Player.local.head != null ? Player.local.head.transform.forward : pc.transform.forward, Vector3.up).normalized;
             Vector3 right = Vector3.Cross(Vector3.up, fwd);

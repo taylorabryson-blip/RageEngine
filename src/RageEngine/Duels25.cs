@@ -73,6 +73,7 @@ namespace RageEngine
                 });
             }
             Debug.Log($"[RageEngine] spawning {n} super soldier(s)");
+            NoteWave29("soldiers");
             Notify($"{n} super soldier(s) incoming (faction {FactionName28(hostile)})");
         }
 

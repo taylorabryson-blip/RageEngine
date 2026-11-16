@@ -20,11 +20,7 @@ namespace RageEngine
 {
     public sealed partial class RageEngineScript
     {
-        [ModOptionCategory(CD, 2), ModOptionOrder(20)]
-        [ModOption("Punch-through kills", "ON: a fast enough punch (or heavy blunt weapon) to the chest goes through and kills. Tough/high-HP NPCs survive it.", defaultValueIndex = 1)]
         public static bool punchThrough = true;
-        [ModOptionCategory(CD, 2), ModOptionOrder(22)]
-        [ModOption("Neck snaps", "ON: hold an NPC by the neck or head and press the spell / trigger button on that hand to break his neck. Just holding or twisting does nothing.", defaultValueIndex = 1)]
         public static bool neckSnaps = true;
         public static float punchThroughSpeed = 7f;
 
@@ -109,7 +105,7 @@ namespace RageEngine
                     Guard("up", () => c.ragdoll.SetState(Ragdoll.State.Destabilized));
                 }
                 Log($"{WhoIs(s)}: UPPERCUT ({speed:0.0} m/s, power {k:0.00})");
-                if (Random.value < k * 0.12f + hpLow * 0.08f) Knockout(s, Vector3.up, true);
+                if (Random.value < (k * 0.12f + hpLow * 0.08f) / Mathf.Max(0.25f, stayOnFeet)) Knockout(s, Vector3.up, true);
                 return;
             }
 
@@ -117,7 +113,7 @@ namespace RageEngine
             //      Velocity is capped low and only the hit part and the chest get it; he only goes down if he's badly hurt.
             if ((kick && speed > 3f) || speed > 7f || (heavyBlunt && speed > 4f))
             {
-                float launch = speed * (kick ? 0.2f : 0.08f) * (0.35f + 0.8f * hpLow) * (heavyBlunt ? 1.2f : 1f);      // 0.28.3: less shove      // 0.28.2: back to 0.25.3, a touch more
+                float launch = speed * (kick ? 0.2f : 0.08f) * (0.35f + 0.8f * hpLow) * (heavyBlunt ? 1.2f : 1f) / Mathf.Max(0.25f, stayOnFeet);      // 0.28.3: less shove; 0.29: Stay on feet      // 0.28.2: back to 0.25.3, a touch more
                 if (launch > 0.5f)
                 {
                     float cap = kick ? 2.4f : 1.5f;

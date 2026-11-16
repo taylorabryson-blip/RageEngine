@@ -71,16 +71,10 @@ namespace RageEngine
 
         public static float bleedingRate = 1f;
 
-        [ModOptionCategory(CD, 2), ModOptionOrder(0)]
-        [ModOption("Shock can kill", "ON: a long time in heavy pain or blood loss sends an NPC into shock and kills him. OFF: no shock deaths - good for boss fights.", defaultValueIndex = 1)]
         public static bool shockDeaths = true;
 
-        [ModOptionCategory(CD, 2), ModOptionOrder(1)]
-        [ModOption("Bleeding out can kill", "ON: wounds drain health until they die. OFF: they still bleed and weaken, but bleeding never takes the last hit point - you have to finish them.", defaultValueIndex = 1)]
         public static bool bleedOutKills = true;
 
-        [ModOptionCategory(CD, 2), ModOptionOrder(2)]
-        [ModOption("Knockouts can kill", "ON: an NPC knocked out cold by head trauma never wakes up. OFF: he comes round after a few seconds, punch-drunk, and fights on.", defaultValueIndex = 1)]
         public static bool knockoutKills = true;
 
         public static float shockSeconds = 45f;
@@ -135,8 +129,6 @@ namespace RageEngine
         [ModOption("Blood on the ground", "Bleeding NPCs leave drops and pools of blood on the floor.", defaultValueIndex = 1)]
         public static bool groundBlood = true;
 
-        [ModOptionCategory(CD, 2), ModOptionOrder(3)]
-        [ModOption("Choke-outs can kill", "ON: choking an NPC out kills him. OFF: he passes out and comes round later.", defaultValueIndex = 0)]
         public static bool chokeOutKills = false;
 
         public static float chokeHaptics = 0.6f;

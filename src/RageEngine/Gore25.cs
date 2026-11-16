@@ -13,8 +13,6 @@ namespace RageEngine
 {
     public sealed partial class RageEngineScript
     {
-        [ModOptionCategory(C4, 4), ModOptionOrder(30)]
-        [ModOption("Gore interactions", "Broken noses, teeth knocked out, throat cuts with arterial spurts, blades pulled out of the gut, eye gouging.", defaultValueIndex = 1)]
         public static bool uniqueGore = true;
 
         /// From HandleHit (every hit on a tracked NPC).
