@@ -43,16 +43,10 @@ namespace RageEngine
         [ModOption("Pressure Points", "Critical injury zones: torso, abdomen, neck, shoulders, arms and legs build up damage and progressively shut down what that part of the body can do.", defaultValueIndex = 1)]
         public static bool ppEnabled = true;
 
-        [ModOptionCategory(CP, 3), ModOptionOrder(1)]
-        [ModOption("Injury severity", "Mild: gradual impairment only. Severe: limbs can be disabled. Extreme: neck and abdomen can put an NPC in critical condition.", valueSourceName = nameof(ppSeverityValues), defaultValueIndex = 1)]
         public static string ppSeverity = "Severe";
 
-        [ModOptionCategory(CP, 3), ModOptionOrder(2)]
-        [ModOption("Injury persistence", "Temporary: zones recover. Encounter: lasts the whole fight. Persistent: named NPCs who escape come back still injured.", valueSourceName = nameof(ppPersistenceValues), defaultValueIndex = 1)]
         public static string ppPersistence = "Encounter";
 
-        [ModOptionCategory(CP, 3), ModOptionOrder(3)]
-        [ModOption("Smooth transitions", "ON: NPCs sink to their knees / the ground instead of snapping straight into ragdoll.", defaultValueIndex = 1)]
         public static bool ppSmooth = true;
 
         static readonly object PPHandler = new object();

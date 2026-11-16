@@ -9,18 +9,12 @@ namespace RageEngine
 {
     public sealed partial class RageEngineScript
     {
-        [ModOptionCategory(C7, 7), ModOptionOrder(0)]
-        [ModOption("Developer mode", "Testing only. Enables the buttons below. Leave off for normal play.", defaultValueIndex = 0)]
         public static bool developerMode = false;
 
         public static ModOptionString[] runButton = { new ModOptionString("Run", null, "run") };
 
-        [ModOptionButton, ModOptionCategory(C7, 7), ModOptionOrder(1)]
-        [ModOption("Regenerate nearby NPCs", "Developer mode only. Heals every NPC within 15 m and resets all Rage Engine injuries, tags and effects on them; dead ones come back and get up.", valueSourceName = nameof(runButton), saveValue = false)]
         public static void RegenerateButton(string _) => Guard("dev", () => instance?.Regenerate());
 
-        [ModOptionButton, ModOptionCategory(C7, 7), ModOptionOrder(2)]
-        [ModOption("Log NPC conditions", "Developer mode only. Writes each nearby NPC's behavior, condition tags and capabilities to Player.log.", valueSourceName = nameof(runButton), saveValue = false)]
         public static void LogConditionsButton(string _) => Guard("dev", () =>
         {
             if (!developerMode) { Debug.Log("[RageEngine] developer mode is off"); return; }

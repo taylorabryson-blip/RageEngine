@@ -54,14 +54,14 @@ namespace RageEngine
             for (int i = 0; i < n; i++)
             {
                 var data = PickSoldier(out int tableFaction);
-                if (data == null) { Debug.Log("[RageEngine] super soldiers: no creature data found in the catalog"); return; }
+                if (data == null) { Debug.Log("[RageEngine] super soldiers: no creature data found in the catalog"); Notify("Rage Engine: couldn't find any enemy type to spawn."); return; }
                 float side = n == 1 ? 0f : (i - (n - 1) * 0.5f) * 1.6f;
                 Vector3 pos = pc.transform.position + fwd * (5f + (i % 2) * 1.2f) + right * side;
                 if (Physics.Raycast(pos + Vector3.up * 3f, Vector3.down, out var hitG, 8f, ~0, QueryTriggerInteraction.Ignore)) pos = hitG.point + Vector3.up * 0.05f;
                 Vector3 look = pc.transform.position - pos; look.y = 0f;
                 float rotY = Quaternion.LookRotation(look.sqrMagnitude > 0.01f ? look : -fwd).eulerAngles.y;
                 int comp = fixedComp >= (int)Comp.NightSoldier && fixedComp < (int)Comp.Count ? fixedComp : RandomSuperSerum();
-                int faction = tableFaction >= 0 && tableFaction != 2 ? tableFaction : data.factionId != 2 && data.factionId >= 0 ? data.factionId : hostile;
+                int faction = hostile >= 0 ? hostile : tableFaction >= 0 && tableFaction != 2 ? tableFaction : data.factionId != 2 && data.factionId >= 0 ? data.factionId : -1;      // 0.28.2: always an aggressive faction first
                 string id = data.id;
                 data.SpawnAsync(pos, rotY, null, false, null, cr =>
                 {
@@ -69,9 +69,11 @@ namespace RageEngine
                     Guard("duel.faction", () => { if (faction >= 0 && faction != 2) cr.SetFaction(faction); });
                     pendingSoldiers.Add(new PendingSoldier { c = cr, at = Time.time + 1.2f, comp = comp });
                     Debug.Log($"[RageEngine] super soldier spawned: {id} (faction {faction}) - {CompName[comp]}");
+                    MakeHostile28(cr, faction);
                 });
             }
             Debug.Log($"[RageEngine] spawning {n} super soldier(s)");
+            Notify($"{n} super soldier(s) incoming (faction {FactionName28(hostile)})");
         }
 
         static int RandomSuperSerum()
@@ -165,6 +167,10 @@ namespace RageEngine
         {
             var gd = Catalog.gameData;
             if (gd == null || gd.factions == null) return -1;
+            // 0.28.2: a faction the game itself marks as aggressive (attacks the player), named like enemies first
+            foreach (var want in new[] { "bandit", "enemy", "mercenar", "rogue", "outlaw", "eraden", "" })
+                foreach (var f in gd.factions)
+                    if (f != null && f.id != 2 && (int)f.attackBehaviour == 3 && (want == "" || (!string.IsNullOrEmpty(f.name) && f.name.ToLowerInvariant().Contains(want)))) return f.id;
             foreach (var want in new[] { "bandit", "enemy", "mercenar", "rogue", "outlaw", "eraden" })
                 foreach (var f in gd.factions) if (f != null && f.id != 2 && !string.IsNullOrEmpty(f.name) && f.name.ToLowerInvariant().Contains(want)) return f.id;
             foreach (var f in gd.factions)

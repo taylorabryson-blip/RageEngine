@@ -103,6 +103,8 @@ namespace RageEngine
             bool badlyHurt = hurt > 0.8f && injuries >= 2f;
             s.stayDown = stayDownWhenHurt && badlyHurt ? Random.Range(1f, 2.5f) * grit : 0f;
             s.stayDown += s.fatigue * 1.5f / Mathf.Max(0.5f, s.personality.recoveryMult);     // 0.19: tired / slow recoverers take longer
+            // 0.28.2: a broken leg keeps him on the floor a good while (both legs: he isn't getting up at all)
+            if (Has(s.brokenParts, LegParts) && !RegenActive(s)) s.stayDown = Mathf.Max(s.stayDown, Random.Range(8f, 15f) * grit);
             if (s.lostLeg) s.stayDown = 30f;
             if (s.spineBroken) s.stayDown = 1e6f;
         }

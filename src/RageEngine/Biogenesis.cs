@@ -49,38 +49,33 @@ namespace RageEngine
         // ---------------------------------------------------------------- settings
         [ModOptionCategory(CB, 6), ModOptionOrder(0)] [ModOption("Serums", "Syringes and vials: the serums and the super serums.", defaultValueIndex = 1)]
         public static bool bioEnabled = true;
-        [ModOptionCategory(CB, 6), ModOptionOrder(1)] [ModOption("Neurostatic", "Impaired coordination, delayed reactions, unsteady balance.", defaultValueIndex = 1)] public static bool bioNeuro = true;
-        [ModOptionCategory(CB, 6), ModOptionOrder(2)] [ModOption("Verdant Syndrome", "Fatigue, slowed movement, a spreading green infection on the skin.", defaultValueIndex = 1)] public static bool bioVerdant = true;
-        [ModOptionCategory(CB, 6), ModOptionOrder(3)] [ModOption("Cryo-Sleep", "Sluggish, dulled awareness, then unconscious for a while.", defaultValueIndex = 1)] public static bool bioCryo = true;
-        [ModOptionCategory(CB, 6), ModOptionOrder(4)] [ModOption("Adrenal Surge", "Aggressive, erratic, shrugs off pain - then crashes.", defaultValueIndex = 1)] public static bool bioSurge = true;
-        [ModOptionCategory(CB, 6), ModOptionOrder(5)] [ModOption("Hallucinatory Syndrome", "Confused: looks at things that aren't there, flinches at nothing, swings at air.", defaultValueIndex = 1)] public static bool bioHalluc = true;
-        [ModOptionCategory(CB, 6), ModOptionOrder(6)] [ModOption("Motor Shutdown", "Arms weaken, legs buckle, can't stay standing - temporarily.", defaultValueIndex = 1)] public static bool bioMotor = true;
-        [ModOptionCategory(CB, 6), ModOptionOrder(7)] [ModOption("Effect duration", "Multiplies how long every compound lasts.", defaultValueIndex = 3)] [ModOptionSlider, ModOptionFloatValues(0.25f, 3f, 0.25f)]
+        public static bool bioNeuro = true;
+        public static bool bioVerdant = true;
+        public static bool bioCryo = true;
+        public static bool bioSurge = true;
+        public static bool bioHalluc = true;
+        public static bool bioMotor = true;
         public static float bioDuration = 1f;
-        [ModOptionCategory(CB, 6), ModOptionOrder(8)] [ModOption("Effect intensity", "Multiplies how strong every compound is.", defaultValueIndex = 3)] [ModOptionSlider, ModOptionFloatValues(0.25f, 2f, 0.25f)]
         public static float bioIntensity = 1f;
-        [ModOptionCategory(CB, 6), ModOptionOrder(9)] [ModOption("Visual effects", "Skin tints, glowing eyes, auras and status indicators.", defaultValueIndex = 1)] public static bool bioVisuals = true;
-        [ModOptionCategory(CB, 6), ModOptionOrder(10)] [ModOption("NPC recovery", "ON: ailments wear off. OFF: they last until the NPC dies or despawns.", defaultValueIndex = 1)] public static bool bioRecovery = true;
+        public static bool bioVisuals = true;
+        public static bool bioRecovery = true;
         [ModOptionCategory(CB, 6), ModOptionOrder(11)] [ModOption("Status indicators", "A small coloured marker above an affected NPC's head.", defaultValueIndex = 1)] public static bool bioIndicators = true;
 
-        [ModOptionCategory(CX, 7), ModOptionOrder(0)] [ModOption("Night Soldier", "", defaultValueIndex = 1)] public static bool xNight = true;
-        [ModOptionCategory(CX, 7), ModOptionOrder(1)] [ModOption("Hero X", "", defaultValueIndex = 1)] public static bool xHero = true;
-        [ModOptionCategory(CX, 7), ModOptionOrder(2)] [ModOption("Adrenal Overload", "", defaultValueIndex = 1)] public static bool xAdrenal = true;
-        [ModOptionCategory(CX, 7), ModOptionOrder(3)] [ModOption("Titan", "", defaultValueIndex = 1)] public static bool xTitan = true;
-        [ModOptionCategory(CX, 7), ModOptionOrder(4)] [ModOption("Phantom", "", defaultValueIndex = 1)] public static bool xPhantom = true;
-        [ModOptionCategory(CX, 7), ModOptionOrder(5)] [ModOption("Phoenix", "", defaultValueIndex = 1)] public static bool xPhoenix = true;
-        [ModOptionCategory(CX, 7), ModOptionOrder(6)] [ModOption("Ravager", "", defaultValueIndex = 1)] public static bool xRavager = true;
-        [ModOptionCategory(CX, 7), ModOptionOrder(7)] [ModOption("Overmind", "", defaultValueIndex = 1)] public static bool xOvermind = true;
-        [ModOptionCategory(CX, 7), ModOptionOrder(8)] [ModOption("Colossus", "", defaultValueIndex = 1)] public static bool xColossus = true;
-        [ModOptionCategory(CX, 7), ModOptionOrder(9)] [ModOption("Enhancement strength", "Scales every super serum buff.", defaultValueIndex = 2)] [ModOptionSlider, ModOptionFloatValues(0.5f, 2f, 0.25f)]
+        public static bool xNight = true;
+        public static bool xHero = true;
+        public static bool xAdrenal = true;
+        public static bool xTitan = true;
+        public static bool xPhantom = true;
+        public static bool xPhoenix = true;
+        public static bool xRavager = true;
+        public static bool xOvermind = true;
+        public static bool xColossus = true;
         public static float xStrength = 1f;
-        [ModOptionCategory(CX, 7), ModOptionOrder(10)] [ModOption("Regeneration rate", "Scales serum healing (0 = off).", defaultValueIndex = 4)] [ModOptionSlider, ModOptionFloatValues(0f, 3f, 0.25f)]
         public static float xRegen = 1f;
-        [ModOptionCategory(CX, 7), ModOptionOrder(14)] [ModOption("Last Stand", "Adrenal Overload: below the health threshold he fights on harder for a while.", defaultValueIndex = 1)] public static bool xLastStand = true;
-        [ModOptionCategory(CX, 7), ModOptionOrder(15)] [ModOption("Last Stand threshold", "Fraction of health that triggers Last Stand.", defaultValueIndex = 3)] [ModOptionSlider, ModOptionFloatValues(0.05f, 0.5f, 0.05f)]
+        public static bool xLastStand = true;
         public static float xLastStandAt = 0.2f;
-        [ModOptionCategory(CX, 7), ModOptionOrder(16)] [ModOption("Serum visuals", "Glowing eyes and an energy aura on enhanced NPCs.", defaultValueIndex = 1)] public static bool xVisuals = true;
-        [ModOptionCategory(CX, 7), ModOptionOrder(17)] [ModOption("Size increase", "Titan/Colossus/Mutation grow slightly (game's own height system). Off by default until tested in the headset - turn on to try it; turn off if joints, grips or walking look wrong.", defaultValueIndex = 0)] public static bool xScaling = false;
+        public static bool xVisuals = true;
+        public static bool xScaling = false;
         [ModOptionCategory(CX, 7), ModOptionOrder(18)] [ModOption("Enhanced NPCs in waves", "Chance a spawned NPC already carries a super serum.", defaultValueIndex = 0)] [ModOptionSlider, ModOptionFloatValues(0f, 0.5f, 0.05f)]
         public static float xSpawnChance = 0f;
 

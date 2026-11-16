@@ -26,9 +26,6 @@ namespace RageEngine
         [ModOptionCategory(CD, 2), ModOptionOrder(22)]
         [ModOption("Neck snaps", "ON: hold an NPC by the neck or head and press the spell / trigger button on that hand to break his neck. Just holding or twisting does nothing.", defaultValueIndex = 1)]
         public static bool neckSnaps = true;
-        [ModOptionCategory(C0, 0), ModOptionOrder(41)]
-        [ModOption("Punch-through speed", "How fast your fist must be going (m/s) to go through a chest.", defaultValueIndex = 4)]
-        [ModOptionSlider, ModOptionFloatValues(5f, 12f, 0.5f)]
         public static float punchThroughSpeed = 7f;
 
         // ------------------------------------------------------------------ hit source
@@ -106,13 +103,13 @@ namespace RageEngine
                 s.daze = Mathf.Max(s.daze, 0.7f + 0.3f * k);
                 s.drunk = Mathf.Max(s.drunk, 0.5f * k);
                 // only a big shot on a hurt man (or a near-dead one) takes his legs - healthy NPCs get rocked and stay up
-                if (!Tank(s) && ((k > 0.6f && hpLow > 0.25f) || hpLow > 0.7f || k > 0.95f))
+                if (!Tank(s) && ((k > 0.8f && hpLow > 0.4f) || hpLow > 0.8f))
                 {
                     AllowFall(s, 3f);
                     Guard("up", () => c.ragdoll.SetState(Ragdoll.State.Destabilized));
                 }
                 Log($"{WhoIs(s)}: UPPERCUT ({speed:0.0} m/s, power {k:0.00})");
-                if (Random.value < k * 0.35f + hpLow * 0.25f) Knockout(s, Vector3.up, true);
+                if (Random.value < k * 0.22f + hpLow * 0.15f) Knockout(s, Vector3.up, true);
                 return;
             }
 
@@ -120,12 +117,12 @@ namespace RageEngine
             //      Velocity is capped low and only the hit part and the chest get it; he only goes down if he's badly hurt.
             if ((kick && speed > 3f) || speed > 7f || (heavyBlunt && speed > 4f))
             {
-                float launch = speed * (kick ? 0.34f : 0.18f) * (0.45f + 0.9f * hpLow) * (heavyBlunt ? 1.2f : 1f);      // 0.28: middle ground
+                float launch = speed * (kick ? 0.24f : 0.11f) * (0.35f + 0.8f * hpLow) * (heavyBlunt ? 1.2f : 1f);      // 0.28.2: back to 0.25.3, a touch more
                 if (launch > 0.5f)
                 {
-                    float cap = kick ? 3.6f : 2.6f;
+                    float cap = kick ? 2.4f : 1.5f;
                     Vector3 push = (Vector3.ProjectOnPlane(dir, Vector3.up).normalized + Vector3.up * 0.1f).normalized * Mathf.Min(launch, cap);
-                    bool drop = !Tank(s) && c.ragdoll.state == Ragdoll.State.Standing && ((kick && (hpLow > 0.35f || speed > 6f) && launch > 1.3f) || (!kick && speed > 7f && hpLow > 0.4f));
+                    bool drop = !Tank(s) && c.ragdoll.state == Ragdoll.State.Standing && kick && hpLow > 0.6f && launch > 1.4f;
                     if (drop)
                     {
                         AllowFall(s, 2f);
@@ -158,6 +155,7 @@ namespace RageEngine
         // ------------------------------------------------------------------ spell-button presses, every frame
         static readonly float[] castDownAt = { -1f, -1f };
         static readonly bool[] castHeld = new bool[2];
+        internal static float lastCastAt = -10f;
         static void PollCastInput()
         {
             var pc = Player.local != null ? Player.local.creature : null;
@@ -168,6 +166,7 @@ namespace RageEngine
                 bool down = false;
                 try { down = h != null && h.playerHand != null && h.playerHand.controlHand != null && (h.playerHand.controlHand.castPressed || h.playerHand.controlHand.usePressed); } catch { }
                 if (down && !castHeld[i]) castDownAt[i] = Time.time;
+                if (down) lastCastAt = Time.time;
                 castHeld[i] = down;
             }
         }
@@ -272,7 +271,7 @@ namespace RageEngine
             if (s.spineBroken) why = "spine broken";
             else if (lLeg && rLeg) why = "both legs broken";
             else if ((lLeg || rLeg) && lArm && rArm) why = "a broken leg and both arms broken - the pain";
-            else if (s.integrity < 14f) why = $"body too broken (integrity {s.integrity:0})";
+            else if (s.integrity < 8f) why = $"body too broken (integrity {s.integrity:0})";
             if (why != null && !s.cantStand)
             {
                 s.cantStand = true;

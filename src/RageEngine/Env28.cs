@@ -55,28 +55,24 @@ namespace RageEngine
         /// A transparent material for clouds / sky, on the unlit shader when the game has it.
         static Material SeeThrough28(Texture2D tex, Color col, bool transparent)
         {
-            Material m = null;
-            if (unlit26 != null && mapLook != "1")
+            // 0.28.2: never URP Unlit (stripped on Quest). Opaque things clone the level's own material.
+            if (!transparent && mapLook != "1")
             {
-                m = new Material(unlit26);
-                m.mainTexture = tex; if (m.HasProperty("_BaseMap")) m.SetTexture("_BaseMap", tex);
-                m.color = col; if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", col);
-                if (m.HasProperty("_Cull")) m.SetFloat("_Cull", 0f);
-                if (transparent)
+                var d = Donor26();
+                if (d != null)
                 {
-                    if (m.HasProperty("_Surface")) m.SetFloat("_Surface", 1f);
-                    m.SetInt("_SrcBlend", (int)BlendMode.SrcAlpha); m.SetInt("_DstBlend", (int)BlendMode.OneMinusSrcAlpha); m.SetInt("_ZWrite", 0);
-                    m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT"); m.renderQueue = 3000;
+                    var m = DonorCopy26(d, tex, Color.white, 1f, col);
+                    if (m.HasProperty("_Cull")) m.SetFloat("_Cull", 0f);
+                    if (m.HasProperty("_EmissionColor") && m.HasProperty("_EmissionMap")) { m.EnableKeyword("_EMISSION"); m.SetTexture("_EmissionMap", tex); m.SetColor("_EmissionColor", Color.white * 0.8f); }
+                    return m;
                 }
             }
-            if (m == null) m = Mats.MakeTextured(tex, null, col, 0f, transparent);
-            return m;
+            return Mats.MakeTextured(tex, null, col, 0f, transparent);
         }
 
         /// After the geometry: sky and cloud objects (children of the map root, so they go with it).
         static void BuildEnv28(Transform root)
         {
-            if (!unlitTried26) MapMat26("concrete", 0);                                  // makes sure the unlit shader was looked up
             // ---- sky
             if (env28Sky != null)
             {
@@ -85,7 +81,7 @@ namespace RageEngine
                 else
                 {
                     tex.wrapModeU = TextureWrapMode.Repeat; tex.wrapModeV = TextureWrapMode.Clamp;
-                    var pano = Shader.Find("Skybox/Panoramic");
+                    Shader pano = null;                                              // 0.28.2: skybox shader is stripped on Quest -> always the dome
                     if (pano != null)
                     {
                         env28SkyMat = new Material(pano);
@@ -111,7 +107,7 @@ namespace RageEngine
                 }
             }
             // ---- clouds
-            foreach (var c in env28CloudSpecs)
+            foreach (var c in (mapLook == "1" ? env28CloudSpecs : new List<CloudSpec28>()))     // 0.28.2: see-through clouds need a shader the Quest may not have
             {
                 var tex = GoreTex.MeshTex("Map/" + c.tex + ".png");
                 if (tex == null) continue;
@@ -181,7 +177,7 @@ namespace RageEngine
             {
                 RenderSettings.fog = true; RenderSettings.fogMode = FogMode.Exponential; RenderSettings.fogColor = env28FogCol;
                 // the sky dome sits inside the fog: keep it thinner so the stars still show
-                RenderSettings.fogDensity = env28SkyMat != null ? env28FogDen * 1.4f : env28FogDen;
+                RenderSettings.fogDensity = Mathf.Min(env28FogDen, 0.004f);                    // 0.28.2: thin, so a missing surface can never become a blue wall
             }
             if (env28HasAmb) { RenderSettings.ambientMode = AmbientMode.Flat; RenderSettings.ambientLight = env28Amb; }
             Debug.Log($"[RageEngine] map night: sky {env28SkyHow}, fog {(env28HasFog ? RenderSettings.fogDensity.ToString("0.0000") : "off")}, {env28Clouds.Count} cloud layer(s)");

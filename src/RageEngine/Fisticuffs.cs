@@ -46,9 +46,10 @@ namespace RageEngine
             if (rag.handlers != null && rag.handlers.Count > 0) return;            // you're holding them: grabs and throws are yours
             // 0.28: anything that happens near you is yours too - spells (gravity push), kicks, shoves, other mods. This guard
             // was undoing them, which is why vanilla effects 'did nothing'. It now only catches trips far away from the fight.
-            var gp = Player.local != null ? Player.local.creature : null;
-            if (gp != null && (gp.transform.position - c.transform.position).sqrMagnitude < 12f * 12f) return;
-            if (Time.time - s.lastHitTime < 2f) return;
+            // 0.28.2: the guard is back (0.28 dropped it near you and NPCs fell over from everything). Two things still
+            // get through: your spells (gravity push etc. - you were holding the cast button) and real power shots.
+            if (Time.time - lastCastAt < 1.5f) return;
+            if (Time.time - s.powerHitAt < 1f) return;
             if (Time.time - s.blockWindowStart > 3f) { s.blockWindowStart = Time.time; s.blockedFalls = 0; }
             if (++s.blockedFalls > 6) return;                                        // something keeps knocking them over: let it
             Guard("antifall", () => rag.SetState(Ragdoll.State.Standing));

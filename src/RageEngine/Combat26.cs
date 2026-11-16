@@ -43,7 +43,7 @@ namespace RageEngine
             }
             { float sv2 = severity; Guard("punchpower", () => sv2 = PunchPower28(s, hit, sv2)); severity = sv2; }
             // big HP pool = hard man (0.28: gentler - 0.26 made everyone feel like a tank)
-            severity *= 1f - (blunt ? 0.22f : 0.1f) * s.hpK;
+            severity *= 1f - (blunt ? 0.3f : 0.12f) * s.hpK;
             if (Tank(s))
             {
                 if (blunt)

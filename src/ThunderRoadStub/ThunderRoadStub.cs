@@ -64,9 +64,20 @@ namespace ThunderRoad
         public EffectInstance Spawn(Transform parent, bool pooled = true, ColliderGroup colliderGroup = null, bool fromPlayer = false) => null;
     }
     public class EffectInstance { public void Play(int stepCustomHashId = 0, bool skipStarts = false, bool skipLoops = false) { } }
+    public enum MessageAnchorType { }
+    public class DisplayMessage : MonoBehaviour
+    {
+        public static DisplayMessage instance;
+        public class MessageData
+        {
+            public string text; public int priority; public bool dismissAutomatically; public float dismissTime; public bool isSkippable;
+            public MessageData(string text, int priority, float showDelay = 0f, Texture image = null, UnityEngine.Video.VideoClip videoClip = null, bool isTutorialMessage = false, bool isSkippable = true, bool fitVideoHorizontally = false, bool warnPlayer = false, MessageAnchorType anchorType = default, Transform anchorTargetTransform = null, bool dismissAutomatically = false, float dismissTime = 0f, UnityEngine.Events.UnityEvent<MessageData> onMessageSkip = null, bool releaseAssetsAtTheEnd = false, object handler = null) { }
+        }
+        public void ShowMessage(MessageData messageData) { }
+    }
     public class GameData
     {
-        public class Faction { public int id; public string name; }
+        public class Faction { public enum AttackBehaviour { Default, Ignored, Passive, Agressive } public int id; public string name; public AttackBehaviour attackBehaviour; }
         public List<Faction> factions;
     }
     public static class Catalog

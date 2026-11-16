@@ -22,9 +22,9 @@ namespace RageEngine
     public sealed partial class RageEngineScript
     {
         [ModOptionCategory(C9, 9), ModOptionOrder(41)]
-        [ModOption("Your punch damage", "Extra damage from your fists and feet by how fast they land. 0 = the game's own damage only, 1 = a haymaker really hurts.", defaultValueIndex = 4)]
+        [ModOption("Your punch damage", "Extra damage from your fists and feet for really fast punches. 0 = the game's own damage only.", defaultValueIndex = 2)]
         [ModOptionSlider, ModOptionFloatValues(0f, 3f, 0.25f)]
-        public static float punchDamage = 1f;
+        public static float punchDamage = 0.5f;
         [ModOptionCategory(C9, 9), ModOptionOrder(42)]
         [ModOption("NPCs pull a knife", "ON: about half the NPCs carry a short blade and pull it when they've lost their weapon and you're close.", defaultValueIndex = 1)]
         public static bool pullKnife = true;
@@ -45,22 +45,23 @@ namespace RageEngine
             var part = hit.damageStruct.hitRagdollPart;
             bool head = part != null && Has(part.type, RagdollPart.Type.Head | RagdollPart.Type.Neck);
             bool tank = Tank(s);
-            if (punchDamage > 0f && speed > 2.5f && !c.isKilled)
+            if (punchDamage > 0f && speed > 5f && !c.isKilled)                  // 0.28.2: normal punches are the game's own; only real power shots add
             {
-                float extra = Mathf.Pow(speed - 2.5f, 1.5f) * 4f * punchDamage * (head ? 1.4f : 1f) * (tank ? 0.3f : 1f);
-                extra = Mathf.Min(extra, 120f);
+                float extra = Mathf.Pow(speed - 5f, 1.4f) * 3f * punchDamage * (head ? 1.25f : 1f) * (tank ? 0.3f : 1f);
+                extra = Mathf.Min(extra, c.maxHealth * 0.25f);
                 // leave the killing blow to the rules below so it reads as a knockout / finisher, not a silent HP drain
                 float room = c.currentHealth - 1f;
                 if (room > 0f) Guard("punchdmg", () => c.Damage(Mathf.Min(extra, room)));
                 if (speed > 5f && Time.time >= s.nextShrugLog) { s.nextShrugLog = Time.time + 1f; Log($"{WhoIs(s)}: your punch {speed:0.0} m/s -> +{extra:0} damage (HP {c.currentHealth:0}/{c.maxHealth:0})"); }
             }
-            severity *= 1f + 0.15f * Mathf.Max(0f, speed - 3f);
+            severity *= 1f + 0.05f * Mathf.Clamp(speed - 6f, 0f, 4f);
+            if (speed >= 8f) s.powerHitAt = Time.time;                                 // a real power shot may put him down
             // the finisher: a real haymaker to the head of a hurt man
-            if (!tank && head && speed >= 6f && !c.isKilled && !s.knockedOut)
+            if (!tank && head && speed >= 9f && !c.isKilled && !s.knockedOut)
             {
                 float hp = HpFrac(c);
-                if (hp <= 0.2f) { s.finalKill = true; Log($"{WhoIs(s)}: haymaker ({speed:0.0} m/s) - lights out for good"); Guard("kill", () => c.Kill()); }
-                else if (hp <= 0.5f || speed >= 8f) { AllowFall(s, 3f); Knockout(s, hit.impactVelocity, true); }
+                if (hp <= 0.08f) { s.finalKill = true; Log($"{WhoIs(s)}: haymaker ({speed:0.0} m/s) - lights out for good"); Guard("kill", () => c.Kill()); }
+                else if (hp <= 0.3f && Random.value < 0.6f) { AllowFall(s, 3f); Knockout(s, hit.impactVelocity, true); }
             }
             return severity;
         }
@@ -306,20 +307,22 @@ namespace RageEngine
             int n = 5; int.TryParse(mixedSize, out n); n = Mathf.Clamp(n, 1, 8);
             LogFactions();
             int hostile = HostileFaction();
+            Notify($"Mixed wave: {n} enemies (faction {FactionName28(hostile)})");
             Vector3 fwd = Vector3.ProjectOnPlane(Player.local.head != null ? Player.local.head.transform.forward : pc.transform.forward, Vector3.up).normalized;
             Vector3 right = Vector3.Cross(Vector3.up, fwd);
             for (int i = 0; i < n; i++)
             {
                 var data = PickSoldier(out int tableFaction);
-                if (data == null) return;
+                if (data == null) { Notify("Rage Engine: couldn't find any enemy type to spawn."); return; }
                 Vector3 pos = pc.transform.position + fwd * (6f + (i % 2) * 1.5f) + right * ((i - (n - 1) * 0.5f) * 1.7f);
                 if (Physics.Raycast(pos + Vector3.up * 3f, Vector3.down, out var hg, 8f, ~0, QueryTriggerInteraction.Ignore)) pos = hg.point + Vector3.up * 0.05f;
-                int faction = tableFaction >= 0 && tableFaction != 2 ? tableFaction : data.factionId != 2 && data.factionId >= 0 ? data.factionId : hostile;
+                int faction = hostile >= 0 ? hostile : tableFaction >= 0 && tableFaction != 2 ? tableFaction : data.factionId != 2 && data.factionId >= 0 ? data.factionId : -1;      // 0.28.2: always an aggressive faction first
                 Vector3 look = pc.transform.position - pos; look.y = 0f;
                 data.SpawnAsync(pos, Quaternion.LookRotation(look.sqrMagnitude > 0.01f ? look : -fwd).eulerAngles.y, null, false, null, cr =>
                 {
                     if (cr == null) return;
                     Guard("mixed.faction", () => { if (faction >= 0 && faction != 2) cr.SetFaction(faction); });
+                    MakeHostile28(cr, faction);
                     QueueMixed(cr);
                 });
             }

@@ -149,7 +149,7 @@ namespace RageEngine
         void MapWave()
         {
             var pc = Player.local != null ? Player.local.creature : null;
-            if (pc == null || map26Root == null || map26Spawns.Count == 0) { Debug.Log("[RageEngine] map: build the place first (Go there)"); return; }
+            if (pc == null || map26Root == null || map26Spawns.Count == 0) { Debug.Log("[RageEngine] map: build the place first (Go there)"); Notify("Go to a map first, then start a wave."); return; }
             int n = 3; int.TryParse(mapWaveSize, out n); n = Mathf.Clamp(n, 1, 8);
             int kind = 0; int.TryParse(mapWaveKind, out kind);
             LogFactions();
@@ -159,16 +159,17 @@ namespace RageEngine
             Vector3 me = pc.transform.position - map26Origin;
             pts.RemoveAll(p => (p - me).sqrMagnitude < 16f);
             if (pts.Count == 0) pts.AddRange(map26Spawns);
+            Notify($"Wave: {n} enemies incoming (faction {FactionName28(hostile)})");
             for (int i = 0; i < n; i++)
             {
                 var data = PickSoldier(out int tableFaction);
-                if (data == null) { Debug.Log("[RageEngine] map: no creature data in the catalog"); return; }
+                if (data == null) { Debug.Log("[RageEngine] map: no creature data in the catalog"); Notify("Rage Engine: couldn't find any enemy type to spawn."); return; }
                 Vector3 pos = map26Origin + pts[Random.Range(0, pts.Count)] + new Vector3(Random.Range(-0.8f, 0.8f), 0f, Random.Range(-0.8f, 0.8f));
                 var lift = LiftArrival28(i);                                         // the first two come up in the elevator
                 if (lift.HasValue) pos = lift.Value;
                 Vector3 look = pc.transform.position - pos; look.y = 0f;
                 float rotY = look.sqrMagnitude > 0.01f ? Quaternion.LookRotation(look).eulerAngles.y : 0f;
-                int faction = tableFaction >= 0 && tableFaction != 2 ? tableFaction : data.factionId != 2 && data.factionId >= 0 ? data.factionId : hostile;
+                int faction = hostile >= 0 ? hostile : tableFaction >= 0 && tableFaction != 2 ? tableFaction : data.factionId != 2 && data.factionId >= 0 ? data.factionId : -1;      // 0.28.2: always an aggressive faction first
                 bool super = kind == 1 || (kind == 2 && Random.value < 0.4f);
                 int comp = super ? RandomSuperSerum() : -1;
                 string id = data.id;
@@ -180,6 +181,7 @@ namespace RageEngine
                     QueueSuit28(cr);
                     if (comp >= 0) pendingSoldiers.Add(new PendingSoldier { c = cr, at = Time.time + 1.2f, comp = comp });
                     Debug.Log($"[RageEngine] map enemy: {id} (faction {faction}){(comp >= 0 ? " - " + CompName[comp] : "")}");
+                    MakeHostile28(cr, faction);
                 });
             }
         }
@@ -189,6 +191,7 @@ namespace RageEngine
         {
             if (map26In) Guard("clouds", DriftClouds28);
             Guard("lounge", TickLounge28);
+            Guard("hostile", TickHostile28);
             float now = Time.time;
             if (now < map26NextCheck) return;
             map26NextCheck = now + 0.5f;
@@ -293,7 +296,7 @@ namespace RageEngine
             foreach (var n in map26Nav) Guard("nav.remove", () => n.Remove());
             map26Nav.Clear(); map26Spawns.Clear();
             int def = GroundLayer26(out string layerWhy);
-            ResetEnv28(); ResetLounge28();
+            ResetEnv28(); ResetLounge28(); ResetDonor26();
             mapMats26.Clear(); texOk26 = texMiss26 = 0; map26KillY = -20f; map26LookBuilt = mapLook;
             var items26 = new List<KeyValuePair<string, Vector3>>();
             map26Origin = new Vector3(Mathf.Round(playerPos.x), Mathf.Round(playerPos.y) + 300f, Mathf.Round(playerPos.z));
@@ -350,7 +353,7 @@ namespace RageEngine
                         {
                             Vector3 mn = new Vector3(PF(p[1]), PF(p[2]), PF(p[3])), mx = new Vector3(PF(p[4]), PF(p[5]), PF(p[6]));
                             var go = Block(root.transform, "Glass", (mn + mx) * 0.5f, mx - mn, "glass", true, def);
-                            var gp = go.AddComponent<GlassPane26>(); gp.hp = PF(p[7]); gp.mat = MapMat26("glass", 0);
+                            var gp = go.AddComponent<GlassPane26>(); gp.hp = PF(p[7]); gp.mat = MapMat26("glass", 0); if (mapLook != "1") { var gr = go.GetComponent<MeshRenderer>(); if (gr != null) gr.enabled = false; }   // 0.28.2: no see-through shader on Quest -> clear opening, still breakable
                             glass++;
                             break;
                         }
@@ -428,8 +431,9 @@ namespace RageEngine
                 var itv = it;
                 Guard("map.item", () => { if (System.Enum.TryParse<ToolKind>(itv.Key, out var tk)) SpawnTool(tk, map26Origin + itv.Value, null); });
             }
-            string report = $"map '{name}' v{Version}: look {mapLook}, unlit shader {(unlit26 != null ? unlit26.name : "none")}, textures loaded {texOk26}, missing {texMiss26}, floor layer {def} ({LayerMask.LayerToName(def)}; {layerWhy}), navmesh agent types {navOk}, kill height {map26KillY}, sky {env28SkyHow}, cloud layers {env28Clouds.Count}";
+            string report = $"map '{name}' v{Version}: look {mapLook}, surface material {donorWhy26}, textures loaded {texOk26}, missing {texMiss26}, floor layer {def} ({LayerMask.LayerToName(def)}; {layerWhy}), navmesh agent types {navOk}, kill height {map26KillY}, sky {env28SkyHow}, cloud layers {env28Clouds.Count}";
             Debug.Log("[RageEngine] " + report);
+            Notify($"Rage Engine map: {name}\nSurfaces: {(donor26 != null ? "level material OK" : mapLook == "2" ? "flat colours" : "game shader")}  -  textures {texOk26}/{texOk26 + texMiss26}\nIf it looks wrong: Map look setting -> Leave -> Go there");
             try { File.WriteAllText(Path.Combine(modFolder ?? "", "RageEngine_map_report.txt"), report + "\n"); } catch { }
             Debug.Log($"[RageEngine] map '{name}' built at {map26Origin}: {boxes} boxes, {acc.Count} materials, {glass} glass panes, {doors} doors, {props} props, {lights} lights, {map26Spawns.Count} spawn points, navmesh for {navOk} agent type(s)");
             return true;
@@ -458,6 +462,59 @@ namespace RageEngine
 
         /// Map materials. Auto = an unlit textured shader when the game has one (textures always show, no lighting needed;
         /// faces are shaded by direction instead), otherwise the game's lit shader.
+        static Material donor26; static bool donorTried26; static string donorWhy26 = "not looked";
+        static readonly string[] donorBad26 = { "transparent", "water", "sky", "particle", "decal", "unlit", "glass", "foliage", "leaf", "leaves", "hair", "ui", "text", "fx", "fade", "cloud", "fog", "blood", "fire", "cutout", "grass" };
+
+        /// The biggest opaque, textured renderer in the loaded level (not ours, not a creature or item).
+        internal static Material Donor26()
+        {
+            if (donorTried26) return donor26;
+            donorTried26 = true;
+            float best = 0f;
+            try
+            {
+                foreach (var r in UnityEngine.Object.FindObjectsOfType<MeshRenderer>())
+                {
+                    if (r == null || !r.enabled || !r.gameObject.activeInHierarchy) continue;
+                    if (map26Root != null && r.transform.IsChildOf(map26Root.transform)) continue;
+                    if (r.GetComponentInParent<Creature>() != null || r.GetComponentInParent<Item>() != null) continue;
+                    var mat = r.sharedMaterial;
+                    if (mat == null || mat.shader == null || mat.mainTexture == null || mat.renderQueue > 2450) continue;
+                    string sn = (mat.shader.name + " " + mat.name).ToLowerInvariant();
+                    bool bad = false; foreach (var b in donorBad26) if (sn.Contains(b)) { bad = true; break; }
+                    if (bad) continue;
+                    var e = r.bounds.size; float score = e.x * e.z + e.y * Mathf.Max(e.x, e.z);
+                    if (sn.Contains("lit")) score *= 2f;
+                    if (score > best) { best = score; donor26 = mat; }
+                }
+            }
+            catch (System.Exception ex) { donorWhy26 = "error " + ex.Message; }
+            donorWhy26 = donor26 != null ? $"{donor26.name} ({donor26.shader.name})" : "none found";
+            return donor26;
+        }
+
+        internal static void ResetDonor26() { donor26 = null; donorTried26 = false; }
+
+        internal static Material DonorCopy26(Material donor, Texture2D tex, Color baseCol, float sh, Color tn)
+        {
+            var m = new Material(donor) { name = "RageEngine_Map" };
+            if (tex != null)
+            {
+                m.mainTexture = tex;
+                foreach (var t in new[] { "_BaseMap", "_MainTex", "_BaseColorMap", "_Albedo" }) if (m.HasProperty(t)) m.SetTexture(t, tex);
+            }
+            m.mainTextureScale = Vector2.one; m.mainTextureOffset = Vector2.zero;
+            foreach (var t in new[] { "_BaseMap", "_MainTex" }) if (m.HasProperty(t)) { m.SetTextureScale(t, Vector2.one); m.SetTextureOffset(t, Vector2.zero); }
+            Color c = new Color(baseCol.r * sh * tn.r, baseCol.g * sh * tn.g, baseCol.b * sh * tn.b, 1f);
+            m.color = c; if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", c);
+            if (m.HasProperty("_Metallic")) m.SetFloat("_Metallic", 0f);
+            if (m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", 0.2f);
+            if (m.HasProperty("_Glossiness")) m.SetFloat("_Glossiness", 0.2f);
+            if (m.HasProperty("_DetailAlbedoMap")) m.SetTexture("_DetailAlbedoMap", null);
+            if (m.HasProperty("_EmissionColor")) m.SetColor("_EmissionColor", Color.black);
+            return m;
+        }
+
         static Material MapMat26(string key, int shade)
         {
             key = (key ?? "").ToLowerInvariant();
@@ -470,27 +527,15 @@ namespace RageEngine
             if (mapLook == "2") m = Mats.Make(Guess(key) * sh * tn, 0.2f);
             else if (mapLook != "1")
             {
-                if (!unlitTried26)
-                {
-                    unlitTried26 = true;
-                    foreach (var n in new[] { "Universal Render Pipeline/Unlit", "Unlit/Texture", "Universal Render Pipeline/Simple Lit" }) { unlit26 = Shader.Find(n); if (unlit26 != null) break; }
-                }
-                if (unlit26 != null)
+                // 0.28.2: Auto clones a material the loaded level is already drawing with, so the shader
+                // variant is guaranteed to exist on the Quest (URP Unlit was stripped -> invisible map).
+                var donor = Donor26();
+                if (donor != null)
                 {
                     var tex = GoreTex.MeshTex("Map/" + key + ".png");
                     if (tex != null) texOk26++; else texMiss26++;
-                    m = new Material(unlit26);
-                    Color c = tex != null ? Color.white : Guess(key);
-                    c = new Color(c.r * sh * tn.r, c.g * sh * tn.g, c.b * sh * tn.b, 1f);
-                    if (glass) c = new Color(0.6f, 0.8f, 0.92f, 0.3f);
-                    if (tex != null) { m.mainTexture = tex; if (m.HasProperty("_BaseMap")) m.SetTexture("_BaseMap", tex); }
-                    m.color = c; if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", c);
-                    if (glass)
-                    {
-                        if (m.HasProperty("_Surface")) m.SetFloat("_Surface", 1f);
-                        m.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha); m.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha); m.SetInt("_ZWrite", 0);
-                        m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT"); m.renderQueue = 3000;
-                    }
+                    m = DonorCopy26(donor, tex, tex != null ? Color.white : Guess(key), sh, tn);
+                    if (glass) { m.color = new Color(0.55f, 0.7f, 0.8f, 1f); if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", m.color); }
                 }
             }
             if (m == null)

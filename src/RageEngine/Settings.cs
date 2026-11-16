@@ -25,8 +25,6 @@ namespace RageEngine
         [ModOptionSlider, ModOptionFloatValues(0f, 1f, 0.1f)]
         public static float sfxVolume = 0.8f;
 
-        [ModOptionCategory(C0, 0), ModOptionOrder(4)]
-        [ModOption("Debug log", "Writes Rage Engine decisions (hits, reactions, RNAS behavior changes, tags) to the game log (Player.log). ON in test builds so problems can be traced - turn off for normal play.", defaultValueIndex = 1)]
         public static bool debugLog = true;
 
         // ======================= 1. Physics reactions =======================
@@ -127,9 +125,6 @@ namespace RageEngine
         // ======================= 6. Choking =======================
         public static float chokeOutSeconds = 7f;
 
-        [ModOptionCategory(CD, 2), ModOptionOrder(5)]
-        [ModOption("Head smash ease", "How easily skulls crack and smash. 1 = a hard hammer blow cracks it and a second one smashes it. Higher = easier.", defaultValueIndex = 2)]
-        [ModOptionSlider, ModOptionFloatValues(0.5f, 2f, 0.25f)]
         public static float headCrushEase = 1f;
 
         [ModOptionCategory(C4, 4), ModOptionOrder(50)]
