@@ -34,9 +34,7 @@ namespace RageEngine
         [ModOptionCategory(C8, 8), ModOptionOrder(50)]
         [ModOption("Passing out", "ON: beaten NPCs sometimes pass out instead of dying (blunt damage, never super soldiers).", defaultValueIndex = 1)]
         public static bool passOut = true;
-        [ModOptionCategory(C4, 4), ModOptionOrder(34)]
-        [ModOption("3D swelling", "ON: solid lumps and knots rise where you hit, growing with every blow to the same spot.", defaultValueIndex = 1)]
-        public static bool knots3d = true;
+        public static bool knots3d = false;                                 // 0.28.3: removed (players hated the welts)
 
         // ------------------------------------------------------------------ weapons hitting NPCs
         /// From HandleHit: special weapons.

@@ -147,7 +147,7 @@ namespace RageEngine
             if (stage == 1)
             {
                 Stamp(c, point, 0.05f, "hematoma", 0.85f); Stamp(c, point, 0.03f, "split_skin", 0.95f);
-                Guard("swell", () => HeadDeform.Dent(c, bone, point + inward * -0.01f, -inward, 0.04f, 0.006f));   // swelling next to the dent
+                // 0.28.3: no swelling lump next to the dent
                 Blood(head.transform);
                 Log($"{WhoIs(s)}: face swollen and split open");
             }

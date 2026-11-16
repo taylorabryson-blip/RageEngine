@@ -38,7 +38,7 @@ namespace RageEngine
 
         static Material GlassMat()
         {
-            var sh = SkinPaint.BlendShader;
+            var sh = (Application.platform == RuntimePlatform.Android ? null : SkinPaint.BlendShader);     // 0.28.3: opaque glass on Quest
             if (sh == null) return Mats.Make(new Color(0.8f, 0.9f, 1f), 0.95f);
             return new Material(sh) { color = new Color(0.85f, 0.93f, 1f, 0.22f), mainTexture = Texture2D.whiteTexture, renderQueue = 3010 };
         }

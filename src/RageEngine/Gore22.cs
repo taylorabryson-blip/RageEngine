@@ -135,7 +135,7 @@ namespace RageEngine
                 Log($"{WhoIs(s)}: {part.type} {what} ({spot.dmg:0.0})");
             }
             // swelling: real mesh deformation outward (hematoma), at most twice per spot
-            if (stage >= 2 && spot.swells < 2 && s.swellCount < 10)
+            if (false && stage >= 2 && spot.swells < 2 && s.swellCount < 10)     // 0.28.3: no swelling lumps
             {
                 var bone = part.meshBone != null ? part.meshBone : part.bone != null ? part.bone.mesh : null;
                 if (bone != null)

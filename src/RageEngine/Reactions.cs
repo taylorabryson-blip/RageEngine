@@ -148,7 +148,8 @@ namespace RageEngine
 
             // 3) balance (drives posture, speed and the punch-drunk wobble; recovers in a couple of seconds)
             float drop = Mathf.Min(0.08f + 0.12f * severity, s.glassJaw ? 0.45f : 0.3f) * balanceLoss * adren / Mathf.Max(0.5f, s.balanceStability);
-            s.balance = Mathf.Max(0.3f, s.balance - drop);
+            drop *= 0.6f;                                                          // 0.28.3: much steadier on their feet
+            s.balance = Mathf.Max(0.45f, s.balance - drop);
             s.fatigue = Mathf.Min(1f, s.fatigue + 0.04f * severity);
 
             if (!standing || Pumped(s)) return;
@@ -156,7 +157,7 @@ namespace RageEngine
             float eff = severity * wild;
             Vector3 flat = Vector3.ProjectOnPlane(dir, Vector3.up);
             flat = flat.sqrMagnitude > 0.01f ? flat.normalized : -c.transform.forward;
-            MaybeStumble(s, flat, eff / thr);                                       // 0.19: stumbles when already off balance
+            MaybeStumble(s, flat, eff / thr * 0.65f);                                       // 0.19: stumbles when already off balance
 
             // 4) punch-drunk meter: clean blunt shots to the head build up; full = they drop
             if (blunt)

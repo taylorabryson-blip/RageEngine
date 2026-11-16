@@ -386,7 +386,7 @@ namespace RageEngine
         static Texture2D softDot;
         static Material GlowMat(Color col)
         {
-            var sh = SkinPaint.BlendShader;
+            var sh = (Application.platform == RuntimePlatform.Android ? null : SkinPaint.BlendShader);     // 0.28.3: UI shader on meshes/particles crashed the Quest
             if (sh == null) return Mats.Make(col, 0.9f);
             var m = new Material(sh) { color = col, renderQueue = 3100 };
             if (softDot == null) softDot = SoftDot();
@@ -396,7 +396,7 @@ namespace RageEngine
         /// Unlit solid colour (reads as a glow on Quest without post-processing).
         static Material SolidGlow(Color col)
         {
-            var sh = SkinPaint.BlendShader;
+            var sh = (Application.platform == RuntimePlatform.Android ? null : SkinPaint.BlendShader);     // 0.28.3: UI shader on meshes/particles crashed the Quest
             if (sh == null) return Mats.Make(col, 0.9f);
             return new Material(sh) { color = new Color(col.r, col.g, col.b, 1f), mainTexture = Texture2D.whiteTexture, renderQueue = 3050 };
         }
@@ -469,7 +469,7 @@ namespace RageEngine
         {
             var c = s.creature;
             var chest = ChestPart(c);
-            if (chest != null && SkinPaint.BlendShader != null)
+            if (chest != null && Application.platform != RuntimePlatform.Android && SkinPaint.BlendShader != null)
             {
                 var go = new GameObject("RageEngine_Aura");
                 go.transform.SetParent(chest.transform, false);

@@ -132,6 +132,7 @@ namespace RageEngine
             pl.Teleport(map26Origin + map26Start + Vector3.up * 0.1f, Quaternion.Euler(0f, map26Yaw, 0f), false, true);
             Guard("map.night", ApplyEnv28);
             Guard("lounge", StartLounge28);
+            Guard("bounds.off", () => Bounds28(false));
             Debug.Log($"[RageEngine] map: you're at {map26Built} ({map26Origin + map26Start})");
         }
 
@@ -142,6 +143,7 @@ namespace RageEngine
             map26In = false;
             Guard("map.night.off", RestoreEnv28);
             Guard("lounge.off", StopLounge28);
+            Guard("bounds.on", () => Bounds28(true));
             pl.Teleport(map26Return, map26ReturnRot, false, true);
             Debug.Log("[RageEngine] map: back in the level");
         }
@@ -200,6 +202,7 @@ namespace RageEngine
                 if (map26Nav.Count > 0) { foreach (var n in map26Nav) Guard("nav.remove", () => n.Remove()); map26Nav.Clear(); }
                 if (map26In || env28Saved) Guard("map.night.off", RestoreEnv28);
                 Guard("lounge.off", ResetLounge28);
+                Guard("bounds.on", () => Bounds28(true));
                 map26In = false; map26Built = null;
                 return;
             }
@@ -583,6 +586,8 @@ namespace RageEngine
                     mass = 1.5f; break;
             }
             var rb = go.AddComponent<Rigidbody>(); rb.mass = mass; rb.drag = 0.2f; rb.angularDrag = 0.5f;
+            rb.isKinematic = true;                                                     // 0.28.3: stays put until something actually hits it
+            go.AddComponent<PropWake28>();
             if (sound != null) go.AddComponent<MapProp26>().sound = sound;
         }
     }

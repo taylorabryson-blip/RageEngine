@@ -103,13 +103,13 @@ namespace RageEngine
                 s.daze = Mathf.Max(s.daze, 0.7f + 0.3f * k);
                 s.drunk = Mathf.Max(s.drunk, 0.5f * k);
                 // only a big shot on a hurt man (or a near-dead one) takes his legs - healthy NPCs get rocked and stay up
-                if (!Tank(s) && ((k > 0.8f && hpLow > 0.4f) || hpLow > 0.8f))
+                if (!Tank(s) && ((k > 0.9f && hpLow > 0.6f) || hpLow > 0.85f))
                 {
                     AllowFall(s, 3f);
                     Guard("up", () => c.ragdoll.SetState(Ragdoll.State.Destabilized));
                 }
                 Log($"{WhoIs(s)}: UPPERCUT ({speed:0.0} m/s, power {k:0.00})");
-                if (Random.value < k * 0.22f + hpLow * 0.15f) Knockout(s, Vector3.up, true);
+                if (Random.value < k * 0.12f + hpLow * 0.08f) Knockout(s, Vector3.up, true);
                 return;
             }
 
@@ -117,12 +117,12 @@ namespace RageEngine
             //      Velocity is capped low and only the hit part and the chest get it; he only goes down if he's badly hurt.
             if ((kick && speed > 3f) || speed > 7f || (heavyBlunt && speed > 4f))
             {
-                float launch = speed * (kick ? 0.24f : 0.11f) * (0.35f + 0.8f * hpLow) * (heavyBlunt ? 1.2f : 1f);      // 0.28.2: back to 0.25.3, a touch more
+                float launch = speed * (kick ? 0.2f : 0.08f) * (0.35f + 0.8f * hpLow) * (heavyBlunt ? 1.2f : 1f);      // 0.28.3: less shove      // 0.28.2: back to 0.25.3, a touch more
                 if (launch > 0.5f)
                 {
                     float cap = kick ? 2.4f : 1.5f;
                     Vector3 push = (Vector3.ProjectOnPlane(dir, Vector3.up).normalized + Vector3.up * 0.1f).normalized * Mathf.Min(launch, cap);
-                    bool drop = !Tank(s) && c.ragdoll.state == Ragdoll.State.Standing && kick && hpLow > 0.6f && launch > 1.4f;
+                    bool drop = !Tank(s) && c.ragdoll.state == Ragdoll.State.Standing && kick && hpLow > 0.75f && launch > 1.6f;
                     if (drop)
                     {
                         AllowFall(s, 2f);

@@ -32,6 +32,7 @@ namespace RageEngine
         /// One-shot puff of glowing particles (cleans itself up).
         static void Puff(Vector3 at, Color col, int count, float speed)
         {
+            if (Application.platform == RuntimePlatform.Android) return;          // 0.28.3: no runtime particles on Quest (crash)
             var go = new GameObject("RageEngine_Puff");
             go.transform.position = at;
             var ps = go.AddComponent<ParticleSystem>();

@@ -14,6 +14,7 @@ namespace ThunderRoad
     public enum DamageType { Unknown = 0, Pierce = 1, Slash = 2, Blunt = 3, Energy = 4, Fire = 5, Lightning = 6, UnBlockable = 7 }
 
     public class ThunderBehaviour : MonoBehaviour { }
+    public class OutOfBoundsFader : ThunderBehaviour { public Collider boundsCollider; public bool constrainPlayer; }
     public abstract class ThunderEntity : ThunderBehaviour { }
     public class Interactable : ThunderBehaviour { public enum Action { UseStart = 0, UseStop = 1, AlternateUseStart = 2, AlternateUseStop = 3, Grab = 4, Ungrab = 5 } }
     public enum Category { Text = 0, Wave = 1, Creature = 2, CreatureTable = 3, LootTable = 4, Container = 5, Item = 6, Brain = 7, Effect = 8 }

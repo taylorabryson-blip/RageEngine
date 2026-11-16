@@ -55,13 +55,13 @@ namespace RageEngine
                 if (speed > 5f && Time.time >= s.nextShrugLog) { s.nextShrugLog = Time.time + 1f; Log($"{WhoIs(s)}: your punch {speed:0.0} m/s -> +{extra:0} damage (HP {c.currentHealth:0}/{c.maxHealth:0})"); }
             }
             severity *= 1f + 0.05f * Mathf.Clamp(speed - 6f, 0f, 4f);
-            if (speed >= 8f) s.powerHitAt = Time.time;                                 // a real power shot may put him down
+            if (speed >= 10f) s.powerHitAt = Time.time;                                 // a real power shot may put him down
             // the finisher: a real haymaker to the head of a hurt man
             if (!tank && head && speed >= 9f && !c.isKilled && !s.knockedOut)
             {
                 float hp = HpFrac(c);
                 if (hp <= 0.08f) { s.finalKill = true; Log($"{WhoIs(s)}: haymaker ({speed:0.0} m/s) - lights out for good"); Guard("kill", () => c.Kill()); }
-                else if (hp <= 0.3f && Random.value < 0.6f) { AllowFall(s, 3f); Knockout(s, hit.impactVelocity, true); }
+                else if (hp <= 0.15f && Random.value < 0.4f) { AllowFall(s, 3f); Knockout(s, hit.impactVelocity, true); }
             }
             return severity;
         }

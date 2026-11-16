@@ -61,6 +61,7 @@ namespace RageEngine
             bool paintedOk = false;
             Guard("skinpaint", () => paintedOk = SkinPaint.Paint(s.creature, point, Mathf.Clamp(0.022f * (0.8f + sev), 0.02f, 0.06f), tone, TexGen.Bruise()));
             if (paintedOk) { s.bruisesPainted++; if (debugLog && s.bruisesPainted <= 3) Log($"{s.creature.name} bruise painted into the skin on {part.type}"); return; }
+            return;                                                               // 0.28.3: no geometry patches (they read as 3D welts on Quest)
 
             // same spot again: grow + darken
             foreach (var b in s.bruises)

@@ -7,6 +7,21 @@ using UnityEngine;
 
 namespace RageEngine
 {
+    /// Map furniture: frozen in place until a hand, a body, a weapon or a thrown thing hits it.
+    internal sealed class PropWake28 : MonoBehaviour
+    {
+        void OnCollisionEnter(Collision c)
+        {
+            var rb = GetComponent<Rigidbody>();
+            if (rb == null || !rb.isKinematic || c.rigidbody == null || c.rigidbody.isKinematic) return;
+            if (c.relativeVelocity.sqrMagnitude < 0.6f * 0.6f) return;
+            rb.isKinematic = false;
+            rb.AddForceAtPosition(c.relativeVelocity * Mathf.Min(1f, c.rigidbody.mass / Mathf.Max(0.5f, rb.mass)) * 0.5f,
+                c.contactCount > 0 ? c.GetContact(0).point : transform.position, ForceMode.VelocityChange);
+            enabled = false;
+        }
+    }
+
     public sealed partial class RageEngineScript
     {
         [ModOptionCategory(CM, 12), ModOptionOrder(20)]
@@ -34,6 +49,21 @@ namespace RageEngine
             var gd = Catalog.gameData;
             if (gd != null && gd.factions != null) foreach (var f in gd.factions) if (f != null && f.id == id) return f.name;
             return id.ToString();
+        }
+
+        // ---- the level's own out-of-bounds fader: the map is outside its bounds, so it faded you to black and sent you back
+        static readonly List<OutOfBoundsFader> boundsOff28 = new List<OutOfBoundsFader>();
+        internal static void Bounds28(bool on)
+        {
+            if (on)
+            {
+                foreach (var f in boundsOff28) if (f != null) f.enabled = true;
+                boundsOff28.Clear();
+                return;
+            }
+            foreach (var f in Object.FindObjectsOfType<OutOfBoundsFader>())
+                if (f != null && f.enabled) { f.enabled = false; boundsOff28.Add(f); }
+            Debug.Log($"[RageEngine] map: level bounds fader off ({boundsOff28.Count})");
         }
 
         struct Hostile28 { public Creature c; public int faction; public float at; }
