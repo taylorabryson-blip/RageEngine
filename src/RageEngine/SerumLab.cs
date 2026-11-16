@@ -53,6 +53,10 @@ namespace RageEngine
 
         [ModOptionCategory(CL, 8), ModOptionOrder(0)] [ModOption("Slot", "Which custom serum you are working on. Each slot is a syringe in the item book (Custom Serums).", valueSourceName = nameof(labSlotValues), defaultValueIndex = 0)]
         public static string labSlot = "1";
+        [ModOptionCategory(CL, 8), ModOptionOrder(1)] [ModOption("Ingredient 1", "", valueSourceName = nameof(labIngValues), defaultValueIndex = 0)] public static string labIng1 = "-1";
+        [ModOptionCategory(CL, 8), ModOptionOrder(2)] [ModOption("Ingredient 2", "", valueSourceName = nameof(labIngValues), defaultValueIndex = 0)] public static string labIng2 = "-1";
+        [ModOptionCategory(CL, 8), ModOptionOrder(3)] [ModOption("Ingredient 3", "", valueSourceName = nameof(labIngValues), defaultValueIndex = 0)] public static string labIng3 = "-1";
+        [ModOptionCategory(CL, 8), ModOptionOrder(4)] [ModOption("Ingredient 4", "", valueSourceName = nameof(labIngValues), defaultValueIndex = 0)] public static string labIng4 = "-1";
         public static string labName = "Auto";
         public static string labColor = "Auto (blend)";
         [ModOptionCategory(CL, 8), ModOptionOrder(7)] [ModOption("Strength", "How strong every ingredient hits.", defaultValueIndex = 2)] [ModOptionSlider, ModOptionFloatValues(0.5f, 1.5f, 0.25f)]

@@ -68,13 +68,13 @@ namespace RageEngine
                 case "clear":
                 {
                     int n = 0;
-                    foreach (var c in new List<Creature>(Creature.allActive)) if (c != null && !c.isPlayer) { Guard("q.despawn", () => c.Despawn()); n++; }
+                    foreach (var c in new List<Creature>(Creature.allActive)) if (c != null && !c.isPlayer) { Guard("q.despawn", () => c.Despawn(0f)); n++; }
                     wave29.Clear(); Notify($"Removed {n} NPC(s)"); break;
                 }
                 case "bodies":
                 {
                     int n = 0;
-                    foreach (var c in new List<Creature>(Creature.allActive)) if (c != null && !c.isPlayer && c.isKilled) { Guard("q.body", () => c.Despawn()); n++; }
+                    foreach (var c in new List<Creature>(Creature.allActive)) if (c != null && !c.isPlayer && c.isKilled) { Guard("q.body", () => c.Despawn(0f)); n++; }
                     Notify($"Cleared {n} bod{(n == 1 ? "y" : "ies")}"); break;
                 }
                 case "gore":
@@ -150,7 +150,7 @@ namespace RageEngine
                 if (kv.Key == null || !kv.Key.isKilled) { (done ??= new List<Creature>()).Add(kv.Key); continue; }
                 if (now - kv.Value < fade) continue;
                 var c = kv.Key;
-                Guard("fade.despawn", () => c.Despawn());
+                Guard("fade.despawn", () => c.Despawn(0f));
                 (done ??= new List<Creature>()).Add(c);
             }
             if (done != null) foreach (var c in done) deadSince29.Remove(c);
