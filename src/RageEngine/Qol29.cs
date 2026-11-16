@@ -15,35 +15,34 @@ namespace RageEngine
 {
     public sealed partial class RageEngineScript
     {
-        [ModOptionCategory(C0, 0), ModOptionOrder(1)]
+        [ModOptionCategory("Rage", 0), ModOptionOrder(3)]
         [ModOption("Stay on feet", "How hard NPCs are to knock over. 1 = default, higher = they stay standing more, lower = they drop easier.", defaultValueIndex = 3)]
         [ModOptionSlider, ModOptionFloatValues(0.25f, 3f, 0.25f)]
         public static float stayOnFeet = 1f;
 
         public static ModOptionString[] styleValues = { new ModOptionString("Custom", null, "custom"), new ModOptionString("Arcade", null, "arcade"), new ModOptionString("Realistic", null, "real"), new ModOptionString("Tough guys", null, "tough") };
-        [ModOptionCategory(C0, 0), ModOptionOrder(4)]
+        [ModOptionCategory("Rage", 0), ModOptionOrder(1)]
         [ModOption("Style", "Quick setup. Arcade: they drop fast, you hit hard. Realistic: the default feel. Tough guys: lots of HP and hard to put down. Custom: your own settings.", valueSourceName = nameof(styleValues), defaultValueIndex = 0)]
         public static string style = "custom";
 
-        [ModOptionCategory(C0, 0), ModOptionOrder(5)]
+        [ModOptionCategory("Rage", 0), ModOptionOrder(5)]
         [ModOption("Injuries can kill", "ON: shock, bleeding out, knockouts and toxins can kill. OFF: they never do (boss fights).", defaultValueIndex = 1)]
         public static bool injuriesKill = true;
 
         public static ModOptionString[] fadeValues = { new ModOptionString("Never", null, "0"), new ModOptionString("After 1 minute", null, "60"), new ModOptionString("After 3 minutes", null, "180"), new ModOptionString("After 5 minutes", null, "300") };
-        [ModOptionCategory(C0, 0), ModOptionOrder(6)]
+        [ModOptionCategory("Rage", 0), ModOptionOrder(11)]
         [ModOption("Bodies fade", "Dead NPCs are cleaned up after this long (keeps the game running smooth on Quest).", valueSourceName = nameof(fadeValues), defaultValueIndex = 2)]
         public static string bodiesFade = "180";
 
         public static ModOptionString[] quickValues = {
             new ModOptionString("Heal me", null, "heal"), new ModOptionString("Remove all enemies", null, "clear"),
             new ModOptionString("Clear dead bodies", null, "bodies"), new ModOptionString("Clean up blood & gore", null, "gore"),
-            new ModOptionString("Unstuck (back to map start)", null, "unstuck"), new ModOptionString("Repeat last wave", null, "again"),
-            new ModOptionString("Spawn mixed-toughness wave here", null, "mixed") };
-        [ModOptionCategory(C0, 0), ModOptionOrder(40)]
+            new ModOptionString("Unstuck (back to map start)", null, "unstuck") };
+        [ModOptionCategory("Rage", 0), ModOptionOrder(14)]
         [ModOption("Quick action", "Pick one, then press Do it.", valueSourceName = nameof(quickValues), defaultValueIndex = 0)]
         public static string quickAction = "heal";
         public static ModOptionString[] doIt = { new ModOptionString("Do it", null, "go") };
-        [ModOptionButton, ModOptionCategory(C0, 0), ModOptionOrder(41)]
+        [ModOptionButton, ModOptionCategory("Rage", 0), ModOptionOrder(15)]
         [ModOption("Do it", "Runs the quick action above.", valueSourceName = nameof(doIt), saveValue = false)]
         public static void QuickButton(string _) => Guard("quick", () => instance?.Quick29(quickAction));
 
@@ -125,14 +124,14 @@ namespace RageEngine
             var pc = Player.local != null ? Player.local.creature : null;
             if (pc == null) return;
             if (loadedAt29 < 0f) loadedAt29 = now;
-            if (!welcomed29 && now - loadedAt29 > 6f) { welcomed29 = true; Notify($"Rage Engine {Version} is on.\nSettings: Mod Options > Rage Engine: General"); }
+            if (!welcomed29 && now - loadedAt29 > 6f) { welcomed29 = true; Notify($"Rage Engine {Version} is on.\nSettings: Mod Options > Rage"); }
 
             // wave cleared
             if (wave29.Count > 0)
             {
                 bool alive = false;
                 foreach (var c in wave29) if (c != null && !c.isKilled && c.gameObject.activeInHierarchy) { alive = true; break; }
-                if (!alive) { Notify($"Wave cleared! {wave29.Count} down.\nQuick action > Repeat last wave for more."); wave29.Clear(); }
+                if (!alive) { Notify($"Wave cleared! {wave29.Count} down."); wave29.Clear(); }
             }
 
             // bodies fade

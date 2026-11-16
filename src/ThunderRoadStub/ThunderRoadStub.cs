@@ -73,6 +73,13 @@ namespace ThunderRoad
         public virtual System.Collections.IEnumerator OnPlayerSpawnCoroutine() { yield break; }
     }
     public class Level : MonoBehaviour { public static Level current; public LevelData data; }
+    public class WaveSpawner : MonoBehaviour
+    {
+        public class SpawnPoint { public Transform transform; public SpawnPoint(Transform transform, Area area = null) { } }
+        public List<Transform> spawns; public List<SpawnPoint> spawnPoints; public bool ignoreDungeonLimits; public bool isRunning;
+    }
+    public class Area : MonoBehaviour { }
+    public class UIWaveSpawner : MonoBehaviour { public WaveSpawner waveSpawner; }
     public class EffectData : CatalogData
     {
         public EffectInstance Spawn(Transform parent, bool pooled = true, ColliderGroup colliderGroup = null, bool fromPlayer = false) => null;

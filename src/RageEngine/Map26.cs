@@ -87,14 +87,8 @@ namespace RageEngine
         public static string mapName = "Skybar";
         public static string mapLook = "0";
         public static void MapGoButton(string _) => Guard("map.go", () => instance?.MapGo());
-        [ModOptionCategory(CM, 12), ModOptionOrder(2)]
-        [ModOption("Enemies per wave", "How many come when you press Spawn enemies.", valueSourceName = nameof(mapWaveSizes), defaultValueIndex = 0)]
         public static string mapWaveSize = "3";
-        [ModOptionCategory(CM, 12), ModOptionOrder(3)]
-        [ModOption("Enemy type", "Normal enemies, super soldiers (random super serum), or a mix.", valueSourceName = nameof(mapWaveKinds), defaultValueIndex = 0)]
         public static string mapWaveKind = "0";
-        [ModOptionButton, ModOptionCategory(CM, 12), ModOptionOrder(4)]
-        [ModOption("Spawn a wave now", "In a Rage Engine level (Skybar, Rage Burger, Red Room Diner - pick them from the game's level list): enemies come from the map's spawn points.", valueSourceName = nameof(mapGo), saveValue = false)]
         public static void MapWaveButton(string _) => Guard("map.wave", () => instance?.MapWave());
         public static void MapLeaveButton(string _) => Guard("map.leave", () => instance?.MapLeave());
 

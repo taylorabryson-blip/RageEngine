@@ -13,7 +13,7 @@
   "tier": 2,
   "flags": "Throwable, Spinnable, Jabbing",
   "levelRequired": 0,
-  "category": "Daggers",
+  "category": "Rage",
   "iconEffectId": null,
   "preferredItemCenter": "Mass",
   "drainImbueWhenIdle": true,

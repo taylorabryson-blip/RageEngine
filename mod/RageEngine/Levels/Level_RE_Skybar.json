@@ -37,9 +37,11 @@
           "cleanerRate": 5.0
         },
         {
-          "$type": "RageEngine.LevelModuleRageMap, RageEngine",
-          "map": "Skybar",
-          "waves": true
+          "$type": "ThunderRoad.LevelModuleMusic, ThunderRoad",
+          "dynamicMusic": "MusicArena"
+        },
+        {
+          "$type": "LevelModuleResetSpawners, ThunderRoad"
         }
       ],
       "availableOptions": []

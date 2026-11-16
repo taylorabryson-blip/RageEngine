@@ -51,22 +51,17 @@ namespace RageEngine
         static ModOptionString[] BuildList(string[] a) { var l = new ModOptionString[a.Length]; for (int i = 0; i < a.Length; i++) l[i] = new ModOptionString(a[i], null, a[i]); return l; }
         public static ModOptionString[] labButton = { new ModOptionString("Do it", null, "go") };
 
-        [ModOptionCategory(CL, 8), ModOptionOrder(0)] [ModOption("Slot", "Which custom serum you are working on. Each slot is a syringe in the item book (Custom Serums).", valueSourceName = nameof(labSlotValues), defaultValueIndex = 0)]
         public static string labSlot = "1";
-        [ModOptionCategory(CL, 8), ModOptionOrder(1)] [ModOption("Ingredient 1", "", valueSourceName = nameof(labIngValues), defaultValueIndex = 0)] public static string labIng1 = "-1";
-        [ModOptionCategory(CL, 8), ModOptionOrder(2)] [ModOption("Ingredient 2", "", valueSourceName = nameof(labIngValues), defaultValueIndex = 0)] public static string labIng2 = "-1";
-        [ModOptionCategory(CL, 8), ModOptionOrder(3)] [ModOption("Ingredient 3", "", valueSourceName = nameof(labIngValues), defaultValueIndex = 0)] public static string labIng3 = "-1";
-        [ModOptionCategory(CL, 8), ModOptionOrder(4)] [ModOption("Ingredient 4", "", valueSourceName = nameof(labIngValues), defaultValueIndex = 0)] public static string labIng4 = "-1";
+        public static string labIng1 = "-1";
+        public static string labIng2 = "-1";
+        public static string labIng3 = "-1";
+        public static string labIng4 = "-1";
         public static string labName = "Auto";
         public static string labColor = "Auto (blend)";
-        [ModOptionCategory(CL, 8), ModOptionOrder(7)] [ModOption("Strength", "How strong every ingredient hits.", defaultValueIndex = 2)] [ModOptionSlider, ModOptionFloatValues(0.5f, 1.5f, 0.25f)]
         public static float labStrength = 1f;
-        [ModOptionCategory(CL, 8), ModOptionOrder(8)] [ModOption("Duration", "How long it lasts (multiplier).", defaultValueIndex = 2)] [ModOptionSlider, ModOptionFloatValues(0.5f, 3f, 0.25f)]
         public static float labDuration = 1f;
-        [ModOptionButton, ModOptionCategory(CL, 8), ModOptionOrder(10)] [ModOption("Save to slot", "Brew it: stores the recipe in the selected slot. Spawn that slot's syringe from the item book (Custom Serums).", valueSourceName = nameof(labButton), saveValue = false)]
         public static void LabSave(string _) => Guard("lab", () => SaveSlot(Slot()));
         public static void LabDuplicate(string _) => Guard("lab", () => DuplicateSlot(Slot()));
-        [ModOptionButton, ModOptionCategory(CL, 8), ModOptionOrder(12)] [ModOption("Delete slot", "Empties the selected slot.", valueSourceName = nameof(labButton), saveValue = false)]
         public static void LabDelete(string _) => Guard("lab", () => { recipes[Slot()] = null; SaveRecipes(); Log($"lab: slot {Slot() + 1} deleted"); RefreshCustomDevices(); });
         public static void LabLoad(string _) => Guard("lab", () => LoadSlot(Slot()));
 

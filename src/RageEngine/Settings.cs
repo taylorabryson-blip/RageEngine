@@ -12,7 +12,7 @@ namespace RageEngine
                      C6 = "Rage Engine: Choking", CD = "Rage Engine: Deaths";
 
         // ======================= 0. General =======================
-        [ModOptionCategory(C0, 0), ModOptionOrder(0)]
+        [ModOptionCategory("Rage", 0), ModOptionOrder(0)]
         [ModOption("Rage Engine enabled", "Master switch. Off = NPCs behave like vanilla (the JSON stumble tuning still applies).", defaultValueIndex = 1)]
         public static bool modEnabled = true;
 
@@ -20,7 +20,7 @@ namespace RageEngine
 
         public static bool awarenessEnabled = true;
 
-        [ModOptionCategory(C0, 0), ModOptionOrder(3)]
+        [ModOptionCategory("Rage", 0), ModOptionOrder(13)]
         [ModOption("Effect volume", "Volume of Rage Engine sounds (bone cracks, crunches, gurgles, death rattles). Game voices are not affected.", defaultValueIndex = 8)]
         [ModOptionSlider, ModOptionFloatValues(0f, 1f, 0.1f)]
         public static float sfxVolume = 0.8f;
@@ -46,7 +46,7 @@ namespace RageEngine
 
         public static float knockdownForce = 5f;
 
-        [ModOptionCategory(C0, 0), ModOptionOrder(2)]
+        [ModOptionCategory("Rage", 0), ModOptionOrder(2)]
         [ModOption("NPC health", "Health every NPC spawns with (0 - 5000 HP). 0 = the game's own health. Applies to NPCs that spawn after you change it.", defaultValueIndex = 6)]
         [ModOptionSlider, ModOptionFloatValues(0f, 5000f, 50f)]
         public static float npcHealth = 300f;
@@ -121,12 +121,10 @@ namespace RageEngine
 
         public static float headCrushEase = 1f;
 
-        [ModOptionCategory(C4, 4), ModOptionOrder(50)]
+        [ModOptionCategory("Rage", 0), ModOptionOrder(8)]
         [ModOption("Wound textures", "Every wound gets its own texture: cuts, stab wounds, bullet holes, split skin, crush wounds, scrapes, bruise stages with swelling, blood drips and splatter.", defaultValueIndex = 1)]
         public static bool goreTextures = true;
 
-        [ModOptionCategory(C4, 4), ModOptionOrder(51)]
-        [ModOption("Blood on the ground", "Bleeding NPCs leave drops and pools of blood on the floor.", defaultValueIndex = 1)]
         public static bool groundBlood = true;
 
         public static bool chokeOutKills = false;

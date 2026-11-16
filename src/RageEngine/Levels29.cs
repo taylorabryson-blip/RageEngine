@@ -1,44 +1,33 @@
-// Rage Engine 0.29 - the maps are real levels now: Skybar, Rage Burger and Red Room Diner show up in the game's own
-// level selection (map board / Sandbox level list) under "Rage Engine". The level loads the Arena scene and this module
-// builds the Rage Engine map on top and puts you in it. Waves come automatically (Mod Options > Maps > Auto waves).
-using System.Collections;
+// Rage Engine 0.31 - Rage Engine levels (Skybar, Rage Burger, Red Room Diner) in the game's level list.
+// The level entry loads the Arena scene; when we see one of our level ids we build the map on top and move the
+// GAME'S OWN wave system into it: the Arena's wave spawner now spawns at the map's spawn points, and the Arena's
+// wave book stands next to you at the map's front door. No Rage Engine wave system.
+using System.Collections.Generic;
 using ThunderRoad;
 using UnityEngine;
 
 namespace RageEngine
 {
-    public class LevelModuleRageMap : LevelModule
-    {
-        public string map = "Skybar";
-        public bool waves = true;
-
-        public override IEnumerator OnLoadCoroutine()
-        {
-            RageEngineScript.RequestLevelMap29(map, waves);
-            yield break;
-        }
-
-        public override void OnUnload() => RageEngineScript.EndLevelMap29();
-    }
-
     public sealed partial class RageEngineScript
     {
-        [ModOptionCategory(CM, 12), ModOptionOrder(1)]
-        [ModOption("Auto waves", "ON: in the Rage Engine levels a new wave comes a few seconds after you clear the last one.", defaultValueIndex = 1)]
-        public static bool autoWaves = true;
-
-        static string levelMap29; static bool levelWaves29; static float levelAt29 = -1f, nextAutoWave29;
-        static bool levelBuilt29;
-
-        internal static void RequestLevelMap29(string map, bool waves)
+        static string levelSeen31, levelMap29;
+        static float levelAt29 = -1f;
+        static bool levelBuilt29, wavesHooked31;
+        static readonly Dictionary<string, string> levelMaps31 = new Dictionary<string, string>
         {
-            levelMap29 = map; levelWaves29 = waves; levelAt29 = -1f; levelBuilt29 = false;
-            Debug.Log($"[RageEngine] level: {map} requested");
-        }
-        internal static void EndLevelMap29() { levelMap29 = null; levelBuilt29 = false; }
+            { "RE_Skybar", "Skybar" }, { "RE_BurgerJoint", "BurgerJoint" }, { "RE_RedRoomDiner", "RedRoomDiner" },
+        };
 
         void TickLevel29()
         {
+            string id = Level.current != null && Level.current.data != null ? Level.current.data.id : null;
+            if (id != levelSeen31)
+            {
+                levelSeen31 = id;
+                levelMap29 = id != null && levelMaps31.TryGetValue(id, out var m) ? m : null;
+                levelAt29 = -1f; levelBuilt29 = false; wavesHooked31 = false;
+                if (levelMap29 != null) Debug.Log($"[RageEngine] level {id}: building {levelMap29}");
+            }
             if (levelMap29 == null) return;
             var pc = Player.local != null ? Player.local.creature : null;
             if (pc == null) return;
@@ -50,14 +39,54 @@ namespace RageEngine
                 levelBuilt29 = true;
                 mapName = levelMap29;
                 MapGo();
-                nextAutoWave29 = now + 8f;
                 return;
             }
-            if (!levelWaves29 || !autoWaves || !map26In) return;
-            if (wave29.Count > 0) { nextAutoWave29 = now + 6f; return; }
-            if (now < nextAutoWave29) return;
-            nextAutoWave29 = now + 6f;
-            MapWave();
+            if (!wavesHooked31 && map26In && now - levelAt29 > 2.5f) { wavesHooked31 = true; Guard("waves.hook", HookWaves31); }
+        }
+
+        /// Point the level's own wave spawner(s) at the map and bring the wave book over.
+        static void HookWaves31()
+        {
+            var pts = new List<Transform>();
+            foreach (var p in map26Spawns)
+            {
+                var t = new GameObject("RageEngine_WaveSpawn").transform;
+                t.SetParent(map26Root.transform, true);
+                t.position = map26Origin + p + Vector3.up * 0.05f;
+                pts.Add(t);
+            }
+            if (pts.Count == 0) { Notify("This map has no spawn points."); return; }
+            int spawners = 0, points = 0;
+            foreach (var ws in Object.FindObjectsOfType<WaveSpawner>())
+            {
+                if (ws == null) continue;
+                spawners++;
+                if (ws.spawns != null) for (int i = 0; i < ws.spawns.Count; i++) ws.spawns[i] = pts[i % pts.Count];
+                if (ws.spawns != null && ws.spawns.Count < pts.Count) for (int i = ws.spawns.Count; i < pts.Count; i++) ws.spawns.Add(pts[i]);
+                if (ws.spawnPoints != null)
+                {
+                    for (int i = 0; i < ws.spawnPoints.Count; i++) if (ws.spawnPoints[i] != null) { ws.spawnPoints[i].transform = pts[i % pts.Count]; points++; }
+                    for (int i = ws.spawnPoints.Count; i < pts.Count; i++) { ws.spawnPoints.Add(new WaveSpawner.SpawnPoint(pts[i])); points++; }
+                }
+                ws.ignoreDungeonLimits = true;
+            }
+            // the wave book: next to the front door, facing you
+            int books = 0;
+            Vector3 start = map26Origin + map26Start;
+            Vector3 fwd = Quaternion.Euler(0f, map26Yaw, 0f) * Vector3.forward;
+            Vector3 right = Vector3.Cross(Vector3.up, fwd);
+            foreach (var ui in Object.FindObjectsOfType<UIWaveSpawner>())
+            {
+                if (ui == null) continue;
+                Vector3 pos = start + fwd * 1.4f + right * (0.9f + books * 1.2f) + Vector3.up * 1.35f;
+                ui.transform.position = pos;
+                ui.transform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(pos - start, Vector3.up).normalized, Vector3.up);
+                books++;
+            }
+            Debug.Log($"[RageEngine] waves: {spawners} spawner(s), {points} spawn point(s), {books} wave book(s) moved to the map");
+            Notify(spawners > 0 && books > 0 ? "Wave book is next to you - pick a wave and fight."
+                 : spawners > 0 ? "Waves are hooked up, but this level has no wave book."
+                 : "This level has no wave spawner.");
         }
     }
 }

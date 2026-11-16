@@ -24,15 +24,9 @@ namespace RageEngine
             new ModOptionString("Crowbar", null, "Crowbar"), new ModOptionString("Pool cue", null, "PoolCue"), new ModOptionString("Whiskey bottle", null, "Bottle"),
             new ModOptionString("Broken bottle", null, "BottleBroken"), new ModOptionString("Smelling salts", null, "Salts"),
         };
-        [ModOptionCategory(CW, 13), ModOptionOrder(0)]
-        [ModOption("Weapon", "Pick one, then press Spawn it. It appears in front of you.", valueSourceName = nameof(weaponNames), defaultValueIndex = 0)]
         public static string weaponPick = "Bat";
-        [ModOptionButton, ModOptionCategory(CW, 13), ModOptionOrder(1)]
-        [ModOption("Spawn it", "Spawns the picked weapon in front of you.", valueSourceName = nameof(mapGo), saveValue = false)]
         public static void SpawnWeaponButton(string _) => Guard("weapon", () => { if (System.Enum.TryParse<ToolKind>(weaponPick, out var k)) SpawnTool(k, null, null); });
 
-        [ModOptionCategory(C8, 8), ModOptionOrder(50)]
-        [ModOption("Passing out", "ON: beaten NPCs sometimes pass out instead of dying (blunt damage, never super soldiers).", defaultValueIndex = 1)]
         public static bool passOut = true;
         public static bool knots3d = false;                                 // 0.28.3: removed (players hated the welts)
 

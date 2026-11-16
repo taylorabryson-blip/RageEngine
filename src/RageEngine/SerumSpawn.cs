@@ -38,12 +38,8 @@ namespace RageEngine
         }
         public static ModOptionString[] spawnItButton = { new ModOptionString("Spawn", null, "spawn") };
 
-        [ModOptionCategory(CB, 6), ModOptionOrder(-2)]
-        [ModOption("Spawn", "Pick a serum, super serum, custom serum, toxin oil or vial, then press Spawn it. It appears in front of you.", valueSourceName = nameof(spawnDeviceValues), defaultValueIndex = 0)]
         public static string spawnDevice = "Bio_Neurostatic";
 
-        [ModOptionButton, ModOptionCategory(CB, 6), ModOptionOrder(-1)]
-        [ModOption("Spawn it", "Spawns the item picked above in front of you.", valueSourceName = nameof(spawnItButton), saveValue = false)]
         public static void SpawnDeviceButton(string _) => Guard("spawn", () => SpawnDevice(spawnDevice));
 
         static void SpawnDevice(string key)

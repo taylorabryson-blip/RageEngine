@@ -25,14 +25,8 @@ namespace RageEngine
         };
         public static ModOptionString[] duelButton = { new ModOptionString("Spawn", null, "spawn") };
 
-        [ModOptionCategory(CX, 7), ModOptionOrder(-3)]
-        [ModOption("Super soldier fight", "A duel with one super soldier, or a wave of them.", valueSourceName = nameof(duelSizeValues), defaultValueIndex = 0)]
         public static string duelSize = "1";
-        [ModOptionCategory(CX, 7), ModOptionOrder(-2)]
-        [ModOption("Their serum", "Random = every super soldier gets a random super serum.", valueSourceName = nameof(duelSerumValues), defaultValueIndex = 0)]
         public static string duelSerum = "-1";
-        [ModOptionButton, ModOptionCategory(CX, 7), ModOptionOrder(-1)]
-        [ModOption("Spawn super soldiers", "Spawns them a few metres in front of you, enhanced and hostile.", valueSourceName = nameof(duelButton), saveValue = false)]
         public static void SpawnDuelButton(string _) => Guard("duel", () => instance?.SpawnDuel());
 
         sealed class PendingSoldier { public Creature c; public float at; public int comp; }

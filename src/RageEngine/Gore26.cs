@@ -15,13 +15,11 @@ namespace RageEngine
 {
     public sealed partial class RageEngineScript
     {
-        [ModOptionCategory(C4, 4), ModOptionOrder(31)]
-        [ModOption("Face cave-in", "Blunt hits to the head add up and really dent the face in (mesh deformation), in three stages.", defaultValueIndex = 1)]
         public static bool faceCave = true;
-        [ModOptionCategory(C4, 4), ModOptionOrder(32)]
+        [ModOptionCategory("Rage", 0), ModOptionOrder(10)]
         [ModOption("Bones through the skin", "Finger bones out of broken hands, rib ends out of the chest.", defaultValueIndex = 1)]
         public static bool bonesOut = true;
-        [ModOptionCategory(C4, 4), ModOptionOrder(33)]
+        [ModOptionCategory("Rage", 0), ModOptionOrder(9)]
         [ModOption("Rage Engine blood spray", "ON: the mod's own dark red spray instead of the game's blood effect. Turn ON if blood sprays come out white with other blood mods installed.", defaultValueIndex = 0)]
         public static bool ownBlood = false;
 

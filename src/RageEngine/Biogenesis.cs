@@ -47,7 +47,6 @@ namespace RageEngine
         internal static bool IsSerum(Comp c) => c >= Comp.NightSoldier;
 
         // ---------------------------------------------------------------- settings
-        [ModOptionCategory(CB, 6), ModOptionOrder(0)] [ModOption("Serums", "Syringes and vials: the serums and the super serums.", defaultValueIndex = 1)]
         public static bool bioEnabled = true;
         public static bool bioNeuro = true;
         public static bool bioVerdant = true;

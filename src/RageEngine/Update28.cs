@@ -21,16 +21,14 @@ namespace RageEngine
 {
     public sealed partial class RageEngineScript
     {
-        [ModOptionCategory(C9, 9), ModOptionOrder(41)]
+        [ModOptionCategory("Rage", 0), ModOptionOrder(4)]
         [ModOption("Your punch damage", "Extra damage from your fists and feet for really fast punches. 0 = the game's own damage only.", defaultValueIndex = 2)]
         [ModOptionSlider, ModOptionFloatValues(0f, 3f, 0.25f)]
         public static float punchDamage = 0.5f;
-        [ModOptionCategory(C9, 9), ModOptionOrder(42)]
+        [ModOptionCategory("Rage", 0), ModOptionOrder(7)]
         [ModOption("NPCs pull a knife", "ON: about half the NPCs carry a short blade and pull it when they've lost their weapon and you're close.", defaultValueIndex = 1)]
         public static bool pullKnife = true;
         public static bool occiputVital = true;
-        [ModOptionCategory(C0, 0), ModOptionOrder(45)]
-        [ModOption("Remember cheats", "ON: free climb, fall damage, infinite focus / imbue and invincibility are saved and put back next time you play.", defaultValueIndex = 1)]
         public static bool rememberCheats = true;
 
         // ------------------------------------------------------------------ your fists

@@ -24,8 +24,6 @@ namespace RageEngine
 
     public sealed partial class RageEngineScript
     {
-        [ModOptionCategory(CM, 12), ModOptionOrder(20)]
-        [ModOption("Show messages", "Short notes in the headset when a map loads or enemies spawn.", defaultValueIndex = 1)]
         public static bool showMessages = true;
 
         static float lastNotifyAt = -10f;

@@ -31,8 +31,6 @@ namespace RageEngine
         public static float spineBreakForce = 6f;
 
         // ---------------- gore & death ----------------
-        [ModOptionCategory(CD, 2), ModOptionOrder(4)]
-        [ModOption("Head smashing", "ON: a heavy enough blow (a hammer or mace swung hard, or a hit in slow motion) - or repeated heavy blows to a cracked skull - smashes the head: skull fragments, brain, teeth. OFF: never.", defaultValueIndex = 1)]
         public static bool headCrush = true;
 
         public static float headCrushForce = 9f;
@@ -52,8 +50,6 @@ namespace RageEngine
         public static bool deathGasp = true;
 
         // ---------------- general ----------------
-        [ModOptionCategory(C0, 0), ModOptionOrder(6)]
-        [ModOption("Fair fights", "ON: some NPCs see you barehanded and throw their weapon away to fight you with fists. OFF (default): they keep their weapons.", defaultValueIndex = 0)]
         public static bool fairFights = false;
 
         public static bool leaveDeathsToOtherMods = false;
