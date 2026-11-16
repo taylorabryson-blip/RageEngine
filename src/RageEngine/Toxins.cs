@@ -326,13 +326,16 @@ namespace RageEngine
             var c = s.creature;
             if (c == null || c.maxHealth <= 1f) return;
             s.hpScaled = true;
-            float k = Mathf.InverseLerp(150f, 2500f, c.maxHealth);
+            // 0.33: 100 HP = a normal man (x1). Every 100 HP above that adds +35% toughness (300 HP x1.7, 500 x2.4, 1000 x4.2).
+            float T = Mathf.Clamp(1f + 0.35f * (c.maxHealth - 100f) / 100f, 0.6f, 6f);
+            s.hpT = T;
+            float k = Mathf.InverseLerp(100f, 1000f, c.maxHealth);
             s.hpK = k;
-            if (k <= 0.01f) return;
-            s.toughness *= 1f + 1.1f * k;                    // 0.28: between 0.25 (0.9) and 0.26 (1.6)
-            s.painSensitivity *= 1f - 0.5f * k;
-            s.balanceStability *= 1f + 0.4f * k;
-            Log($"{c.name}: {c.maxHealth:0} HP - toughness x{1f + 0.9f * k:0.00}, pain x{1f - 0.4f * k:0.00}, grip +{k * 50f:0}%");
+            float r = Mathf.Sqrt(T);
+            s.toughness *= r;
+            s.painSensitivity /= r;
+            s.balanceStability *= r;
+            Log($"{c.name}: {c.maxHealth:0} HP - toughness x{T:0.00}");
         }
     }
 }

@@ -14,8 +14,6 @@ namespace RageEngine
 {
     public sealed partial class RageEngineScript
     {
-        [ModOptionCategory("Rage", 0), ModOptionOrder(6)]
-        [ModOption("Downed NPCs keep fighting", "ON: an NPC on the ground swings at your legs and crawls after you instead of just lying there.", defaultValueIndex = 1)]
         public static bool groundFight = true;
         public static bool superTank = true;
 

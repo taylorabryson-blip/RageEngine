@@ -21,15 +21,18 @@ namespace RageEngine
 {
     public sealed partial class RageEngineScript
     {
-        [ModOptionCategory("Rage", 0), ModOptionOrder(4)]
+        [ModOptionCategory("Rage", 0), ModOptionOrder(6)]
         [ModOption("Your punch damage", "Extra damage from your fists and feet for really fast punches. 0 = the game's own damage only.", defaultValueIndex = 2)]
         [ModOptionSlider, ModOptionFloatValues(0f, 3f, 0.25f)]
         public static float punchDamage = 0.5f;
-        [ModOptionCategory("Rage", 0), ModOptionOrder(7)]
-        [ModOption("NPCs pull a knife", "ON: about half the NPCs carry a short blade and pull it when they've lost their weapon and you're close.", defaultValueIndex = 1)]
         public static bool pullKnife = true;
         public static bool occiputVital = true;
+        [ModOptionCategory("Rage", 0), ModOptionOrder(1)]
+        [ModOption("Save cheat settings", "ON: your cheats (infinite focus, invincibility, free climb...) are remembered between sessions.", defaultValueIndex = 1)]
         public static bool rememberCheats = true;
+        [ModOptionCategory("Rage", 0), ModOptionOrder(2)]
+        [ModOption("Mod sound effects", "ON: Rage Engine's bone cracks, crunches and gurgles. OFF: only the game's own sounds.", defaultValueIndex = 1)]
+        public static bool modSfx = true;
 
         // ------------------------------------------------------------------ your fists
         /// From Toughen: the player's bare hand or foot landed. Returns the new severity.
@@ -51,13 +54,13 @@ namespace RageEngine
                 if (speed > 5f && Time.time >= s.nextShrugLog) { s.nextShrugLog = Time.time + 1f; Log($"{WhoIs(s)}: your punch {speed:0.0} m/s -> +{extra:0} damage (HP {c.currentHealth:0}/{c.maxHealth:0})"); }
             }
             severity *= 1f + 0.05f * Mathf.Clamp(speed - 6f, 0f, 4f);
-            if (speed >= 10f * Mathf.Sqrt(stayOnFeet)) s.powerHitAt = Time.time;                                 // a real power shot may put him down
+            if (speed >= 10f * Mathf.Sqrt(Tough33(s))) s.powerHitAt = Time.time;                                 // a real power shot may put him down
             // the finisher: a real haymaker to the head of a hurt man
             if (!tank && head && speed >= 9f && !c.isKilled && !s.knockedOut)
             {
                 float hp = HpFrac(c);
                 if (hp <= 0.08f) { s.finalKill = true; Log($"{WhoIs(s)}: haymaker ({speed:0.0} m/s) - lights out for good"); Guard("kill", () => c.Kill()); }
-                else if (hp <= 0.15f && Random.value < 0.4f / stayOnFeet) { AllowFall(s, 3f); Knockout(s, hit.impactVelocity, true); }
+                else if (hp <= 0.15f && Random.value < 0.4f / Tough33(s)) { AllowFall(s, 3f); Knockout(s, hit.impactVelocity, true); }
             }
             return severity;
         }

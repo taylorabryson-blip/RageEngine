@@ -516,8 +516,7 @@ namespace RageEngine
             Transform bone = head.meshBone != null ? head.meshBone : head.bone != null ? head.bone.mesh : null;
             int swollen = 0;
             if (bone != null)
-                Guard("swell", () => swollen = HeadDeform.Dent(c, bone, eye - up * 0.018f + outward * 0.012f, outward, 0.024f, 0.0045f * Mathf.Clamp(severity, 1f, 2f))
-                                             + HeadDeform.Dent(c, bone, eye + up * 0.01f + outward * 0.012f, outward, 0.016f, 0.003f));
+                // 0.33: no swelling bumps (3D welts)
             if (painted == 0) for (int k = 0; k < 3; k++) AddBruise(s, head, eye + Random.insideUnitSphere * 0.012f, outward, Mathf.Max(severity, 1.2f));   // fallback
             s.eyesShutUntil = Mathf.Max(s.eyesShutUntil, Time.time + 2f);       // squints shut a moment
             if (!livingEyes.Contains(s)) livingEyes.Add(s);

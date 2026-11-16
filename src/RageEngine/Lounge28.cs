@@ -17,9 +17,6 @@ namespace RageEngine
 {
     public sealed partial class RageEngineScript
     {
-        [ModOptionCategory("Rage", 0), ModOptionOrder(12)]
-        [ModOption("Map music", "Volume of the music in the maps (0 = off).", defaultValueIndex = 5)]
-        [ModOptionSlider, ModOptionFloatValues(0f, 1f, 0.1f)]
         public static float mapMusic = 0.5f;
         public static float mapAmbience = 0.7f;
         public static bool mapSuits = true;

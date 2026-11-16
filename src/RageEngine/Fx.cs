@@ -90,7 +90,7 @@ namespace RageEngine
         /// One-shot at a world position (for hits where the body part may move away).
         public static void PlayAt(string key, Vector3 pos, float volume)
         {
-            if (!clips.TryGetValue(key, out var list) || list.Count == 0) return;
+            if (!RageEngineScript.modSfx || !clips.TryGetValue(key, out var list) || list.Count == 0) return;
             RageEngineScript.Guard("sound", () =>
             {
                 var go = new GameObject("RageEngine_SFX");
@@ -105,7 +105,7 @@ namespace RageEngine
 
         public static void Play(string key, Transform at, float volume, float pitchMul)
         {
-            if (at == null || !clips.TryGetValue(key, out var list) || list.Count == 0) return;
+            if (at == null || !RageEngineScript.modSfx || !clips.TryGetValue(key, out var list) || list.Count == 0) return;
             RageEngineScript.Guard("sound", () =>
             {
                 // 0.16: voice cap + shuffle bag (every variant plays once before any repeats; never the same twice in a row)

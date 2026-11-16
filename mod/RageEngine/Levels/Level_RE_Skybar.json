@@ -14,7 +14,7 @@
   "worldmapTextureAddress": "Bas.Worldmap.Eraden",
   "worldmapLabel": null,
   "worldMapTravelAudioContainerAddress": "Bas.AudioGroup.Dungeon.Start",
-  "mapLocationIndex": 1,
+  "mapLocationIndex": 6,
   "showOnMap": true,
   "hideOnAndroid": false,
   "mapLocationIconAddress": "Bas.Icon.Location.Arena",
@@ -51,5 +51,5 @@
   "customCameras": [],
   "throwableRefType": "Item",
   "improvisedThrowableID": "",
-  "groupPath": "Rage Engine"
+  "groupPath": null
 }

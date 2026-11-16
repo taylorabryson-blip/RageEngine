@@ -20,9 +20,6 @@ namespace RageEngine
 
         public static bool awarenessEnabled = true;
 
-        [ModOptionCategory("Rage", 0), ModOptionOrder(13)]
-        [ModOption("Effect volume", "Volume of Rage Engine sounds (bone cracks, crunches, gurgles, death rattles). Game voices are not affected.", defaultValueIndex = 8)]
-        [ModOptionSlider, ModOptionFloatValues(0f, 1f, 0.1f)]
         public static float sfxVolume = 0.8f;
 
         public static bool debugLog = true;
@@ -46,8 +43,8 @@ namespace RageEngine
 
         public static float knockdownForce = 5f;
 
-        [ModOptionCategory("Rage", 0), ModOptionOrder(2)]
-        [ModOption("NPC health", "Health every NPC spawns with (0 - 5000 HP). 0 = the game's own health. Applies to NPCs that spawn after you change it.", defaultValueIndex = 6)]
+        [ModOptionCategory("Rage", 0), ModOptionOrder(4)]
+        [ModOption("NPC HP", "100 = a normal man. Every HP above 100 makes them tougher too: harder to knock over, shrug off pain, slower to go down. 0 = the game's own health.", defaultValueIndex = 6)]
         [ModOptionSlider, ModOptionFloatValues(0f, 5000f, 50f)]
         public static float npcHealth = 300f;
         static float npcHealthMultiplier = 1f;   // (no longer used: health is absolute now)
@@ -121,8 +118,6 @@ namespace RageEngine
 
         public static float headCrushEase = 1f;
 
-        [ModOptionCategory("Rage", 0), ModOptionOrder(8)]
-        [ModOption("Wound textures", "Every wound gets its own texture: cuts, stab wounds, bullet holes, split skin, crush wounds, scrapes, bruise stages with swelling, blood drips and splatter.", defaultValueIndex = 1)]
         public static bool goreTextures = true;
 
         public static bool groundBlood = true;

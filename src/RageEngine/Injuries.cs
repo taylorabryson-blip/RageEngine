@@ -368,8 +368,7 @@ namespace RageEngine
             outward.Normalize();
             int kinked = 0;
             if (bone != null)
-                kinked = HeadDeform.Dent(c, bone, point, outward, 0.07f, 0.018f)                      // angulation bump
-                       + HeadDeform.Dent(c, bone, point + axis * 0.05f, -outward, 0.05f, 0.008f);    // the step on the far side
+                kinked = 0;                                                                            // 0.33: no bone bumps (read as 3D welts)
             var tex = TexGen.Bruise();
             SkinPaint.Paint(c, point, 0.05f, new Color(0.38f, 0.1f, 0.22f, 0.65f), tex);
             SkinPaint.Paint(c, point + axis * 0.04f, 0.035f, new Color(0.3f, 0.1f, 0.28f, 0.5f), tex);

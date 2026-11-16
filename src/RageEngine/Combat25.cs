@@ -105,7 +105,7 @@ namespace RageEngine
                     Guard("up", () => c.ragdoll.SetState(Ragdoll.State.Destabilized));
                 }
                 Log($"{WhoIs(s)}: UPPERCUT ({speed:0.0} m/s, power {k:0.00})");
-                if (Random.value < (k * 0.12f + hpLow * 0.08f) / Mathf.Max(0.25f, stayOnFeet)) Knockout(s, Vector3.up, true);
+                if (Random.value < (k * 0.12f + hpLow * 0.08f) / Tough33(s)) Knockout(s, Vector3.up, true);
                 return;
             }
 
@@ -113,7 +113,7 @@ namespace RageEngine
             //      Velocity is capped low and only the hit part and the chest get it; he only goes down if he's badly hurt.
             if ((kick && speed > 3f) || speed > 7f || (heavyBlunt && speed > 4f))
             {
-                float launch = speed * (kick ? 0.2f : 0.08f) * (0.35f + 0.8f * hpLow) * (heavyBlunt ? 1.2f : 1f) / Mathf.Max(0.25f, stayOnFeet);      // 0.28.3: less shove; 0.29: Stay on feet      // 0.28.2: back to 0.25.3, a touch more
+                float launch = speed * (kick ? 0.2f : 0.08f) * (0.35f + 0.8f * hpLow) * (heavyBlunt ? 1.2f : 1f) / Tough33(s);      // 0.28.3: less shove; 0.29: Stay on feet      // 0.28.2: back to 0.25.3, a touch more
                 if (launch > 0.5f)
                 {
                     float cap = kick ? 2.4f : 1.5f;
@@ -143,7 +143,7 @@ namespace RageEngine
                     var head = c.ragdoll.headPart;
                     var bone = head != null ? (head.meshBone != null ? head.meshBone : head.bone != null ? head.bone.mesh : null) : null;
                     var ce = c.centerEyes;
-                    if (bone != null && ce != null) Guard("swell", () => HeadDeform.Dent(c, bone, ep + ce.forward * 0.01f - ce.up * 0.008f, ce.forward, 0.022f, 0.0025f * st));
+                    if (false && bone != null && ce != null) Guard("swell", () => HeadDeform.Dent(c, bone, ep + ce.forward * 0.01f - ce.up * 0.008f, ce.forward, 0.022f, 0.0025f * st));
                     if (st >= 3) Log($"{WhoIs(s)}: {e.eyeTag} eye swelling shut");
                 }
         }

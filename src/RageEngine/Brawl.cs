@@ -153,7 +153,7 @@ namespace RageEngine
             Sfx.Play("NRE_BoneSnap_Arm", hand.transform, 0.9f);
             Guard("fingers", () => FingerBones(s, hand, point, severity));
             Transform bone = hand.meshBone != null ? hand.meshBone : hand.bone != null ? hand.bone.mesh : null;
-            if (bone != null) Guard("handkink", () => HeadDeform.Dent(c, bone, point, Random.onUnitSphere, 0.04f, 0.01f));
+            if (false && bone != null) Guard("handkink", () => HeadDeform.Dent(c, bone, point, Random.onUnitSphere, 0.04f, 0.01f));
             Guard("handpaint", () => SkinPaint.Paint(c, point, 0.035f, new Color(0.32f, 0.08f, 0.24f, 0.7f), TexGen.Bruise()));
             BoneBreakShock(s, hand, severity);
             Log($"{WhoIs(s)}: {side} HAND BROKEN - can't hold anything with it");
