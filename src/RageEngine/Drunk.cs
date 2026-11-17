@@ -44,6 +44,12 @@ namespace RageEngine
                 s.rnasDirty = true;
             }
             if (stage == 0 || c.isKilled || s.knockedOut || s.shocked || c.ragdoll.state != Ragdoll.State.Standing || Pumped(s)) return;
+            // 0.35: punch-drunk enough and his stomach turns
+            if (s.drunk >= 0.85f && now >= s.nextVomit && s.vomitUntil < now)
+            {
+                if (Random.value < 0.4f) Guard("drunk.vomit", () => Vomit(s));
+                else s.nextVomit = now + 4f;
+            }
 
             float k = Mathf.Clamp01((s.drunk - 0.3f) / 0.9f);
             // head lolls

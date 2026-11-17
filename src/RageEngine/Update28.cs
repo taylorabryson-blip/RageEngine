@@ -47,7 +47,7 @@ namespace RageEngine
             if (punchDamage > 0f && speed > 5f && !c.isKilled)                  // 0.28.2: normal punches are the game's own; only real power shots add
             {
                 float extra = Mathf.Pow(speed - 5f, 1.4f) * 3f * punchDamage * (head ? 1.25f : 1f) * (tank ? 0.3f : 1f);
-                extra = Mathf.Min(extra, c.maxHealth * 0.25f);
+                extra = Mathf.Min(extra / Tough33(s), c.maxHealth * 0.06f);              // 0.35: one punch is never a quarter of his life
                 // leave the killing blow to the rules below so it reads as a knockout / finisher, not a silent HP drain
                 float room = c.currentHealth - 1f;
                 if (room > 0f) Guard("punchdmg", () => c.Damage(Mathf.Min(extra, room)));
@@ -119,13 +119,13 @@ namespace RageEngine
                 }
             }
             // ---- gut
-            if (Has(t, RagdollPart.Type.Torso) && (severity >= 0.6f || projectileHit34) && !tank)
+            if (Has(t, RagdollPart.Type.Torso) && severity >= 0.5f && !projectileHit34 && !tank)
             {
                 var chest = ChestPart(c) ?? part;
                 if (Vector3.Dot(p - chest.transform.position, c.transform.up) < -0.05f && Vector3.Dot(p - chest.transform.position, c.transform.forward) > -0.05f)
                 {
-                    s.gutShots += projectileHit34 ? 4f : Mathf.Min(severity, 2f);          // 0.34: a shot to the gut makes him throw up
-                    if (s.gutShots >= 4f && Time.time >= s.nextVomit) Vomit(s);
+                    s.gutShots += Mathf.Min(severity, 2f) * (bareHit34 ? 1.3f : 1f);       // 0.35: punches to the stomach
+                    if (s.gutShots >= 3f && Time.time >= s.nextVomit) Vomit(s);
                 }
             }
         }
