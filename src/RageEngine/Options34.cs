@@ -10,9 +10,7 @@ namespace RageEngine
         [ModOption("Mod voices", "ON: Rage Engine's screams, pain groans and gasps. OFF: only the game's own voices.", defaultValueIndex = 1)]
         public static bool modVoices = true;
 
-        [ModOptionCategory("Rage", 0), ModOptionOrder(10)]
-        [ModOption("Fist fighting", "ON: unarmed NPCs put their fists up and box you. OFF: the game (or your other mods) handles unarmed NPCs.", defaultValueIndex = 1)]
-        public static bool fistFighting = true;
+        public static bool fistFighting = false;                                  // 0.36: fisticuffs removed - unarmed NPCs are the game's again
 
         [ModOptionCategory("Rage", 0), ModOptionOrder(11)]
         [ModOption("Bones through skin", "ON: weapons, falls and crushing blows can push broken bones out. Never from punches or kicks.", defaultValueIndex = 1)]
