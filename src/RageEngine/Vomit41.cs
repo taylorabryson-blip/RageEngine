@@ -26,7 +26,7 @@ namespace RageEngine
             for (int i = 0; i < n; i++)
             {
                 var go = new GameObject("RageEngine_Vomit");
-                go.transform.position = mouth + Random.insideUnitSphere * 0.02f;
+                go.transform.position = mouth + dir * 0.09f + Random.insideUnitSphere * 0.02f;
                 float sz = Random.Range(0.012f, 0.03f);
                 go.transform.localScale = new Vector3(sz, sz * Random.Range(0.6f, 1f), sz);
                 go.AddComponent<MeshFilter>().sharedMesh = Blob41();
@@ -34,7 +34,6 @@ namespace RageEngine
                 var col = go.AddComponent<SphereCollider>(); col.radius = 0.5f;
                 var rb = go.AddComponent<Rigidbody>(); rb.mass = 0.02f; rb.drag = 0.4f;
                 rb.velocity = (dir + Random.insideUnitSphere * 0.25f).normalized * Random.Range(2.0f, 3.6f);
-                if (c != null && c.ragdoll != null) foreach (var p in c.ragdoll.parts) if (p != null && p.colliderGroup != null) foreach (var pc in p.colliderGroup.colliders) if (pc != null) Physics.IgnoreCollision(col, pc);
                 Object.Destroy(go, Random.Range(2.5f, 4f));
             }
             if (Physics.Raycast(mouth + dir * 0.3f, Vector3.down, out var hit, 3f, ~0, QueryTriggerInteraction.Ignore))
