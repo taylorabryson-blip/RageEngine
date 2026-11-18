@@ -57,13 +57,16 @@ jobs:
           fs() { # $1 page  $2 out.mp3
             u=$(curl -fsSL -A "Mozilla/5.0" "$1" | grep -o 'https://cdn.freesound.org/previews/[^"]*-hq.mp3' | head -1)
             [ -n "$u" ] && curl -fsSL -A "Mozilla/5.0" -o "$2" "$u"; }
-          vcut() { ffmpeg -loglevel error -y -i "$1" -ss "$2" -t "$3" -ac 1 -ar 22050 -af "loudnorm=I=-18:TP=-2,afade=t=out:st=$(echo "$3 - 0.25" | bc):d=0.25" -c:a pcm_s16le "$4"; }
+          # squeeze out the silences first, so every cut lands on the actual sound
+          vcut() { [ -f "$1.dense.wav" ] || ffmpeg -loglevel error -y -i "$1" -ac 1 -ar 22050 -af "silenceremove=start_periods=1:start_threshold=-40dB:stop_periods=-1:stop_threshold=-40dB:stop_duration=0.25" "$1.dense.wav"
+                   ffmpeg -loglevel error -y -i "$1.dense.wav" -ss "$2" -t "$3" -af "loudnorm=I=-18:TP=-2,afade=t=out:st=$(echo "$3 - 0.25" | bc):d=0.25" -c:a pcm_s16le "$4"
+                   echo "$4 $(ffprobe -v error -show_entries format=duration -of csv=p=0 "$1.dense.wav") $(ffmpeg -i "$4" -af volumedetect -f null - 2>&1 | grep mean_volume)" | tee -a build.log; }
           if fs https://freesound.org/people/arnaump/sounds/232540/ /tmp/au/v1.mp3; then
-            vcut /tmp/au/v1.mp3 0 3.2 $S/NRE_Vomit_1.wav; vcut /tmp/au/v1.mp3 3.2 3.4 $S/NRE_Vomit_2.wav
+            vcut /tmp/au/v1.mp3 0 2.6 $S/NRE_Vomit_1.wav; vcut /tmp/au/v1.mp3 2.4 2.6 $S/NRE_Vomit_2.wav
             echo "NRE_Vomit_1-2: vomit.wav by arnaump https://freesound.org/s/232540/ - CC0" >> /tmp/au/credits.txt
           else echo "MISSING sound: vomit" | tee -a build.log; fi
           if fs https://freesound.org/people/mefrancis13/sounds/117605/ /tmp/au/v2.mp3; then
-            vcut /tmp/au/v2.mp3 0.3 2.6 $S/NRE_Retch_1.wav; vcut /tmp/au/v2.mp3 3.0 2.6 $S/NRE_Retch_2.wav; vcut /tmp/au/v2.mp3 6.0 2.6 $S/NRE_Retch_3.wav
+            vcut /tmp/au/v2.mp3 0 2.2 $S/NRE_Retch_1.wav; vcut /tmp/au/v2.mp3 2.2 2.2 $S/NRE_Retch_2.wav; vcut /tmp/au/v2.mp3 4.4 2.2 $S/NRE_Retch_3.wav
             echo "NRE_Retch_1-3: Retching by mefrancis13 https://freesound.org/s/117605/ - CC0" >> /tmp/au/credits.txt
           else echo "MISSING sound: retch" | tee -a build.log; fi
           if fs https://freesound.org/people/SpliceSound/sounds/338116/ /tmp/au/v3.mp3; then
