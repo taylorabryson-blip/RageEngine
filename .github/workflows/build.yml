@@ -43,14 +43,14 @@ jobs:
           for t in "Bossa Antigua" "Lobby Time" "Smooth Lovin" "Jazz Brunch" "Local Forecast - Slower"; do
             u=$(echo "$t" | sed 's/ /%20/g'); i=$((i+1))
             if get "$IC/$u.mp3" /tmp/au/l$i.mp3 "$AX/$u.mp3"; then
-              ffmpeg -loglevel error -y -i /tmp/au/l$i.mp3 -ac 1 -ar 32000 -af loudnorm=I=-20:TP=-2 -c:a libvorbis -q:a 2 "$M/lounge_$i.ogg" && echo "$t Kevin MacLeod (incompetech.com) - Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/" >> /tmp/au/credits.txt
+              ffmpeg -nostdin -loglevel error -y -i /tmp/au/l$i.mp3 -ac 1 -ar 32000 -af loudnorm=I=-20:TP=-2 -c:a libvorbis -q:a 2 "$M/lounge_$i.ogg" && echo "$t Kevin MacLeod (incompetech.com) - Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/" >> /tmp/au/credits.txt
             else echo "MISSING music: $t" | tee -a build.log; fi
           done
           if get "$IC/Local%20Forecast%20-%20Elevator.mp3" /tmp/au/el.mp3 "$AX/Local%20Forecast%20-%20Elevator.mp3"; then
-            ffmpeg -loglevel error -y -i /tmp/au/el.mp3 -ac 1 -ar 32000 -af "loudnorm=I=-20:TP=-2,lowpass=f=4500,highpass=f=180" -c:a libvorbis -q:a 2 "$M/elevator.ogg" && echo "Local Forecast - Elevator Kevin MacLeod (incompetech.com) - Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/" >> /tmp/au/credits.txt
+            ffmpeg -nostdin -loglevel error -y -i /tmp/au/el.mp3 -ac 1 -ar 32000 -af "loudnorm=I=-20:TP=-2,lowpass=f=4500,highpass=f=180" -c:a libvorbis -q:a 2 "$M/elevator.ogg" && echo "Local Forecast - Elevator Kevin MacLeod (incompetech.com) - Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/" >> /tmp/au/credits.txt
           else echo "MISSING music: elevator" | tee -a build.log; fi
           if get https://opengameart.org/sites/default/files/wind-01.ogg /tmp/au/wind.ogg https://opengameart.org/sites/default/files/wind-01_0.ogg; then
-            ffmpeg -loglevel error -y -i /tmp/au/wind.ogg -ac 1 -ar 32000 -c:a libvorbis -q:a 3 "$A/wind.ogg" && echo "Wind loop: created by Jonathan Shaw (InspectorJ) https://freesound.org/people/InspectorJ/sounds/376415/ , loop by AntumDeluge https://opengameart.org/node/101110 - CC-BY 3.0" >> /tmp/au/credits.txt
+            ffmpeg -nostdin -loglevel error -y -i /tmp/au/wind.ogg -ac 1 -ar 32000 -c:a libvorbis -q:a 3 "$A/wind.ogg" && echo "Wind loop: created by Jonathan Shaw (InspectorJ) https://freesound.org/people/InspectorJ/sounds/376415/ , loop by AntumDeluge https://opengameart.org/node/101110 - CC-BY 3.0" >> /tmp/au/credits.txt
           else echo "MISSING ambience: wind" | tee -a build.log; fi
           # vomiting: real CC0 recordings from freesound (preview found on the sound's page)
           S=dist/RageEngine/Sounds
@@ -58,9 +58,9 @@ jobs:
             u=$(curl -fsSL -A "Mozilla/5.0" "$1" | grep -o 'https://cdn.freesound.org/previews/[^"]*-hq.mp3' | head -1)
             [ -n "$u" ] && curl -fsSL -A "Mozilla/5.0" -o "$2" "$u"; }
           # squeeze out the silences first, so every cut lands on the actual sound
-          vcut() { [ -f "$1.dense.wav" ] || ffmpeg -loglevel error -y -i "$1" -ac 1 -ar 22050 -af "silenceremove=start_periods=1:start_threshold=-40dB:stop_periods=-1:stop_threshold=-40dB:stop_duration=0.25" "$1.dense.wav"
-                   ffmpeg -loglevel error -y -i "$1.dense.wav" -ss "$2" -t "$3" -af "loudnorm=I=-18:TP=-2,afade=t=out:st=$(echo "$3 - 0.25" | bc):d=0.25" -c:a pcm_s16le "$4"
-                   echo "$4 $(ffprobe -v error -show_entries format=duration -of csv=p=0 "$1.dense.wav") $(ffmpeg -i "$4" -af volumedetect -f null - 2>&1 | grep mean_volume)" | tee -a build.log; }
+          vcut() { [ -f "$1.dense.wav" ] || ffmpeg -nostdin -loglevel error -y -i "$1" -ac 1 -ar 22050 -af "silenceremove=start_periods=1:start_threshold=-40dB:stop_periods=-1:stop_threshold=-40dB:stop_duration=0.25" "$1.dense.wav"
+                   ffmpeg -nostdin -loglevel error -y -i "$1.dense.wav" -ss "$2" -t "$3" -af "loudnorm=I=-18:TP=-2,afade=t=out:st=$(echo "$3 - 0.25" | bc):d=0.25" -c:a pcm_s16le "$4"
+                   echo "$4 $(ffprobe -v error -show_entries format=duration -of csv=p=0 "$1.dense.wav") $(ffmpeg -nostdin -i "$4" -af volumedetect -f null - 2>&1 | grep mean_volume)" | tee -a build.log; }
           if fs https://freesound.org/people/arnaump/sounds/232540/ /tmp/au/v1.mp3; then
             vcut /tmp/au/v1.mp3 0 2.6 $S/NRE_Vomit_1.wav; vcut /tmp/au/v1.mp3 2.4 2.6 $S/NRE_Vomit_2.wav
             echo "NRE_Vomit_1-2: vomit.wav by arnaump https://freesound.org/s/232540/ - CC0" >> /tmp/au/credits.txt
