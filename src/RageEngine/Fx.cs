@@ -13,7 +13,7 @@ namespace RageEngine
     {
         static readonly Dictionary<string, List<AudioClip>> clips = new Dictionary<string, List<AudioClip>>();
         static int MaxVoices => RageEngineScript.PerfVoices;
-        static bool Allowed(string key) => RageEngineScript.modVoices || !(key.StartsWith("NRE_Scream") || key.StartsWith("NRE_Pain") || key.StartsWith("NRE_Breath") || key.StartsWith("NRE_DeathGasp"));
+        static bool Allowed(string key) => RageEngineScript.modVoices || !(key.StartsWith("NRE_Scream") || key.StartsWith("NRE_Pain") || key.StartsWith("NRE_Breath") || key.StartsWith("NRE_DeathGasp") || key.StartsWith("NRE_Retch") || key.StartsWith("NRE_Vomit_") || key == "NRE_Vomit");
         static readonly List<AudioSource> live = new List<AudioSource>();
         static readonly Dictionary<string, List<int>> bags = new Dictionary<string, List<int>>();
         static readonly Dictionary<string, int> lastPlayed = new Dictionary<string, int>();

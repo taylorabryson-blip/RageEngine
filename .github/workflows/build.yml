@@ -52,7 +52,26 @@ jobs:
           if get https://opengameart.org/sites/default/files/wind-01.ogg /tmp/au/wind.ogg https://opengameart.org/sites/default/files/wind-01_0.ogg; then
             ffmpeg -loglevel error -y -i /tmp/au/wind.ogg -ac 1 -ar 32000 -c:a libvorbis -q:a 3 "$A/wind.ogg" && echo "Wind loop: created by Jonathan Shaw (InspectorJ) https://freesound.org/people/InspectorJ/sounds/376415/ , loop by AntumDeluge https://opengameart.org/node/101110 - CC-BY 3.0" >> /tmp/au/credits.txt
           else echo "MISSING ambience: wind" | tee -a build.log; fi
-          { echo; echo "# Map music and ambience (downloaded at build time)"; sed 's/^/- /' /tmp/au/credits.txt; } >> dist/RageEngine/SOUND_CREDITS.md
+          # vomiting: real CC0 recordings from freesound (preview found on the sound's page)
+          S=dist/RageEngine/Sounds
+          fs() { # $1 page  $2 out.mp3
+            u=$(curl -fsSL -A "Mozilla/5.0" "$1" | grep -o 'https://cdn.freesound.org/previews/[^"]*-hq.mp3' | head -1)
+            [ -n "$u" ] && curl -fsSL -A "Mozilla/5.0" -o "$2" "$u"; }
+          vcut() { ffmpeg -loglevel error -y -i "$1" -ss "$2" -t "$3" -ac 1 -ar 22050 -af "loudnorm=I=-18:TP=-2,afade=t=out:st=$(echo "$3 - 0.25" | bc):d=0.25" -c:a pcm_s16le "$4"; }
+          if fs https://freesound.org/people/arnaump/sounds/232540/ /tmp/au/v1.mp3; then
+            vcut /tmp/au/v1.mp3 0 3.2 $S/NRE_Vomit_1.wav; vcut /tmp/au/v1.mp3 3.2 3.4 $S/NRE_Vomit_2.wav
+            echo "NRE_Vomit_1-2: vomit.wav by arnaump https://freesound.org/s/232540/ - CC0" >> /tmp/au/credits.txt
+          else echo "MISSING sound: vomit" | tee -a build.log; fi
+          if fs https://freesound.org/people/mefrancis13/sounds/117605/ /tmp/au/v2.mp3; then
+            vcut /tmp/au/v2.mp3 0.3 2.6 $S/NRE_Retch_1.wav; vcut /tmp/au/v2.mp3 3.0 2.6 $S/NRE_Retch_2.wav; vcut /tmp/au/v2.mp3 6.0 2.6 $S/NRE_Retch_3.wav
+            echo "NRE_Retch_1-3: Retching by mefrancis13 https://freesound.org/s/117605/ - CC0" >> /tmp/au/credits.txt
+          else echo "MISSING sound: retch" | tee -a build.log; fi
+          if fs https://freesound.org/people/SpliceSound/sounds/338116/ /tmp/au/v3.mp3; then
+            vcut /tmp/au/v3.mp3 0 1.6 $S/NRE_VomitSplat_1.wav
+            echo "NRE_VomitSplat_1: Vomit, puking spilling water onto grass splat by SpliceSound https://freesound.org/s/338116/ - CC0" >> /tmp/au/credits.txt
+          else echo "MISSING sound: vomit splat" | tee -a build.log; fi
+          ls -la $S | grep -i "vomit\|retch" | tee -a build.log
+          { echo; echo "# Map music, ambience and vomiting sounds (downloaded at build time)"; sed 's/^/- /' /tmp/au/credits.txt; } >> dist/RageEngine/SOUND_CREDITS.md
           ls -la $M $A | tee -a build.log
           cd dist && rm -f ../RageEngine-$VER.zip && zip -qr ../RageEngine-$VER.zip RageEngine && cd .. && ls -la RageEngine-$VER.zip | tee -a build.log
       - name: Publish release (download this on the Quest)

@@ -20,8 +20,10 @@ namespace RageEngine
         [ModOptionSlider, ModOptionFloatValues(0.25f, 3f, 0.25f)]
         public static float stayOnFeet = 1f;
 
-        public static ModOptionString[] styleValues = { new ModOptionString("Custom", null, "custom"), new ModOptionString("Arcade", null, "arcade"), new ModOptionString("Realistic", null, "real"), new ModOptionString("Tough guys", null, "tough") };
-        public static string style = "custom";
+        public static ModOptionString[] styleValues = { new ModOptionString("Default", null, "default"), new ModOptionString("Brute NPCs", null, "brute"), new ModOptionString("Lightweights", null, "light"), new ModOptionString("Custom", null, "custom") };
+        [ModOptionCategory("Rage", 0), ModOptionOrder(4)]
+        [ModOption("Style", "Default: the mod as it's meant to play. Brute NPCs: big, tough men who barely go down. Lightweights: normal men who drop fast. Custom: your own NPC HP, Stay on feet and Your punch damage below.", valueSourceName = nameof(styleValues), defaultValueIndex = 0)]
+        public static string style = "default";
 
         public static bool injuriesKill = true;
 
@@ -95,19 +97,27 @@ namespace RageEngine
             }
         }
 
+        static float customHp29 = -1f, customStay29, customPunch29;
+        /// 0.41: presets hold while picked; Custom gives you back your own sliders.
         static void ApplyStyle29()
         {
-            if (styleSeen29 == null) { styleSeen29 = style; return; }        // loading saved settings is not a change
-            if (style == styleSeen29) return;
-            styleSeen29 = style;
-            switch (style)
+            if (style == "custom")
             {
-                case "arcade": punchDamage = 1f; stayOnFeet = 0.6f; npcHealth = 150f; break;
-                case "real": punchDamage = 0.5f; stayOnFeet = 1f; npcHealth = 300f; break;
-                case "tough": punchDamage = 0.35f; stayOnFeet = 1.8f; npcHealth = 800f; break;
-                default: return;
+                if (styleSeen29 != null && styleSeen29 != "custom" && customHp29 >= 0f) { npcHealth = customHp29; stayOnFeet = customStay29; punchDamage = customPunch29; }
+                customHp29 = npcHealth; customStay29 = stayOnFeet; customPunch29 = punchDamage;
             }
-            Notify($"Style: {style} (applies to NPCs that spawn from now on)");
+            else
+            {
+                if (customHp29 < 0f) { customHp29 = npcHealth; customStay29 = stayOnFeet; customPunch29 = punchDamage; }
+                switch (style)
+                {
+                    case "brute": npcHealth = 700f; stayOnFeet = 2f; punchDamage = 0.35f; break;
+                    case "light": npcHealth = 100f; stayOnFeet = 0.6f; punchDamage = 0.8f; break;
+                    default: npcHealth = 300f; stayOnFeet = 1f; punchDamage = 0.5f; break;
+                }
+            }
+            if (styleSeen29 != null && styleSeen29 != style) Notify($"Style: {style} - NPCs that spawn from now on");
+            styleSeen29 = style;
         }
 
         static void TickQol29()

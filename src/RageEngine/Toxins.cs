@@ -326,8 +326,8 @@ namespace RageEngine
             var c = s.creature;
             if (c == null || c.maxHealth <= 1f) return;
             s.hpScaled = true;
-            // 0.33: 100 HP = a normal man (x1). Every 100 HP above that adds +35% toughness (300 HP x1.7, 500 x2.4, 1000 x4.2).
-            float T = Mathf.Clamp(1f + 0.35f * (c.maxHealth - 100f) / 100f, 0.6f, 6f);
+            // 0.41: 100 HP = a normal man (x1).
+            float T = Mathf.Clamp(1f + 0.01f * (c.maxHealth - 100f), 0.6f, 12f);          // 0.41: +1% toughness per HP above 100 (300 HP x3, 600 x6)
             s.hpT = T;
             float k = Mathf.InverseLerp(100f, 1000f, c.maxHealth);
             s.hpK = k;

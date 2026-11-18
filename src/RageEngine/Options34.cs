@@ -52,10 +52,18 @@ namespace RageEngine
         }
 
         // the last hit HandleHit is working on
-        internal static bool bareHit34, projectileHit34;
+        static bool bareRaw34, projRaw34; static int hitFrame34 = -1;
+        /// true only while the hit that set it is being handled (same frame)
+        internal static bool bareHit34 => bareRaw34 && Time.frameCount == hitFrame34;
+        internal static bool projectileHit34 => projRaw34 && Time.frameCount == hitFrame34;
         static void ClassifyHit34(CollisionInstance hit)
         {
-            bareHit34 = projectileHit34 = false;
+            bool bareHit34 = false, projectileHit34 = false;
+            hitFrame34 = Time.frameCount;
+            try { Classify34(hit, ref bareHit34, ref projectileHit34); } finally { bareRaw34 = bareHit34; projRaw34 = projectileHit34; }
+        }
+        static void Classify34(CollisionInstance hit, ref bool bareHit34, ref bool projectileHit34)
+        {
             var col = hit != null ? hit.sourceCollider : null;
             if (col == null) return;
             var it = col.GetComponentInParent<Item>();

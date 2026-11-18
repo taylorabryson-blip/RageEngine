@@ -41,9 +41,8 @@ namespace RageEngine
             var prev = s.prevState;
             s.prevState = st;
             if (!blockCheapKnockdowns || prev != Ragdoll.State.Standing || (st != Ragdoll.State.Destabilized && st != Ragdoll.State.Inert)) return;
-            float hpFrac = c.maxHealth > 1f ? c.currentHealth / c.maxHealth : 1f;
-            bool hurt = hpFrac < 0.45f / Mathf.Sqrt(Tough33(s));                          // 0.33: healthy men don't go down
-            if (c.isKilled || s.dying || (hurt && Time.time < s.allowFallUntil) || s.spineBroken || s.lostLeg || Has(s.brokenParts, LegParts)
+            // 0.41: he stays up unless knocked out, dying, a leg is broken, or a big hit landed on his legs or stomach
+            if (c.isKilled || s.dying || Time.time - s.bigHitAt < 1.2f || s.spineBroken || s.lostLeg || Has(s.brokenParts, LegParts)
                 || s.knockedOutUntil > 0f || s.shockDeathAt > 0f) return;
             if (rag.handlers != null && rag.handlers.Count > 0) return;            // you're holding them: grabs and throws are yours
             // 0.28: anything that happens near you is yours too - spells (gravity push), kicks, shoves, other mods. This guard
@@ -51,9 +50,8 @@ namespace RageEngine
             // 0.28.2: the guard is back (0.28 dropped it near you and NPCs fell over from everything). Two things still
             // get through: your spells (gravity push etc. - you were holding the cast button) and real power shots.
             if (Time.time - lastCastAt < 1.5f) return;
-            if (hurt && Time.time - s.powerHitAt < 1f) return;
             if (Time.time - s.blockWindowStart > 3f) { s.blockWindowStart = Time.time; s.blockedFalls = 0; }
-            if (++s.blockedFalls > 20) return;                                        // something keeps knocking them over: let it
+            if (++s.blockedFalls > 60) return;                                        // something keeps knocking them over: let it
             Guard("antifall", () => rag.SetState(Ragdoll.State.Standing));
             s.prevState = Ragdoll.State.Standing;
             Log($"{c.name}: blocked a cheap knockdown (kept on their feet)");

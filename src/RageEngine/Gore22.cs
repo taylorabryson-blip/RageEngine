@@ -208,27 +208,28 @@ namespace RageEngine
         {
             var c = s.creature;
             if (!goreTextures) return;
-            bool bleeding = s.bleedRate > 0.04f || (s.woundSpots.Count > 0 && now - s.woundSpots[s.woundSpots.Count - 1].born < 20f);
+            bool bleeding = s.bleedRate > 0.03f || (s.woundSpots.Count > 0 && now - s.woundSpots[s.woundSpots.Count - 1].born < 40f);
             if (!bleeding) return;
             // drips running down from wounds
             foreach (var w in s.woundSpots)
             {
-                if (w.part == null || now < w.nextDrip || now - w.born > 45f) continue;
-                w.nextDrip = now + Random.Range(5f, 9f);
+                if (w.part == null || now < w.nextDrip || now - w.born > 90f) continue;
+                w.nextDrip = now + Random.Range(2f, 4f);                                       // 0.41: more bleeding
                 Vector3 at = w.part.transform.TransformPoint(w.local) - Vector3.up * 0.035f;
                 Stamp(c, at, w.heavy ? 0.045f : 0.032f, "blood_drip", 0.85f, false, 0f);
+                Stamp(c, at - Vector3.up * 0.06f, w.heavy ? 0.06f : 0.04f, "blood_drip", 0.75f, false, 0f);
                 if (w.heavy) Stamp(c, at - Vector3.up * 0.05f, 0.05f, "blood_drip", 0.7f, true, 0f);
             }
             // drops / pool on the ground
-            if (now < s.nextGroundBlood || s.bleedRate < 0.04f) return;
-            s.nextGroundBlood = now + Mathf.Lerp(3f, 0.8f, Mathf.Clamp01(s.bleedRate));
+            if (now < s.nextGroundBlood || s.bleedRate < 0.03f) return;
+            s.nextGroundBlood = now + Mathf.Lerp(1.6f, 0.45f, Mathf.Clamp01(s.bleedRate));
             var root = c.ragdoll.rootPart;
             Vector3 at2 = root != null ? root.transform.position : c.transform.position;
             bool down = c.ragdoll.state != Ragdoll.State.Standing || c.isKilled;
             if (s.pool != null && (s.pool.transform.position - at2).sqrMagnitude < (down ? 0.6f * 0.6f : 0.35f * 0.35f))
             {
                 float cur = s.pool.transform.localScale.x;
-                float max = down ? 1.6f : 0.7f;
+                float max = down ? 2.2f : 0.9f;
                 if (cur < max) s.pool.transform.localScale = Vector3.one * Mathf.Min(max, cur + 0.05f + 0.12f * s.bleedRate);
                 return;
             }

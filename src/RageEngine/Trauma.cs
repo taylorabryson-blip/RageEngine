@@ -187,7 +187,7 @@ namespace RageEngine
             if (shockDeaths && !s.onAdrenaline && !DeathsHandledElsewhere)
             {
                 float hp = HealthFraction(s);
-                bool critical = s.bleedRate >= 0.5f || hp < 0.15f;                      // 0.35: pain alone (a beating) never sends a man into shock
+                bool critical = s.pain >= 0.75f + 0.05f * (Tough33(s) - 1f) || s.bleedRate >= 0.5f || hp < 0.25f;   // 0.41: deaths back - shock from pain, tougher men hold out longer
                 if (critical) s.shock += dt * (0.5f + s.bleedRate * 0.5f + (hp < 0.25f ? 0.5f : 0f));
                 else s.shock = Mathf.Max(0f, s.shock - dt * 0.25f);
                 if (s.shockDeathAt <= 0f && s.shock >= shockSeconds * Tough33(s))

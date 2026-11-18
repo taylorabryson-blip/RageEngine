@@ -118,6 +118,9 @@ namespace RageEngine
                     break;
                 }
             }
+            // ---- 0.41: a hard enough blow to the legs or the stomach is the one thing (besides a knockout) that drops him
+            if ((Has(t, RagdollPart.Type.LeftLeg | RagdollPart.Type.RightLeg | RagdollPart.Type.LeftFoot | RagdollPart.Type.RightFoot) || Has(t, RagdollPart.Type.Torso))
+                && severity >= 1.3f * Mathf.Sqrt(Tough33(s))) s.bigHitAt = Time.time;
             // ---- gut
             if (Has(t, RagdollPart.Type.Torso) && severity >= 0.5f && !projectileHit34 && !tank)
             {
@@ -136,6 +139,8 @@ namespace RageEngine
             s.gutShots = 1.5f; s.nextVomit = Time.time + 12f;
             s.vomitUntil = Time.time + 2.2f; s.nextVomitSpurt = 0f;
             s.daze = Mathf.Max(s.daze, 0.7f);
+            var m0 = Mouth(c); if (m0 != null) Sfx.PlayAt("NRE_Retch", m0.position, 1f);
+            s.vomitUntil = Time.time + 2.8f; s.nextVomitSpurt = Time.time + 0.6f;               // 0.41: retch first, then it comes up
             Guard("vomit.stagger", () => Stagger(s, -c.transform.forward, BrainModuleHitReaction.PushBehaviour.Effect.StaggerMedium, RagdollPart.Type.Torso));
             Log($"{WhoIs(s)}: gut shots - he throws up");
         }
@@ -152,8 +157,9 @@ namespace RageEngine
                 var mouth = Mouth(c);
                 if (mouth != null)
                 {
-                    Guard("vomit", () => Spray28(mouth.position, (c.transform.forward + Vector3.down * 0.7f).normalized, new Color(0.62f, 0.55f, 0.2f), 14, 1.6f));
-                    Sfx.PlayAt("NRE_Squelch", mouth.position, 0.7f);
+                    bool first = s.nextVomitSpurt - now > 0f && s.vomitUntil - now > 1.9f;
+                    Guard("vomit", () => Spurt41(mouth.position, (c.transform.forward + Vector3.down * 0.55f).normalized, c, first));
+                    if (first) Sfx.PlayAt("NRE_Vomit", mouth.position, 1f);
                     var chest = ChestPart(c);
                     if (chest != null && chest.physicBody != null && c.ragdoll.state == Ragdoll.State.Standing) chest.physicBody.AddForce((c.transform.forward * 0.8f + Vector3.down * 0.6f), ForceMode.VelocityChange);
                 }
