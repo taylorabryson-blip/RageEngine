@@ -35,9 +35,14 @@ jobs:
       - name: Music and ambience (real recordings, fetched at build time)
         if: success()
         run: |
-          sudo apt-get install -y -qq ffmpeg > /dev/null
+          if ! command -v ffmpeg >/dev/null; then
+            timeout 240 sudo apt-get install -y -qq ffmpeg > /dev/null 2>&1 || {
+              echo "apt ffmpeg slow - static build"; curl -fsSL --max-time 180 -o /tmp/ff.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz &&
+              mkdir -p /tmp/ff && tar -xf /tmp/ff.tar.xz -C /tmp/ff --strip-components=1 && sudo cp /tmp/ff/ffmpeg /tmp/ff/ffprobe /usr/local/bin/; }
+          fi
+          ffmpeg -version | head -1
           M=dist/RageEngine/Music; A=dist/RageEngine/Ambience; mkdir -p $M $A /tmp/au
-          get() { curl -fsSL --retry 2 -o "$2" "$1" || curl -fsSL --retry 2 -o "$2" "$3"; }
+          get() { curl -fsSL --max-time 90 --retry 2 -o "$2" "$1" || curl -fsSL --max-time 90 --retry 2 -o "$2" "$3"; }
           IC=https://incompetech.com/music/royalty-free/mp3-royaltyfree; AX=http://aux.incompetech.com/music/royalty-free/mp3-royaltyfree
           i=0
           for t in "Bossa Antigua" "Lobby Time" "Smooth Lovin" "Jazz Brunch" "Local Forecast - Slower"; do
@@ -55,8 +60,8 @@ jobs:
           # vomiting: real CC0 recordings from freesound (preview found on the sound's page)
           S=dist/RageEngine/Sounds
           fs() { # $1 page  $2 out.mp3
-            u=$(curl -fsSL -A "Mozilla/5.0" "$1" | grep -o 'https://cdn.freesound.org/previews/[^"]*-hq.mp3' | head -1)
-            [ -n "$u" ] && curl -fsSL -A "Mozilla/5.0" -o "$2" "$u"; }
+            u=$(curl -fsSL --max-time 40 -A "Mozilla/5.0" "$1" | grep -o 'https://cdn.freesound.org/previews/[^"]*-hq.mp3' | head -1)
+            [ -n "$u" ] && curl -fsSL --max-time 60 -A "Mozilla/5.0" -o "$2" "$u"; }
           # squeeze out the silences first, so every cut lands on the actual sound
           vcut() { [ -f "$1.dense.wav" ] || ffmpeg -nostdin -loglevel error -y -i "$1" -ac 1 -ar 22050 -af "silenceremove=start_periods=1:start_threshold=-40dB:stop_periods=-1:stop_threshold=-40dB:stop_duration=0.25" "$1.dense.wav"
                    ffmpeg -nostdin -loglevel error -y -i "$1.dense.wav" -ss "$2" -t "$3" -af "loudnorm=I=-18:TP=-2,afade=t=out:st=$(echo "$3 - 0.25" | bc):d=0.25" -c:a pcm_s16le "$4"
