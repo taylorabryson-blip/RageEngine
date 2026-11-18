@@ -18,15 +18,28 @@ namespace RageEngine
             { "RE_Skybar", "Skybar" }, { "RE_BurgerJoint", "BurgerJoint" }, { "RE_RedRoomDiner", "RedRoomDiner" }, { "RE_RewindVideo", "RewindVideo" }, { "RE_StarliteArcade", "StarliteArcade" }, { "RE_RageBlock", "RageBlock" }, { "RE_GasAndGo", "GasAndGo" }, { "RE_ClubMillennium", "ClubMillennium" },
         };
 
+        static IEnumerable<string> LevelIds40()
+        {
+            string a = null, b = null, c = null;
+            Guard("lvl.master", () => { if (Level.master != null && Level.master.data != null) a = Level.master.data.id; });
+            Guard("lvl.current", () => { if (Level.current != null && Level.current.data != null) b = Level.current.data.id; });
+            Guard("lvl.manager", () => c = LevelManager.GetCurrentLevel());
+            yield return a; yield return b; yield return c;
+        }
+
         void TickLevel29()
         {
-            string id = Level.current != null && Level.current.data != null ? Level.current.data.id : null;
+            // 0.40: the scene is the Arena's, so its own Level can say "Arena" - ask every source and take ours if any has it
+            string id = null;
+            foreach (var cand in LevelIds40())
+                if (cand != null && levelMaps31.ContainsKey(cand)) { id = cand; break; }
+            if (id == null) id = Level.current != null && Level.current.data != null ? Level.current.data.id : null;
             if (id != levelSeen31)
             {
                 levelSeen31 = id;
                 levelMap29 = id != null && levelMaps31.TryGetValue(id, out var m) ? m : null;
                 levelAt29 = -1f; levelBuilt29 = false; wavesHooked31 = false;
-                if (levelMap29 != null) Debug.Log($"[RageEngine] level {id}: building {levelMap29}");
+                if (levelMap29 != null) { Debug.Log($"[RageEngine] level {id}: building {levelMap29}"); Notify($"Rage Engine: building {levelMap29}..."); }
             }
             if (levelMap29 == null) return;
             var pc = Player.local != null ? Player.local.creature : null;

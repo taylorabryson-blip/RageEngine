@@ -72,7 +72,8 @@ namespace ThunderRoad
         public Level level;
         public virtual System.Collections.IEnumerator OnPlayerSpawnCoroutine() { yield break; }
     }
-    public class Level : MonoBehaviour { public static Level current; public LevelData data; }
+    public class Level : MonoBehaviour { public static Level current; public static Level master; public LevelData data; }
+    public static class LevelManager { public static string GetCurrentLevel() => null; }
     public class WaveSpawner : MonoBehaviour
     {
         public class SpawnPoint { public Transform transform; public SpawnPoint(Transform transform, Area area = null) { } }

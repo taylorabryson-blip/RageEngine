@@ -75,6 +75,8 @@ namespace RageEngine
         /// Paints a texture stamp (its own colours) at a random angle. Falls back silently.
         static bool Stamp(Creature c, Vector3 at, float radius, string prefix, float alpha = 0.95f, bool cloth = false, float rot = float.NaN)
         {
+            if (bareHit34) return false;                                                       // 0.40: fists leave no painted circles
+            if (!bruiseMarks && prefix.StartsWith("bruise")) return false;
             var t = GoreTex.Pick(prefix);
             if (t == null) return false;
             bool ok = false;
