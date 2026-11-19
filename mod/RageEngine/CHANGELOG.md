@@ -1,5 +1,21 @@
 # Rage Engine changelog
 
+## 0.42.0 - eyes, jaws, knives, waves that keep their count, Rage Tower, lighting
+- Eyes: a hard blow, a blade tip or a thumb in the eye pops it out. It hangs from the socket on the nerve, swings, then tears off and drops. A lost eye is gone for good; lose both and he is blind for good (loses you unless you're on top of him, swings wild, no parrying, hand on his face).
+- Teeth and eyeballs always fly now (not only with "Face cave-in & skull bits" on).
+- Broken jaws get held: a hand goes up to the jaw again and again.
+- Daggers: an unarmed NPC who's taking a beating sometimes pulls a dagger. Rage Engine has no fist fighting of its own, so it doesn't clash with fist-fighting mods.
+- More bone-break reactions: cradling and staring at a broken arm, going down holding a broken leg, gritting it out and charging (tough NPCs), being sick from the pain, passing out from the pain.
+- Punching through the chest is removed.
+- Waves keep their max: when Rage Engine keeps an NPC going after the game counted him dead (dying moments, adrenaline, passing out), he goes back into the wave's count, so breaking bones no longer pulls in extra enemies. New setting "Max NPCs at once" (Game default or 1-15).
+- Sound effects are gore only: bones, flesh, blood, teeth, eyes, glass. No more punch / body-hit / whoosh / thud sounds on top of the game's.
+- Fewer crashes and stutters: the per-NPC update no longer allocates thousands of small objects a second, each part runs on its own, and a part that keeps failing pauses for 20 s instead of erroring every frame.
+- Map lighting on every map: maps are built in 12 m cells so every lamp lights its own area, lights are brighter and reach further, more lights per object while you're in a map, and fill lights are added automatically wherever a floor is left dark.
+- Glass shows on Quest (frame + light streaks) and still breaks.
+- Rage Block NYC: the subway train runs - pulls in from the tunnel, waits, pulls out. Don't stand on the tracks.
+- New map Rage Tower: two empty floors of a skyscraper under construction, crates, pallets, glass all round (break it and throw them out), a bridge to the tower next door, the roof.
+- 5 new waves in the Rage wave category: Saloon Showdown, Brutes, The Gauntlet, Ambush, Last Man Standing.
+
 ## 0.26.0 - combos, self-injection, bones and faces, tanks, maps built by the mod
 - NPC boxing: planned combinations (1-2, 1-1-2, 1-2-3, body-body-head, 1-6-3-2 ...) with alternating hands, head/body targets and faster hand-offs inside a combination. Better fighters (aggressive, high HP, on a serum) throw the longer ones.
 - Downed NPCs keep fighting: they swing at your legs when you're close and drag themselves after you. Only the truly terrified give up. Being unable to stand counts far less toward surrender.
