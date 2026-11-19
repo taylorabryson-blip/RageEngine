@@ -118,6 +118,7 @@ namespace RageEngine
                 l.intensity *= boost; l.range *= reach; n++;
                 l.renderMode = n <= 8 ? LightRenderMode.ForcePixel : LightRenderMode.Auto;
             }
+            int fill = 0; Guard("map.fill", () => fill = FillLights42(root));
             string urp = "no URP";
             try
             {
@@ -140,7 +141,45 @@ namespace RageEngine
                 }
             }
             catch (System.Exception e) { urp = "URP: " + e.Message; }
-            Debug.Log($"[RageEngine] map lighting: {n} lights x{boost} brightness x{reach} reach; {urp}");
+            Debug.Log($"[RageEngine] map lighting: {n} lights x{boost} brightness x{reach} reach, {fill} fill lights added; {urp}");
+        }
+
+        /// Every map: finds each floor (every walkable surface with headroom, stacked floors too) on a 7 m grid and puts a
+        /// soft fill light over any spot no map light reaches - no more black corners, stairwells or back rooms.
+        int FillLights42(Transform root)
+        {
+            Physics.SyncTransforms();
+            var have = new List<Vector3>();
+            foreach (var l in root.GetComponentsInChildren<Light>(true)) if (l != null) have.Add(l.transform.position);
+            var cols = root.GetComponentsInChildren<Collider>(true);
+            if (cols.Length == 0) return 0;
+            Bounds b = cols[0].bounds; foreach (var c in cols) if (c != null && !c.isTrigger) b.Encapsulate(c.bounds);
+            int max = perfMode == "p" ? 12 : perfMode == "q" ? 40 : 26, added = 0;
+            float step = 7f, top = b.max.y + 1f;
+            var hits = new RaycastHit[12];
+            for (float x = b.min.x + step * 0.5f; x < b.max.x && added < max; x += step)
+                for (float z = b.min.z + step * 0.5f; z < b.max.z && added < max; z += step)
+                {
+                    int n = Physics.RaycastNonAlloc(new Vector3(x, top, z), Vector3.down, hits, top - b.min.y + 1f, ~0, QueryTriggerInteraction.Ignore);
+                    for (int i = 0; i < n && added < max; i++)
+                    {
+                        var h = hits[i];
+                        if (h.collider == null || !h.collider.transform.IsChildOf(root) || h.normal.y < 0.8f) continue;
+                        // headroom: open floor with a ceiling (or sky) at least 2.4 m up
+                        float head = 6f;
+                        if (Physics.Raycast(h.point + Vector3.up * 0.1f, Vector3.up, out var up, 6f, ~0, QueryTriggerInteraction.Ignore)) head = up.distance;
+                        if (head < 2.4f) continue;
+                        Vector3 at = h.point + Vector3.up * Mathf.Min(head - 0.4f, 2.8f);
+                        bool lit = false;
+                        foreach (var p in have) if ((p - at).sqrMagnitude < 6.5f * 6.5f && Mathf.Abs(p.y - at.y) < 3.5f) { lit = true; break; }
+                        if (lit) continue;
+                        var go = new GameObject("FillLight"); go.transform.SetParent(root, true); go.transform.position = at;
+                        var lt = go.AddComponent<Light>(); lt.type = LightType.Point; lt.shadows = LightShadows.None;
+                        lt.color = new Color(1f, 0.93f, 0.82f); lt.range = 8.5f; lt.intensity = 0.75f; lt.renderMode = LightRenderMode.Auto;
+                        have.Add(at); added++;
+                    }
+                }
+            return added;
         }
 
         static void LightRestore42()
