@@ -101,7 +101,7 @@ namespace RageEngine
                 }
             }
             // ---- eyes: blunt trauma right on one
-            if (uniqueGore && Has(t, RagdollPart.Type.Head) && severity >= 1.1f && c.allEyes != null)
+            if (false && uniqueGore && Has(t, RagdollPart.Type.Head) && severity >= 1.1f && c.allEyes != null)      // 0.42: Gore42Hit does eyes now
             {
                 for (int i = 0; i < c.allEyes.Count && i < 2; i++)
                 {
@@ -204,7 +204,8 @@ namespace RageEngine
             }
             // ---- the knife
             if (pullKnife && s.hasKnife && !s.knifeOut && !s.knifePending && c.ragdoll.state == Ragdoll.State.Standing && !s.knockedOut && !s.ally
-                && s.unarmedSince > 0f && now - s.unarmedSince > 1.5f && now - s.trackedAt > 6f)
+                && s.unarmedSince > 0f && now - s.unarmedSince > 1.5f && now - s.trackedAt > 6f
+                && s.beatHits42 >= 2 && now - s.beatAt42 < 6f && !HasRealWeapon42(s))
             {
                 var pc = Player.local != null ? Player.local.creature : null;
                 if (pc != null && (pc.transform.position - c.transform.position).sqrMagnitude < 3f * 3f) Guard("knife", () => PullKnife(s));
@@ -306,6 +307,7 @@ namespace RageEngine
             var pc = Player.local != null ? Player.local.creature : null;
             if (pc == null) return;
             int n = 5; int.TryParse(mixedSize, out n); n = Mathf.Clamp(n, 1, 8);
+            n = SpawnRoom42(n); if (n <= 0) { Notify($"Max NPCs at once is {MaxNpcs42} - finish these first."); return; }
             LogFactions();
             int hostile = HostileFaction();
             NoteWave29("mixed");

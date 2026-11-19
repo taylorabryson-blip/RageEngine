@@ -64,6 +64,7 @@ namespace RageEngine
                 BreakFeedback(hit);
                 s.pain = 1f; s.balance = Mathf.Max(MinBalance, s.balance - 0.3f);
                 Scream(s, true);
+                s.nextJawHold42 = Time.time + 0.6f;                                  // 0.42: a hand goes straight to it
                 Log($"{c.name} JAW BROKEN");
                 return;
             }
@@ -142,6 +143,7 @@ namespace RageEngine
                 s.balance = Mathf.Max(MinBalance, s.balance - 0.3f);
             }
             Log($"{c.name} {(leg ? "LEG" : "ARM")} BROKEN ({t})");
+            Guard("bonereact", () => BoneReact42(s, part, point, leg));
         }
 
         /// Blunt trauma to the chest/stomach: winded (doubles over, holds it) and, if hard enough, cracked ribs.

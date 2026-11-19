@@ -143,6 +143,7 @@ namespace RageEngine
                 c.Resurrect(health, null);
                 if (c.brain.instance == null || !c.brain.instance.isActive) c.brain.Load(c.data.brainId);
             });
+            Guard("wave.rejoin", () => RejoinWave42(s));                         // 0.42: no replacement spawned on top of him
             // 0.15: the body is wherever it fell - get up from there. Leaving it "standing" straight from a dead ragdoll is
             // what made revived NPCs float.
             AllowFall(s, 3f);

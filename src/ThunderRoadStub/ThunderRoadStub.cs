@@ -78,6 +78,17 @@ namespace ThunderRoad
     {
         public class SpawnPoint { public Transform transform; public SpawnPoint(Transform transform, Area area = null) { } }
         public List<Transform> spawns; public List<SpawnPoint> spawnPoints; public bool ignoreDungeonLimits; public bool isRunning;
+        public static List<WaveSpawner> instances;
+        public List<Creature> spawnedCreatures;
+        public Dictionary<WaveData.Group, int> groupAliveCounts;
+        public WaveData currentLoadedData;
+    }
+    public class WaveData : CatalogData
+    {
+        public class Group { }
+        public class WaveFaction { public int factionMaxAlive; }
+        public int totalMaxAlive;
+        public List<WaveFaction> factions;
     }
     public class Area : MonoBehaviour { }
     public class UIWaveSpawner : MonoBehaviour { public WaveSpawner waveSpawner; }
@@ -330,6 +341,8 @@ namespace ThunderRoad
         public enum ColorModifier { Hair = 0, HairSecondary = 1, HairSpecular = 2, EyesIris = 3, EyesSclera = 4, Skin = 5 }
         public delegate void DamageEvent(CollisionInstance collisionInstance, EventTime eventTime);
         public static List<Creature> allActive;
+        public WaveData.Group spawnGroup;
+        public bool countTowardsMaxAlive;
         public int factionId;
         public Transform jaw;
         public Transform centerEyes;

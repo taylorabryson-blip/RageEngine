@@ -164,6 +164,10 @@ namespace RageEngine
             s.pain = Mathf.Min(1f, s.pain + 0.5f);
             s.defSkill *= 0.6f;                                                                  // can't see your hands coming on that side
             StartClutch(s, c.ragdoll.headPart, ep, null, false, false);
+            s.blindEyes |= 1 << i;                                                               // 0.42: gone for good
+            Guard("vision", () => UpdateVision(s));
+            Guard("eye.hang", () => HangEye42(c.ragdoll.headPart.transform, ep, (ep - c.ragdoll.headPart.transform.position).normalized, s));
+            if (AllBlind(s)) s.blind42 = true;
             Log($"{WhoIs(s)}: EYE GOUGED ({e.eyeTag})");
         }
 

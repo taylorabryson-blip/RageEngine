@@ -78,7 +78,7 @@ namespace RageEngine
     public sealed partial class RageEngineScript
     {
         const string CM = "Rage Engine: Maps";
-        public static ModOptionString[] mapNames = { new ModOptionString("Rage Skybar (skyscraper)", null, "Skybar"), new ModOptionString("Rage Burger (drive-thru)", null, "BurgerJoint"), new ModOptionString("Red Room Diner", null, "RedRoomDiner") };
+        public static ModOptionString[] mapNames = { new ModOptionString("Rage Skybar (skyscraper)", null, "Skybar"), new ModOptionString("Rage Burger (drive-thru)", null, "BurgerJoint"), new ModOptionString("Red Room Diner", null, "RedRoomDiner"), new ModOptionString("Dead Man's Gulch (Wild West)", null, "DeadMansGulch") };
         public static ModOptionString[] mapWaveSizes = { new ModOptionString("3", null, "3"), new ModOptionString("5", null, "5"), new ModOptionString("8", null, "8"), new ModOptionString("1", null, "1") };
         public static ModOptionString[] mapWaveKinds = { new ModOptionString("Normal enemies", null, "0"), new ModOptionString("Super soldiers", null, "1"), new ModOptionString("Mixed", null, "2"), new ModOptionString("Mixed toughness (60-1500 HP)", null, "3") };
         public static ModOptionString[] mapLooks = { new ModOptionString("Auto", null, "0"), new ModOptionString("Game shader (lit)", null, "1"), new ModOptionString("Flat colours", null, "2") };
@@ -139,6 +139,7 @@ namespace RageEngine
             var pc = Player.local != null ? Player.local.creature : null;
             if (pc == null || map26Root == null || map26Spawns.Count == 0) { Debug.Log("[RageEngine] map: build the place first (Go there)"); Notify("Go to a map first, then start a wave."); return; }
             int n = 3; int.TryParse(mapWaveSize, out n); n = Mathf.Clamp(n, 1, 8);
+            n = SpawnRoom42(n); if (n <= 0) { Notify($"Max NPCs at once is {MaxNpcs42} - finish these first."); return; }
             int kind = 0; int.TryParse(mapWaveKind, out kind);
             LogFactions();
             int hostile = HostileFaction();
@@ -190,6 +191,7 @@ namespace RageEngine
             {
                 if (map26Nav.Count > 0) { foreach (var n in map26Nav) Guard("nav.remove", () => n.Remove()); map26Nav.Clear(); }
                 if (map26In || env28Saved) Guard("map.night.off", RestoreEnv28);
+                Guard("map.lights.off", LightRestore42);
                 Guard("lounge.off", ResetLounge28);
                 Guard("bounds.on", () => Bounds28(true));
                 map26In = false; map26Built = null;
@@ -234,26 +236,31 @@ namespace RageEngine
 
         static void AddBox(MeshAcc a, Vector3 mn, Vector3 mx, float uvs) => AddBox(a, a, a, mn, mx, uvs);
         /// Faces go to three lists (up/down, facing Z, facing X) so the unlit look can shade them differently.
+        /// 0.42: tiled textures are mapped in world space, so a box cut into pieces (for lighting) tiles seamlessly.
         static void AddBox(MeshAcc aTop, MeshAcc aZ, MeshAcc aX, Vector3 mn, Vector3 mx, float uvs)
         {
             float x0 = mn.x, y0 = mn.y, z0 = mn.z, x1 = mx.x, y1 = mx.y, z1 = mx.z;
             MeshAcc a = aTop;
-            void Q(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float w, float h)
+            void Q(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, int proj)
             {
                 int o = a.v.Count;
                 a.v.Add(p0); a.v.Add(p1); a.v.Add(p2); a.v.Add(p3);
-                float u = uvs > 0f ? w * uvs : 1f, vv = uvs > 0f ? h * uvs : 1f;
-                a.uv.Add(new Vector2(0, 0)); a.uv.Add(new Vector2(u, 0)); a.uv.Add(new Vector2(u, vv)); a.uv.Add(new Vector2(0, vv));
+                if (uvs > 0f)
+                {
+                    Vector2 U(Vector3 q) => proj == 0 ? new Vector2(q.x, q.z) * uvs : proj == 1 ? new Vector2(q.x, q.y) * uvs : new Vector2(q.z, q.y) * uvs;
+                    a.uv.Add(U(p0)); a.uv.Add(U(p1)); a.uv.Add(U(p2)); a.uv.Add(U(p3));
+                }
+                else { a.uv.Add(new Vector2(0, 0)); a.uv.Add(new Vector2(1, 0)); a.uv.Add(new Vector2(1, 1)); a.uv.Add(new Vector2(0, 1)); }
                 a.t.Add(o); a.t.Add(o + 2); a.t.Add(o + 1); a.t.Add(o); a.t.Add(o + 3); a.t.Add(o + 2);
             }
-            Q(new Vector3(x0, y1, z0), new Vector3(x1, y1, z0), new Vector3(x1, y1, z1), new Vector3(x0, y1, z1), x1 - x0, z1 - z0);   // top
+            Q(new Vector3(x0, y1, z0), new Vector3(x1, y1, z0), new Vector3(x1, y1, z1), new Vector3(x0, y1, z1), 0);   // top
             a = aZ;
-            Q(new Vector3(x0, y0, z1), new Vector3(x1, y0, z1), new Vector3(x1, y0, z0), new Vector3(x0, y0, z0), x1 - x0, z1 - z0);   // bottom
-            Q(new Vector3(x1, y0, z1), new Vector3(x0, y0, z1), new Vector3(x0, y1, z1), new Vector3(x1, y1, z1), x1 - x0, y1 - y0);   // +z
-            Q(new Vector3(x0, y0, z0), new Vector3(x1, y0, z0), new Vector3(x1, y1, z0), new Vector3(x0, y1, z0), x1 - x0, y1 - y0);   // -z
+            Q(new Vector3(x0, y0, z1), new Vector3(x1, y0, z1), new Vector3(x1, y0, z0), new Vector3(x0, y0, z0), 0);   // bottom
+            Q(new Vector3(x1, y0, z1), new Vector3(x0, y0, z1), new Vector3(x0, y1, z1), new Vector3(x1, y1, z1), 1);   // +z
+            Q(new Vector3(x0, y0, z0), new Vector3(x1, y0, z0), new Vector3(x1, y1, z0), new Vector3(x0, y1, z0), 1);   // -z
             a = aX;
-            Q(new Vector3(x0, y0, z1), new Vector3(x0, y0, z0), new Vector3(x0, y1, z0), new Vector3(x0, y1, z1), z1 - z0, y1 - y0);   // -x
-            Q(new Vector3(x1, y0, z0), new Vector3(x1, y0, z1), new Vector3(x1, y1, z1), new Vector3(x1, y1, z0), z1 - z0, y1 - y0);   // +x
+            Q(new Vector3(x0, y0, z1), new Vector3(x0, y0, z0), new Vector3(x0, y1, z0), new Vector3(x0, y1, z1), 2);   // -x
+            Q(new Vector3(x1, y0, z0), new Vector3(x1, y0, z1), new Vector3(x1, y1, z1), new Vector3(x1, y1, z0), 2);   // +x
         }
 
         static Mesh Cube26()
@@ -313,12 +320,7 @@ namespace RageEngine
                             string mat = p[1];
                             Vector3 mn = new Vector3(PF(p[2]), PF(p[3]), PF(p[4])), mx = new Vector3(PF(p[5]), PF(p[6]), PF(p[7]));
                             float uvs = PF(p[8]); bool noCol = p.Length > 9 && p[9].Contains("n");
-                            if (mat != "none")
-                            {
-                                var a3 = new MeshAcc[3];
-                                for (int q = 0; q < 3; q++) { string ak = mat + "|" + q; if (!acc.TryGetValue(ak, out a3[q])) acc[ak] = a3[q] = new MeshAcc(); }
-                                AddBox(a3[0], a3[1], a3[2], mn, mx, uvs);
-                            }
+                            if (mat != "none") AddChunked42(acc, mat, mn, mx, uvs);
                             if (!noCol)
                             {
                                 var go = new GameObject("c"); go.layer = def; go.transform.SetParent(colRoot, false);
@@ -345,7 +347,7 @@ namespace RageEngine
                         {
                             Vector3 mn = new Vector3(PF(p[1]), PF(p[2]), PF(p[3])), mx = new Vector3(PF(p[4]), PF(p[5]), PF(p[6]));
                             var go = Block(root.transform, "Glass", (mn + mx) * 0.5f, mx - mn, "glass", true, def);
-                            var gp = go.AddComponent<GlassPane26>(); gp.hp = PF(p[7]); gp.mat = MapMat26("glass", 0); if (mapLook != "1") { var gr = go.GetComponent<MeshRenderer>(); if (gr != null) gr.enabled = false; }   // 0.28.2: no see-through shader on Quest -> clear opening, still breakable
+                            var gp = go.AddComponent<GlassPane26>(); gp.hp = PF(p[7]); gp.mat = MapMat26("glass", 0); if (mapLook != "1") { var gr = go.GetComponent<MeshRenderer>(); if (gr != null) gr.enabled = false; Guard("glass.look", () => GlassLook42(go, gp)); }   // 0.28.2: no see-through shader on Quest -> 0.42: frame + streaks you can see
                             glass++;
                             break;
                         }
@@ -361,6 +363,8 @@ namespace RageEngine
                             var hj = door.AddComponent<HingeJoint>(); hj.axis = Vector3.up; hj.anchor = Vector3.zero;
                             hj.useLimits = true; hj.limits = new JointLimits { min = -105f, max = 105f };
                             hj.useSpring = true; hj.spring = new JointSpring { spring = 6f, damper = 2f, targetPosition = 0f };
+                            if (mat.StartsWith("batwing")) { rb.mass = 4f; hj.spring = new JointSpring { spring = 9f, damper = 0.6f, targetPosition = 0f }; hj.limits = new JointLimits { min = -110f, max = 110f }; }   // 0.42: saloon doors swing both ways and flap back
+                            door.AddComponent<DoorCreak42>();
                             doors++;
                             break;
                         }
@@ -372,6 +376,7 @@ namespace RageEngine
                             lights++;
                             break;
                         }
+                        case "TRAIN": Guard("map.train", () => BuildTrain42(root.transform, p, def)); break;
                         case "K": map26KillY = PF(p[1]); break;
                         case "SKY": case "FOG": case "AMB": case "CLOUD": case "C": ParseEnv28(p); break;
                         case "MUSIC": case "AMBIENT": case "E": case "DRESS": ParseLounge28(p); break;
@@ -386,7 +391,7 @@ namespace RageEngine
             foreach (var kv in acc)
             {
                 if (kv.Value.v.Count == 0) continue;
-                string mk = kv.Key.Substring(0, kv.Key.LastIndexOf('|')); int shade = kv.Key[kv.Key.Length - 1] - '0';
+                string mk = kv.Key.Substring(0, kv.Key.IndexOf('|')); int shade = kv.Key[kv.Key.IndexOf('|') + 1] - '0';
                 var go = new GameObject("Mesh_" + kv.Key); go.layer = def; go.transform.SetParent(root.transform, false);
                 var m = new Mesh { name = "RageEngine_Map_" + kv.Key };
                 if (kv.Value.v.Count > 65000) m.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
@@ -416,6 +421,7 @@ namespace RageEngine
             Guard("map.env", () => BuildEnv28(root.transform));
             Guard("map.lounge", () => BuildLounge28(root.transform));
             map26Root = root; map26Built = name;
+            Guard("map.lights", () => LightPass42(root.transform));
             Physics.SyncTransforms();
             // weapons lying around the place
             foreach (var it in items26)

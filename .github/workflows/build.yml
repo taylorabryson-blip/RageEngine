@@ -78,6 +78,15 @@ jobs:
             vcut /tmp/au/v3.mp3 0 1.6 $S/NRE_VomitSplat_1.wav
             echo "NRE_VomitSplat_1: Vomit, puking spilling water onto grass splat by SpliceSound https://freesound.org/s/338116/ - CC0" >> /tmp/au/credits.txt
           else echo "MISSING sound: vomit splat" | tee -a build.log; fi
+          # 0.42 maps: the subway train and the saloon doors (real recordings, CC BY 4.0 - credited)
+          if fs https://freesound.org/people/InspectorJ/sounds/346370/ /tmp/au/t1.mp3; then
+            vcut /tmp/au/t1.mp3 5.5 6 $S/NRE_Train_1.wav
+            echo "NRE_Train_1: \"Train Passing, Close\" by InspectorJ (www.jshaw.co.uk) of Freesound.org https://freesound.org/s/346370/ - CC BY 4.0" >> /tmp/au/credits.txt
+          else echo "MISSING sound: train" | tee -a build.log; fi
+          if fs https://freesound.org/people/InspectorJ/sounds/342241/ /tmp/au/d1.mp3; then
+            vcut /tmp/au/d1.mp3 0 1.5 $S/NRE_DoorCreak_1.wav
+            echo "NRE_DoorCreak_1: \"Door Squeak, Normal, A.wav\" by InspectorJ (www.jshaw.co.uk) of Freesound.org https://freesound.org/s/342241/ - CC BY 4.0" >> /tmp/au/credits.txt
+          else echo "MISSING sound: door creak" | tee -a build.log; fi
           ls -la $S | grep -i "vomit\|retch" | tee -a build.log
           { echo; echo "# Map music, ambience and vomiting sounds (downloaded at build time)"; sed 's/^/- /' /tmp/au/credits.txt; } >> dist/RageEngine/SOUND_CREDITS.md
           ls -la $M $A | tee -a build.log

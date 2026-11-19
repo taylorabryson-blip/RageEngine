@@ -10,7 +10,7 @@ namespace RageEngine
 {
     public sealed partial class RageEngineScript : ThunderScript
     {
-        public const string Version = "0.41";
+        public const string Version = "0.42";
         const int MaxTracked = 20;
         const float ScanInterval = 0.5f;
         const float TickInterval = 0.05f;
@@ -116,6 +116,7 @@ namespace RageEngine
             // 0.14 musculature, agony, eyes
             public float[] muscles = new float[2 * (int)Mu.Count]; public bool musclesDirty, gripBlockL, gripBlockR, eyesWereShut;
             public float holdFatigueL, holdFatigueR, agonyUntil, eyesShutUntil; public int blindEyes;
+            public int beatHits42; public float beatAt42, nextJawHold42, nextBlindSwing42; public bool blind42; public WaveSpawner wave42;   // 0.42
             // 0.15 hit director
             public float nextDirected, clutchAt, impaleSince, nextThrash, nextImpaleScream, rushUntil, airTime;
             public RagdollPart clutchAtPart, impalePart; public Vector3 clutchAtPoint; public bool clutchAtBoth, rushUsed, clutching2;
@@ -147,16 +148,23 @@ namespace RageEngine
         static readonly HashSet<string> disabled = new HashSet<string>();
         internal static void Guard(string feature, Action a)
         {
-            if (disabled.Contains(feature)) return;
+            if (disabled.Contains(feature) || Muted42(feature)) return;
             try { a(); }
-            catch (Exception e)
+            catch (Exception e) { Fail42(feature, e); }
+        }
+        /// 0.42: hot loops call features directly (no closure per call) - On() before, Fail42() in the catch.
+        internal static bool On(string feature) => !disabled.Contains(feature) && !Muted42(feature);
+        internal static void Fail42(string feature, Exception e)
+        {
+            if (e is MissingMethodException || e is MissingFieldException || e is TypeLoadException || e is MissingMemberException)
             {
-                if (e is MissingMethodException || e is MissingFieldException || e is TypeLoadException || e is MissingMemberException)
-                {
-                    disabled.Add(feature);
-                    Debug.LogWarning($"[RageEngine] '{feature}' disabled: not available in this game version ({e.Message})");
-                }
-                else if (debugLog) Debug.LogWarning($"[RageEngine] {feature}: {e.GetType().Name} {e.Message}");
+                disabled.Add(feature);
+                Debug.LogWarning($"[RageEngine] '{feature}' disabled: not available in this game version ({e.Message})");
+            }
+            else
+            {
+                NoteError42(feature);
+                if (debugLog) Debug.LogWarning($"[RageEngine] {feature}: {e.GetType().Name} {e.Message}");
             }
         }
         internal static void Log(string msg) { if (debugLog) Debug.Log("[RageEngine] " + msg); }
@@ -205,12 +213,13 @@ namespace RageEngine
             for (int i = 0; i < MaxTracked; i++)
             {
                 var m = pool[i];
-                if (m.active && m.creature != null && (now < m.looseUntil || m.limpParts != 0 || m.musclesActive || m.pain > 0.05f
-                    || now < m.weakArmLUntil || now < m.weakArmRUntil || m.dying)) Guard("muscles", () => TickMuscles(m));
-                if (m.active && m.creature != null) Guard("antifall", () => GuardKnockdown(m));
-                if (m.active && m.creature != null) Guard("handwatch", () => HandWatchdog(m));
-                if (m.active && m.creature != null && now < m.followUntil && now >= m.heldUntil) Guard("follow", () => FollowBody(m));
-                if (fistFighting && m.active && m.creature != null && m.punchPhase != 0 && !m.shocked) Guard("punch", () => TickPunch(m));
+                if (!m.active || m.creature == null) continue;
+                if ((now < m.looseUntil || m.limpParts != 0 || m.musclesActive || m.pain > 0.05f || now < m.weakArmLUntil || now < m.weakArmRUntil || m.dying) && On("muscles"))
+                    try { TickMuscles(m); } catch (Exception e) { Fail42("muscles", e); }
+                if (On("antifall")) try { GuardKnockdown(m); } catch (Exception e) { Fail42("antifall", e); }
+                if (On("handwatch")) try { HandWatchdog(m); } catch (Exception e) { Fail42("handwatch", e); }
+                if (now < m.followUntil && now >= m.heldUntil && On("follow")) try { FollowBody(m); } catch (Exception e) { Fail42("follow", e); }
+                if (fistFighting && m.punchPhase != 0 && !m.shocked && On("punch")) try { TickPunch(m); } catch (Exception e) { Fail42("punch", e); }
             }
             Guard("ikwatch", IkWatchdog);                                                  // 0.22: map-centre fix
             Guard("rage", TickRageMoment);
@@ -225,6 +234,7 @@ namespace RageEngine
             Guard("mixed", TickMixed28);
             Guard("cheats", TickCheats28);
             Guard("map26", TickMap26);
+            Guard("waves42", TickWaves42);
             Guard("settings", TickSettingsSave);
             Guard("duelspawn", TickDuelSpawns);
             Guard("pending", TickPending);
@@ -236,29 +246,7 @@ namespace RageEngine
                 {
                     var s = pool[i];
                     if (!s.active || s.creature == null) continue;
-                    Guard("balance", () => TickBalance(s, dt));
-                    Guard("muscles", () => TickMuscles(s));
-                    Guard("injuries", () => TickInjuries(s, dt));
-                    Guard("wounds", () => TickWounds(s, dt));
-                    Guard("musculature", () => TickMusculature(s, dt));
-                    Guard("director", () => TickDirector(s, dt));
-                    Guard("rnas", () => TickRnas(s, dt));
-                    Guard("adapt", () => TickAdapt(s, dt));
-                    Guard("awareness", () => TickAwareness(s, dt));
-                    Guard("vanilla", () => TickVanilla(s, Time.time));
-                    Guard("brawl", () =>
-                    {
-                        float tn = Time.time;
-                        TickDrunk(s, tn); TickSteady(s, tn); TickPressure(s, tn); TickSink(s, tn); TickBlood(s, tn); TickGore25(s, tn); TickLab(s, tn); TickTakedowns(s, tn); TickIntegrity(s, tn); TickDefense(s, tn); TickToxin(s, tn); TickBio(s, tn); TickSerum25(s, tn); TickGroundFight(s, tn); TickSalts(s, tn); Tick28(s, tn);
-                        TickKnockout(s, tn); TickPullOut(s, tn); MaybeInviteFistfight(s, tn); TickGroup(s, tn); TickCharge(s, tn); TickArmedFootwork(s, tn); TickPointAt(s, tn);
-                    });
-                    Guard("stability", () => { float tn = Time.time; TickStumble(s, tn); TickDazed(s, tn); TickSettle(s, tn); TickNavigation(s, dt, tn); });
-                    Guard("choke", () => TickChoke(s, dt));
-                    Guard("trauma", () => TickTrauma(s, dt));
-                    Guard("dying", () => TickDying(s));
-                    Guard("bruises", () => TickBruises(s));
-                    Guard("forcephysic", () => TickPhysics(s));
-                    Guard("fists", () => TickFisticuffs(s));
+                    TickNpc42(s, dt);
                     if (s.daze > 0f) s.daze = Mathf.Max(0f, s.daze - 0.08f * recoverySpeed * dt);
                 }
             }
@@ -376,7 +364,8 @@ namespace RageEngine
         static void Reset(NpcState s)
         {
             Guard("gouged", () => RestoreGouged(s));
-            s.stealthKilled = s.punchedThrough = s.neckSnapped = s.paralysed = s.ally = s.castPrevL = s.castPrevR = s.neckGrabL = s.neckGrabR = s.spineShrugged = s.regenClean = s.crawlFlip = s.passedOut = s.knifeOut = s.knifePending = false; s.hasKnife = UnityEngine.Random.value < 0.5f; s.occiput = s.gutShots = s.nextVomit = s.vomitUntil = s.nextVomitSpurt = s.chokeBloodSince = s.nextChokeCough = s.convulseUntil = s.nextConvulse = s.hpOverride = 0f; s.hpT = 1f; s.eyeDmg[0] = s.eyeDmg[1] = 0f; s.headSaves = 0; s.saltsT = 0f; ClearKnots(s); s.ribsL = s.ribsR = s.bodyShots = s.faceStage = s.fingersOut = s.ribsOut = 0; s.faceDepth = s.nextShrugLog = s.groundSince = s.nextGroundAct = s.groundSwingUntil = s.faceDmg = s.nextFaceCave = 0f; s.comboPlan = s.comboLast = null; s.nextSpineShrug = 0f; s.neckGrabAt = s.neckSnapUsedAt = s.injectFlashUntil = s.nextRegenStep = s.regenGlowUntil = 0f; s.eyeTintKey = -1f; if (s.fxMark != null) UnityEngine.Object.Destroy(s.fxMark); s.fxMark = null; s.mouthT = s.nextIntegrityTrip = 0f; s.integrity = 100f; System.Array.Clear(s.blackEye, 0, s.blackEye.Length);
+            s.stealthKilled = s.punchedThrough = s.neckSnapped = s.paralysed = s.ally = s.castPrevL = s.castPrevR = s.neckGrabL = s.neckGrabR = s.spineShrugged = s.regenClean = s.crawlFlip = s.passedOut = s.knifeOut = s.knifePending = false; s.hasKnife = UnityEngine.Random.value < 0.4f; s.occiput = s.gutShots = s.nextVomit = s.vomitUntil = s.nextVomitSpurt = s.chokeBloodSince = s.nextChokeCough = s.convulseUntil = s.nextConvulse = s.hpOverride = 0f; s.hpT = 1f; s.eyeDmg[0] = s.eyeDmg[1] = 0f; s.headSaves = 0; s.saltsT = 0f; ClearKnots(s); s.ribsL = s.ribsR = s.bodyShots = s.faceStage = s.fingersOut = s.ribsOut = 0; s.faceDepth = s.nextShrugLog = s.groundSince = s.nextGroundAct = s.groundSwingUntil = s.faceDmg = s.nextFaceCave = 0f; s.comboPlan = s.comboLast = null; s.nextSpineShrug = 0f; s.neckGrabAt = s.neckSnapUsedAt = s.injectFlashUntil = s.nextRegenStep = s.regenGlowUntil = 0f; s.eyeTintKey = -1f; if (s.fxMark != null) UnityEngine.Object.Destroy(s.fxMark); s.fxMark = null; s.mouthT = s.nextIntegrityTrip = 0f; s.integrity = 100f; System.Array.Clear(s.blackEye, 0, s.blackEye.Length);
+            s.beatHits42 = 0; s.beatAt42 = s.nextJawHold42 = s.nextBlindSwing42 = 0f; s.blind42 = false; s.wave42 = null;
             s.noseBroken = s.gutImpaled = false; s.teethLost = 0; s.throatCutUntil = s.nextSpurt = 0f; s.throatPart = s.gutPart = null;
             s.balance = 1f; s.fatigue = 0f; s.looseUntil = 0f; s.looseAmount = 0f; s.looseParts = 0; s.limpParts = 0; s.pinOverridden = false;
             s.pain = 0f; s.brokenParts = 0; s.jawBroken = false; s.bleedRate = 0f; s.bleedAccum = 0f; s.bloodInAirway = false; s.nextCoughTime = 0f;
@@ -528,6 +517,7 @@ namespace RageEngine
             Guard("toxin", () => ToxinHit(s, hit, part));
             Guard("device", () => DeviceHit(s, hit, part));
             Guard("gore25", () => Gore25Hit(s, hit, part, t, severity));
+            Guard("gore42", () => Gore42Hit(s, hit, part, t, severity));
             Guard("combat25", () => Combat25Hit(s, hit, part, t, severity));
             if (!c.isKilled) Guard("follow", () => StartFollow(s, severity));
             Guard("wounds", () => ApplyWounds(s, hit, part, t));

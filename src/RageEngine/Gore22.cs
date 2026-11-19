@@ -299,7 +299,7 @@ namespace RageEngine
             if (c != null && c.ragdoll != null) bodyCols.AddRange(c.ragdoll.GetComponentsInChildren<Collider>());
             for (int i = 0; i < count; i++)
             {
-                if (!faceCave && (prefix.StartsWith("RE_Skull") || prefix.StartsWith("RE_Brain") || prefix.StartsWith("RE_Jaw") || prefix.StartsWith("RE_Tooth") || prefix.StartsWith("RE_Eyeball"))) return;
+                if (!faceCave && (prefix.StartsWith("RE_Skull") || prefix.StartsWith("RE_Brain") || prefix.StartsWith("RE_Jaw"))) return;      // 0.42: teeth and eyes always
                 Mesh m = BoneModels.Get(prefix) ?? BoneModels.Get(prefix + "_" + Random.Range(1, 7)) ?? BoneModels.Get(prefix + "_1");
                 if (m == null) return;
                 while (goreModels.Count > 0 && (goreModels.Count >= PerfGorePieces || goreModels[0] == null)) { if (goreModels[0] != null) Object.Destroy(goreModels[0]); goreModels.RemoveAt(0); }

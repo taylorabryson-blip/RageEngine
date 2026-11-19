@@ -20,7 +20,7 @@ namespace RageEngine
 {
     public sealed partial class RageEngineScript
     {
-        public static bool punchThrough = true;
+        public static bool punchThrough = false;                                    // 0.42: removed (feedback)
         public static bool neckSnaps = true;
         public static float punchThroughSpeed = 7f;
 
@@ -62,7 +62,7 @@ namespace RageEngine
             var chest = ChestPart(c);
 
             // ---- punch-through
-            if (punchThrough && Has(t, RagdollPart.Type.Torso) && dt == DamageType.Blunt && ((fist && speed >= punchThroughSpeed) || (heavyBlunt && speed >= punchThroughSpeed * 0.8f)))
+            if (false && punchThrough && Has(t, RagdollPart.Type.Torso) && dt == DamageType.Blunt && ((fist && speed >= punchThroughSpeed) || (heavyBlunt && speed >= punchThroughSpeed * 0.8f)))
             {
                 bool tough = s.hpK > 0.65f || s.bioNoQuit || s.bioStrength > 1.3f || Tank(s);
                 if (!tough)

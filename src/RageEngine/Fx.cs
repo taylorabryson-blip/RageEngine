@@ -13,7 +13,7 @@ namespace RageEngine
     {
         static readonly Dictionary<string, List<AudioClip>> clips = new Dictionary<string, List<AudioClip>>();
         static int MaxVoices => RageEngineScript.PerfVoices;
-        static bool Allowed(string key) => RageEngineScript.modVoices || !(key.StartsWith("NRE_Scream") || key.StartsWith("NRE_Pain") || key.StartsWith("NRE_Breath") || key.StartsWith("NRE_DeathGasp") || key.StartsWith("NRE_Retch") || key.StartsWith("NRE_Vomit_") || key == "NRE_Vomit");
+        static bool Allowed(string key) => RageEngineScript.GoreSound42(key) && (RageEngineScript.modVoices || !(key.StartsWith("NRE_Scream") || key.StartsWith("NRE_Pain") || key.StartsWith("NRE_Breath") || key.StartsWith("NRE_DeathGasp") || key.StartsWith("NRE_Retch") || key.StartsWith("NRE_Vomit_") || key == "NRE_Vomit"));
         static readonly List<AudioSource> live = new List<AudioSource>();
         static readonly Dictionary<string, List<int>> bags = new Dictionary<string, List<int>>();
         static readonly Dictionary<string, int> lastPlayed = new Dictionary<string, int>();
@@ -99,6 +99,14 @@ namespace RageEngine
                 Play(key, go.transform, volume);
                 UnityEngine.Object.Destroy(go, 5f);
             });
+        }
+
+        /// 0.42: one clip of a set, for looping sources (the train). Needs mod sound effects on.
+        public static bool TryClip(string key, out AudioClip clip)
+        {
+            clip = null;
+            if (!RageEngineScript.modSfx || !clips.TryGetValue(key, out var list) || list.Count == 0) return false;
+            clip = list[0]; return clip != null;
         }
 
         /// Plays a random variant of a sound set at (and following) a transform. 3D, audible ~25 m.
