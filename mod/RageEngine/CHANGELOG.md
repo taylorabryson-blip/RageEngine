@@ -1,5 +1,14 @@
 # Rage Engine changelog
 
+## 0.47.0 - fewer things, done better
+- We're trimming some content to focus on quality. Maps: Rage Tower, Skybar and Red Room Diner.
+- Fixed: NPCs spawned from the book could collapse like they'd lost their bones (and sometimes bleed) a few spawns in.
+- NPCs stay on their feet like they did in 0.31-0.38: healthy NPCs don't go down; hurt ones can, and the lower the HP the likelier. Strong-willed NPCs can still power through.
+- Dynamic organs: deep cuts low on the belly spill the guts (they hang from the wound), deep chest cuts drop lung or heart, huge blasts throw organs out. New Mode setting: Rage Engine + dynamic organs / Rage Engine (no organs) / Dynamic organs only.
+- NPC weapons (waves, dungeons, anywhere): Game default / Mixed / Anything - any melee weapon in the game, mods included.
+- Smarter NPCs: skilled fighters step back out of big swings, disarmed NPCs pick weapons back up off the floor, and NPCs tell nearby friends where you are.
+- The wave book is found and moved into the map even when the level hides it.
+
 ## 0.43.0 - new serums, super serums with powers, proficiency, desperation
 - 7 new serums: Iron Skin (cuts do a third), Bloodhound (always knows where you are), Painless (feels nothing, then all of it at once), Static Charge (hit him with a weapon and it shocks you), Featherweight (fast, one good hit sends him flying), Rot (weakens and stains), Deep Sleep (puts him to sleep - never kills - until you tap his head or knock him).
 - 11 new super serums: Juggernaut, Berserker King, Wraith (blinks behind you), Hivemind (allies share his eyes; kill him and they panic), Bone Lord (bones snap back), Magnet (weapons fly back to his hand), Lazarus (gets up once after dying), Gravity Well, Mirror (your hits come back), Vampire (drains you up close), Shockwave.
