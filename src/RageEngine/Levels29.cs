@@ -15,7 +15,7 @@ namespace RageEngine
         static bool levelBuilt29, wavesHooked31;
         static readonly Dictionary<string, string> levelMaps31 = new Dictionary<string, string>
         {
-            { "RE_Skybar", "Skybar" }, { "RE_BurgerJoint", "BurgerJoint" }, { "RE_RedRoomDiner", "RedRoomDiner" }, { "RE_RewindVideo", "RewindVideo" }, { "RE_StarliteArcade", "StarliteArcade" }, { "RE_RageBlock", "RageBlock" }, { "RE_GasAndGo", "GasAndGo" }, { "RE_ClubMillennium", "ClubMillennium" }, { "RE_RageTower", "RageTower" },
+            { "RE_RageTower", "RageTower" }, { "RE_RedRoomDiner", "RedRoomDiner" }, { "RE_Skybar", "Skybar" },
         };
 
         static IEnumerable<string> LevelIds40()
@@ -58,6 +58,23 @@ namespace RageEngine
         }
 
         /// Point the level's own wave spawner(s) at the map and bring the wave book over.
+        /// The book's stand: climb up from the book while the parent is still a small object (not the level itself).
+        static Transform BookRoot47(Transform t)
+        {
+            var cur = t;
+            for (int i = 0; i < 4 && cur.parent != null; i++)
+            {
+                var p = cur.parent;
+                if (p.parent == null || p.childCount > 12) break;                                      // the level / a big group: stop
+                var r = p.GetComponentsInChildren<Renderer>(true);
+                Bounds b = r.Length > 0 ? r[0].bounds : new Bounds(p.position, Vector3.zero);
+                foreach (var x in r) b.Encapsulate(x.bounds);
+                if (b.size.magnitude > 4f) break;                                                     // bigger than a book stand
+                cur = p;
+            }
+            return cur;
+        }
+
         static void HookWaves31()
         {
             var pts = new List<Transform>();
@@ -88,13 +105,22 @@ namespace RageEngine
             Vector3 start = map26Origin + map26Start;
             Vector3 fwd = Quaternion.Euler(0f, map26Yaw, 0f) * Vector3.forward;
             Vector3 right = Vector3.Cross(Vector3.up, fwd);
-            foreach (var ui in Object.FindObjectsOfType<UIWaveSpawner>())
+            // 0.47: inactive books count too (FindObjectsOfType skipped them), and the whole book stand moves with it
+            foreach (var ui in Resources.FindObjectsOfTypeAll<UIWaveSpawner>())
             {
-                if (ui == null) continue;
-                Vector3 pos = start + fwd * 1.4f + right * (0.9f + books * 1.2f) + Vector3.up * 1.35f;
-                ui.transform.position = pos;
-                ui.transform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(pos - start, Vector3.up).normalized, Vector3.up);
+                if (ui == null || !ui.gameObject.scene.IsValid() || ui.hideFlags != HideFlags.None) continue;
+                Transform t = BookRoot47(ui.transform);
+                if (!t.gameObject.activeSelf) t.gameObject.SetActive(true);
+                if (!ui.gameObject.activeInHierarchy) ui.gameObject.SetActive(true);
+                Vector3 pos = start + fwd * 1.4f + right * (0.9f + books * 1.2f);
+                // stand it on the floor there
+                if (Physics.Raycast(pos + Vector3.up * 2f, Vector3.down, out var fl, 4f, ~0, QueryTriggerInteraction.Ignore)) pos = fl.point;
+                Vector3 off = ui.transform.position - t.position;                         // where the book sits on its stand
+                float lift = t == ui.transform ? 1.35f : 0f;
+                t.position = pos + Vector3.up * lift;
+                t.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(start - pos, Vector3.up).normalized, Vector3.up);
                 books++;
+                Debug.Log($"[RageEngine] wave book '{ui.name}' (stand '{t.name}') moved to the map");
             }
             Debug.Log($"[RageEngine] waves: {spawners} spawner(s), {points} spawn point(s), {books} wave book(s) moved to the map");
             Notify(spawners > 0 && books > 0 ? "Wave book is next to you - pick a wave and fight."

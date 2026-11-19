@@ -123,7 +123,7 @@ namespace RageEngine
                 s.beatHits42++; s.beatAt42 = now;
             }
             if (uniqueGore && part != null && Has(t, RagdollPart.Type.Neck)) Guard("neckgrab", () => NeckGrab44(s, part, hit, severity));
-            if (uniqueGore && part != null && dt == DamageType.Slash && Has(t, RagdollPart.Type.Torso)) Guard("guts", () => GutSpill44(s, part, hit, severity));
+            if (part != null && Has(t, RagdollPart.Type.Torso)) Guard("organs", () => Organs47(s, c, part, hit, severity));
             if (!uniqueGore || part == null || c.allEyes == null || !Has(t, RagdollPart.Type.Head)) return;
             Vector3 p = hit.contactPoint;
             for (int i = 0; i < c.allEyes.Count && i < 2; i++)

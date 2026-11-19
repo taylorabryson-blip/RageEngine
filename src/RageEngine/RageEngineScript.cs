@@ -10,7 +10,7 @@ namespace RageEngine
 {
     public sealed partial class RageEngineScript : ThunderScript
     {
-        public const string Version = "0.46";
+        public const string Version = "0.47";
         const int MaxTracked = 20;
         const float ScanInterval = 0.5f;
         const float TickInterval = 0.05f;
@@ -116,6 +116,7 @@ namespace RageEngine
             // 0.14 musculature, agony, eyes
             public float[] muscles = new float[2 * (int)Mu.Count]; public bool musclesDirty, gripBlockL, gripBlockR, eyesWereShut;
             public float holdFatigueL, holdFatigueR, agonyUntil, eyesShutUntil; public int blindEyes;
+            public bool loadoutDone47; public float nextDodge47, nextPickup47, nextShare47;   // 0.47
             public bool will44, wearOn44, vomitHold44, gutsOut44; public float nextNeckGrab44; public float wear44, wearSpeed44 = 1f, nextWear44;   // 0.44
             public bool hound43, deepSleep43; public float next43, rage43, burnout43, rageMaxAt43, magnetNext43, prof43, profAnim43, profDelay43, profRec43, despUntil43, despNext43; public int despPose43; public Item magnetItem43; public BrainModuleMelee profMelee43; public BrainModuleHitReaction profHit43; public Transform despL43, despR43;   // 0.43
             public int beatHits42; public float beatAt42, nextJawHold42, nextBlindSwing42; public bool blind42; public WaveSpawner wave42;   // 0.42
@@ -210,6 +211,7 @@ namespace RageEngine
         void UpdateCore()
         {
             if (!modEnabled) { if (byCreature.Count > 0) ReleaseAll(); return; }
+            if (OrgansOnly) { if (byCreature.Count > 0) ReleaseAll(); Guard("settings", TickSettingsSave); return; }                  // 0.47: only the organs (they run from the hit event)
             float now = Time.time;
             // muscles every frame while a reaction is running, so the game's own pin updates can't cancel it
             for (int i = 0; i < MaxTracked; i++)
@@ -368,6 +370,7 @@ namespace RageEngine
         {
             Guard("gouged", () => RestoreGouged(s));
             s.stealthKilled = s.punchedThrough = s.neckSnapped = s.paralysed = s.ally = s.castPrevL = s.castPrevR = s.neckGrabL = s.neckGrabR = s.spineShrugged = s.regenClean = s.crawlFlip = s.passedOut = s.knifeOut = s.knifePending = false; s.hasKnife = UnityEngine.Random.value < 0.4f; s.occiput = s.gutShots = s.nextVomit = s.vomitUntil = s.nextVomitSpurt = s.chokeBloodSince = s.nextChokeCough = s.convulseUntil = s.nextConvulse = s.hpOverride = 0f; s.hpT = 1f; s.eyeDmg[0] = s.eyeDmg[1] = 0f; s.headSaves = 0; s.saltsT = 0f; ClearKnots(s); s.ribsL = s.ribsR = s.bodyShots = s.faceStage = s.fingersOut = s.ribsOut = 0; s.faceDepth = s.nextShrugLog = s.groundSince = s.nextGroundAct = s.groundSwingUntil = s.faceDmg = s.nextFaceCave = 0f; s.comboPlan = s.comboLast = null; s.nextSpineShrug = 0f; s.neckGrabAt = s.neckSnapUsedAt = s.injectFlashUntil = s.nextRegenStep = s.regenGlowUntil = 0f; s.eyeTintKey = -1f; if (s.fxMark != null) UnityEngine.Object.Destroy(s.fxMark); s.fxMark = null; s.mouthT = s.nextIntegrityTrip = 0f; s.integrity = 100f; System.Array.Clear(s.blackEye, 0, s.blackEye.Length);
+            s.loadoutDone47 = false; s.nextDodge47 = s.nextPickup47 = s.nextShare47 = 0f;
             s.will44 = s.wearOn44 = s.vomitHold44 = s.gutsOut44 = false; s.nextNeckGrab44 = 0f; s.wear44 = 0f; s.wearSpeed44 = 1f; s.nextWear44 = 0f;
             s.hound43 = s.deepSleep43 = false; s.next43 = s.rage43 = s.burnout43 = s.rageMaxAt43 = s.magnetNext43 = s.despUntil43 = s.despNext43 = 0f; s.despPose43 = 0; s.magnetItem43 = null;
             if (s.despL43 != null) UnityEngine.Object.Destroy(s.despL43.gameObject); if (s.despR43 != null) UnityEngine.Object.Destroy(s.despR43.gameObject); s.despL43 = s.despR43 = null;
@@ -496,13 +499,14 @@ namespace RageEngine
         // ---------------- events ----------------
         void OnContact(CollisionInstance hit, RagdollPart part)
         {
-            if (!modEnabled || hit == null || part == null || part.ragdoll == null) return;
+            if (!modEnabled || OrgansOnly || hit == null || part == null || part.ragdoll == null) return;
             Guard("contact", () => HandleContact(hit, part));
         }
 
         void OnCreatureDamaged(CollisionInstance hit, EventTime time)
         {
             if (!modEnabled || time != EventTime.OnEnd || hit == null) return;
+            if (OrgansOnly) { Guard("organs", () => OrganOnlyHit47(hit)); return; }
             Guard("hit", () => HandleHit(hit));
         }
 
@@ -514,6 +518,7 @@ namespace RageEngine
             lastHandled = hit;
             ClassifyHit34(hit);
             if (!TryGet(c, out var s) || s.knockedOutUntil > 0f) return;
+            { bool ig = false; Guard("ignore47", () => ig = Ignore47(s, hit)); if (ig) return; }
             var t = part.type;
             float severity = HitSeverity(hit);
             { float sv = severity; Guard("toughen", () => sv = Toughen(s, hit, sv)); severity = sv; }
@@ -574,7 +579,7 @@ namespace RageEngine
 
         void OnCreatureKill(Creature victim, Player player, CollisionInstance hit, EventTime time)
         {
-            if (!modEnabled || victim == null || victim.isPlayer) return;
+            if (!modEnabled || OrgansOnly || victim == null || victim.isPlayer) return;
             if (time == EventTime.OnEnd) Guard("death", () => HandleKill(victim, hit));
         }
 

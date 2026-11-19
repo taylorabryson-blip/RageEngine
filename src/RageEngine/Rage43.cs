@@ -454,6 +454,8 @@ namespace RageEngine
             }
             if (!s.deepSleep43 && s.hound43 && !HasFx(s, Comp.Bloodhound)) { s.hound43 = false; Guard("hound.off", () => c.detectionFOVModifier.Remove(Hound43)); }
             Guard("wear", () => Wear44(s, now));
+            Guard("loadout", () => Loadout47(s, now));
+            Guard("smart", () => Smart47(s, now));
             Guard("prof", () => ProfTick43(s));
             Guard("desp", () => Desperation43(s, now));
         }

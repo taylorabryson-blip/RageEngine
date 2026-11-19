@@ -51,12 +51,21 @@ namespace ThunderRoad
         public List<Drop> drops;
         public bool TryPick(ref CreatureData creatureData, System.Random randomGen = null) => false;
     }
+    public class ItemModule { }
+    public class ItemModuleAI : ItemModule
+    {
+        public enum WeaponClass { None, Melee, Bow, Arrow, Shield, Wand, Crossbow, Bolt, Firearm, Throwable }
+        public enum WeaponHandling { None, OneHanded, TwoHanded }
+        public WeaponClass primaryClass, secondaryClass; public WeaponHandling weaponHandling;
+    }
     public class RevealDecal : MonoBehaviour { public void Reset() { } }
     public class ItemData : EntityData
     {
         public enum Type { Misc = 0, Weapon = 1, Quiver = 2, Potion = 3, Prop = 4, Body = 5, Shield = 6, Wardrobe = 7, Spell = 8, Crystal = 9, Valuable = 10, Tool = 11, Food = 12, Note = 13 }
         public string displayName;
         public Type type;
+        public string slot, category; public int tier;
+        public ItemModuleAI moduleAI;
         public void SpawnAsync(Action<Item> callback, Vector3? position = null, Quaternion? rotation = null, Transform parent = null, bool pooled = true, List<ContentCustomData> customDataList = null, Item.Owner owner = Item.Owner.None) { }
     }
     public class LevelData : CatalogData { public class Mode { } public string name; }
@@ -318,6 +327,7 @@ namespace ThunderRoad
         public ItemData data;
         public event HeldActionDelegate OnHeldActionEvent;
         public static List<Item> allActive;
+        public RagdollHand lastHandler;
         public List<Handle> handles;
         public Handle mainHandleLeft;
         public Handle mainHandleRight;

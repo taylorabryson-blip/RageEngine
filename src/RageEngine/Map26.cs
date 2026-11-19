@@ -78,7 +78,7 @@ namespace RageEngine
     public sealed partial class RageEngineScript
     {
         const string CM = "Rage Engine: Maps";
-        public static ModOptionString[] mapNames = { new ModOptionString("Rage Skybar (skyscraper)", null, "Skybar"), new ModOptionString("Rage Burger (drive-thru)", null, "BurgerJoint"), new ModOptionString("Red Room Diner", null, "RedRoomDiner"), new ModOptionString("Rage Tower (empty skyscraper)", null, "RageTower") };
+        public static ModOptionString[] mapNames = { new ModOptionString("Rage Skybar (skyscraper)", null, "Skybar"), new ModOptionString("Red Room Diner", null, "RedRoomDiner"), new ModOptionString("Rage Tower (empty skyscraper)", null, "RageTower") };
         public static ModOptionString[] mapWaveSizes = { new ModOptionString("3", null, "3"), new ModOptionString("5", null, "5"), new ModOptionString("8", null, "8"), new ModOptionString("1", null, "1") };
         public static ModOptionString[] mapWaveKinds = { new ModOptionString("Normal enemies", null, "0"), new ModOptionString("Super soldiers", null, "1"), new ModOptionString("Mixed", null, "2"), new ModOptionString("Mixed toughness (60-1500 HP)", null, "3") };
         public static ModOptionString[] mapLooks = { new ModOptionString("Auto", null, "0"), new ModOptionString("Game shader (lit)", null, "1"), new ModOptionString("Flat colours", null, "2") };

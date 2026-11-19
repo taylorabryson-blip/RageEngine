@@ -22,6 +22,7 @@ namespace RageEngine
             bool dead = c.isKilled && !s.onAdrenaline;
             var col = hit.sourceCollider;
             if (col == null) return;
+            if (Ignore47(s, hit)) return;                                                           // 0.47: spawn overlap, NPCs bumping
             var rb = col.attachedRigidbody;
             if (rb == null || rb.isKinematic) { HandleSlam(s, hit, part, dead); return; }   // walls / floor / pillars
             if (!dead && s.knockedOutUntil > 0f) return;
