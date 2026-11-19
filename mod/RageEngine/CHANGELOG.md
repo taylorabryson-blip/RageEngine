@@ -1,5 +1,12 @@
 # Rage Engine changelog
 
+## 0.43.0 - new serums, super serums with powers, proficiency, desperation
+- 7 new serums: Iron Skin (cuts do a third), Bloodhound (always knows where you are), Painless (feels nothing, then all of it at once), Static Charge (hit him with a weapon and it shocks you), Featherweight (fast, one good hit sends him flying), Rot (weakens and stains), Deep Sleep (puts him to sleep - never kills - until you tap his head or knock him).
+- 11 new super serums: Juggernaut, Berserker King, Wraith (blinks behind you), Hivemind (allies share his eyes; kill him and they panic), Bone Lord (bones snap back), Magnet (weapons fly back to his hand), Lazarus (gets up once after dying), Gravity Well, Mirror (your hits come back), Vampire (drains you up close), Shockwave.
+- Combinations: Painless + Berserker King, Iron Skin + Juggernaut, Featherweight + Wraith, Static Charge + Magnet.
+- Weapon proficiency: every NPC is a Novice, Trained, Veteran or Master - parrying, attack tempo and recovery from an interrupted attack - independent of personality. Returning NPCs keep theirs.
+- Desperation Response: badly hurt NPCs beg with their hands, signal stop, back off, hesitate, call allies in, run, or turn defiant - by personality and whether they're alone. New setting "Desperation" (Off / Subtle / Normal / Intense).
+
 ## 0.42.0 - eyes, jaws, knives, waves that keep their count, Rage Tower, lighting
 - Eyes: a hard blow, a blade tip or a thumb in the eye pops it out. It hangs from the socket on the nerve, swings, then tears off and drops. A lost eye is gone for good; lose both and he is blind for good (loses you unless you're on top of him, swings wild, no parrying, hand on his face).
 - Teeth and eyeballs always fly now (not only with "Face cave-in & skull bits" on).
