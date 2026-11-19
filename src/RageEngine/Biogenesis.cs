@@ -24,27 +24,46 @@ namespace RageEngine
     internal enum Comp
     {
         Neurostatic, Verdant, CryoSleep, AdrenalSurge, Hallucinatory, MotorShutdown,
-        NightSoldier, HeroX, AdrenalOverload, Titan, Phantom, Phoenix, Ravager, Overmind, Colossus, Count
+        NightSoldier, HeroX, AdrenalOverload, Titan, Phantom, Phoenix, Ravager, Overmind, Colossus,
+        // 0.43 serums (ailment-type syringes)
+        IronSkin, Bloodhound, Painless, StaticCharge, Featherweight, Rot, DeepSleep,
+        // 0.43 super serums (powers)
+        Juggernaut, BerserkerKing, Wraith, Hivemind, BoneLord, Magnet, Lazarus, GravityWell, Mirror, Vampire, Shockwave, Count
     }
 
     public sealed partial class RageEngineScript
     {
         const string CB = "Rage Engine: Serums", CX = "Rage Engine: Super Serums";
         internal static readonly string[] CompKey = { "Neurostatic", "Verdant", "CryoSleep", "AdrenalSurge", "Hallucinatory", "MotorShutdown",
-            "X01_NightSoldier", "X02_HeroX", "X03_AdrenalOverload", "X04_Titan", "X05_Phantom", "X06_Phoenix", "X07_Ravager", "X08_Overmind", "X09_Colossus" };
+            "X01_NightSoldier", "X02_HeroX", "X03_AdrenalOverload", "X04_Titan", "X05_Phantom", "X06_Phoenix", "X07_Ravager", "X08_Overmind", "X09_Colossus",
+            "IronSkin", "Bloodhound", "Painless", "StaticCharge", "Featherweight", "Rot", "DeepSleep",
+            "X10_Juggernaut", "X11_BerserkerKing", "X12_Wraith", "X13_Hivemind", "X14_BoneLord", "X15_Magnet", "X16_Lazarus", "X17_GravityWell", "X18_Mirror", "X19_Vampire", "X20_Shockwave" };
         internal static readonly string[] CompName = { "Neurostatic", "Verdant Syndrome", "Cryo-Sleep", "Adrenal Surge", "Hallucinatory Syndrome", "Motor Shutdown",
-            "Night Soldier", "Hero X", "Adrenal Overload", "Titan", "Phantom", "Phoenix", "Ravager", "Overmind", "Colossus" };
+            "Night Soldier", "Hero X", "Adrenal Overload", "Titan", "Phantom", "Phoenix", "Ravager", "Overmind", "Colossus",
+            "Iron Skin", "Bloodhound", "Painless", "Static Charge", "Featherweight", "Rot", "Deep Sleep",
+            "Juggernaut", "Berserker King", "Wraith", "Hivemind", "Bone Lord", "Magnet", "Lazarus", "Gravity Well", "Mirror", "Vampire", "Shockwave" };
         internal static readonly Color[] CompLiquid =
         {
             new Color(0.2f, 0.9f, 1f), new Color(0.35f, 0.8f, 0.15f), new Color(0.6f, 0.85f, 1f), new Color(1f, 0.45f, 0.05f), new Color(0.95f, 0.2f, 0.85f), new Color(0.75f, 0.75f, 0.78f),
             new Color(0.55f, 0.02f, 0.04f), new Color(1f, 0.8f, 0.2f), new Color(1f, 0.35f, 0.05f), new Color(1f, 0.85f, 0.1f), new Color(0.35f, 0.65f, 1f),
             new Color(0.2f, 1f, 0.35f), new Color(0.75f, 0f, 0.12f), new Color(0.6f, 0.2f, 1f), new Color(0.75f, 0.9f, 1f),
+            // 0.43 serums
+            new Color(0.55f, 0.58f, 0.62f), new Color(0.75f, 0.4f, 0.1f), new Color(0.95f, 0.95f, 0.95f), new Color(0.3f, 0.75f, 1f), new Color(0.85f, 1f, 0.9f), new Color(0.3f, 0.35f, 0.08f), new Color(0.35f, 0.3f, 0.85f),
+            // 0.43 super serums
+            new Color(0.45f, 0.42f, 0.4f), new Color(0.9f, 0.08f, 0.02f), new Color(0.15f, 0.15f, 0.2f), new Color(0.95f, 0.75f, 0.1f), new Color(0.92f, 0.9f, 0.82f), new Color(0.6f, 0.62f, 0.7f),
+            new Color(1f, 0.95f, 0.7f), new Color(0.25f, 0.05f, 0.45f), new Color(0.75f, 0.95f, 1f), new Color(0.45f, 0f, 0.05f), new Color(1f, 0.6f, 0.2f),
         };
         // X-series identity: eyes / aura (index = comp - NightSoldier)
-        static readonly Color[] XEyes = { new Color(1f, 0.05f, 0.05f), Color.white, new Color(1f, 0.5f, 0f), new Color(1f, 0.95f, 0.1f), new Color(0.2f, 0.5f, 1f), new Color(0.1f, 1f, 0.2f), new Color(0.85f, 0f, 0.15f), new Color(0.65f, 0.1f, 1f), new Color(0.8f, 0.95f, 1f) };
-        static readonly Color[] XAura = { new Color(0.45f, 0f, 0.02f), new Color(1f, 0.78f, 0.2f), new Color(1f, 0.3f, 0.05f), new Color(1f, 0.55f, 0.05f), new Color(0.55f, 0.8f, 1f), new Color(0.15f, 0.9f, 0.2f), new Color(0.75f, 0f, 0.1f), new Color(0.55f, 0.1f, 0.9f), new Color(0.3f, 0.5f, 1f) };
+        static readonly Color[] XEyes = { new Color(1f, 0.05f, 0.05f), Color.white, new Color(1f, 0.5f, 0f), new Color(1f, 0.95f, 0.1f), new Color(0.2f, 0.5f, 1f), new Color(0.1f, 1f, 0.2f), new Color(0.85f, 0f, 0.15f), new Color(0.65f, 0.1f, 1f), new Color(0.8f, 0.95f, 1f),
+            Color.gray, Color.gray, Color.gray, Color.gray, Color.gray, Color.gray, Color.gray,                                  // (0.43 serums - not X-series)
+            new Color(0.75f, 0.75f, 0.75f), new Color(1f, 0f, 0f), new Color(0.05f, 0.05f, 0.08f), new Color(1f, 0.85f, 0.1f), Color.white, new Color(0.7f, 0.75f, 0.9f),
+            new Color(1f, 0.95f, 0.6f), new Color(0.5f, 0.1f, 1f), new Color(0.6f, 0.95f, 1f), new Color(0.75f, 0f, 0f), new Color(1f, 0.55f, 0.1f) };
+        static readonly Color[] XAura = { new Color(0.45f, 0f, 0.02f), new Color(1f, 0.78f, 0.2f), new Color(1f, 0.3f, 0.05f), new Color(1f, 0.55f, 0.05f), new Color(0.55f, 0.8f, 1f), new Color(0.15f, 0.9f, 0.2f), new Color(0.75f, 0f, 0.1f), new Color(0.55f, 0.1f, 0.9f), new Color(0.3f, 0.5f, 1f),
+            Color.gray, Color.gray, Color.gray, Color.gray, Color.gray, Color.gray, Color.gray,
+            new Color(0.5f, 0.48f, 0.45f), new Color(0.9f, 0.05f, 0.02f), new Color(0.1f, 0.1f, 0.15f), new Color(1f, 0.8f, 0.2f), new Color(0.9f, 0.88f, 0.8f), new Color(0.55f, 0.6f, 0.75f),
+            new Color(1f, 0.95f, 0.65f), new Color(0.35f, 0.05f, 0.6f), new Color(0.65f, 0.9f, 1f), new Color(0.5f, 0f, 0.05f), new Color(1f, 0.5f, 0.15f) };
 
-        internal static bool IsSerum(Comp c) => c >= Comp.NightSoldier;
+        internal static bool IsSerum(Comp c) => (c >= Comp.NightSoldier && c <= Comp.Colossus) || (c >= Comp.Juggernaut && c < Comp.Count);   // 0.43: new serums sit between the two X ranges
 
         // ---------------------------------------------------------------- settings
         public static bool bioEnabled = true;
@@ -88,7 +107,7 @@ namespace RageEngine
                 case Comp.Titan: return xTitan; case Comp.Phantom: return xPhantom; case Comp.Phoenix: return xPhoenix;
                 case Comp.Ravager: return xRavager; case Comp.Overmind: return xOvermind; case Comp.Colossus: return xColossus;
             }
-            return false;
+            return c > Comp.Colossus && c < Comp.Count;                                     // 0.43 serums and super serums
         }
 
         // ---------------------------------------------------------------- per-NPC effects
@@ -105,7 +124,7 @@ namespace RageEngine
             // incompatible pairs: stimulants cancel sleep, sleep cancels surge
             if (comp == Comp.AdrenalSurge || comp == Comp.AdrenalOverload) s.bioFx.RemoveAll(f => f.comp == Comp.CryoSleep);
             if (comp == Comp.CryoSleep) s.bioFx.RemoveAll(f => f.comp == Comp.AdrenalSurge);
-            float baseDur = serum ? 600f : comp == Comp.CryoSleep ? 50f : comp == Comp.AdrenalSurge ? 45f : 75f;
+            float baseDur = serum ? 600f : comp == Comp.CryoSleep ? 50f : comp == Comp.AdrenalSurge ? 45f : comp == Comp.DeepSleep ? 600f : comp == Comp.Painless ? 45f : comp == Comp.Bloodhound || comp == Comp.Rot ? 90f : 75f;
             var fx = new BioFx { comp = comp, start = Time.time, dur = baseDur * bioDuration * Mathf.Lerp(0.6f, 1f, dose), inten = bioIntensity * dose * (serum ? xStrength : 1f), dose = dose };
             if (comp == Comp.HeroX) fx.outcome = RollSyndrome();
             s.bioFx.Add(fx);
@@ -128,7 +147,7 @@ namespace RageEngine
         {
             var c = s.creature;
             if (s.bioFx.Count == 0 && !s.bioActive) return;
-            if (c.isKilled) { ClearBio(s); return; }
+            if (c.isKilled) { Guard("hive.panic", () => HivemindDied43(s)); ClearBio(s); return; }
             float dt = s.bioLastTick > 0f ? Mathf.Min(0.5f, now - s.bioLastTick) : 0.1f;
             s.bioLastTick = now;
 
@@ -189,6 +208,7 @@ namespace RageEngine
                         speed *= 0.5f;
                         break;
                     default:
+                        if (!IsSerum(f.comp)) { Serum43(s, f, t, k, dt, ramp, ref tough, ref pain, ref balance, ref speed, ref dmgTaken, ref react, ref painCap, ref strength, ref flinch, ref noQuit, ref angry); break; }
                         xs = f.comp;
                         SerumTick(s, f, t, k, dt, ref tough, ref pain, ref balance, ref speed, ref dmgTaken, ref react, ref painCap, ref regen, ref height, ref strength, ref flinch, ref noQuit, ref angry);
                         break;
@@ -297,6 +317,10 @@ namespace RageEngine
                             if (o == s || !o.active || o.creature == null || o.creature.isKilled) continue;
                             if ((o.creature.transform.position - c.transform.position).sqrMagnitude < 64f) o.bioAllyBoostUntil = now + 2f;
                         }
+                    break;
+                case Comp.Juggernaut: case Comp.BerserkerKing: case Comp.Wraith: case Comp.Hivemind: case Comp.BoneLord: case Comp.Magnet:
+                case Comp.Lazarus: case Comp.GravityWell: case Comp.Mirror: case Comp.Vampire: case Comp.Shockwave:
+                    Super43(s, f, t, k, dt, ref tough, ref pain, ref balance, ref speed, ref dmgTaken, ref react, ref painCap, ref regen, ref strength, ref flinch, ref noQuit, ref angry);
                     break;
                 case Comp.Colossus:
                     dmgTaken *= 1f - 0.6f * Mathf.Min(1f, k); flinch *= 0.1f; strength *= 1f + 0.5f * k; tough *= 1f + 1.5f * k; speed *= 0.8f; height = Mathf.Max(height, 1.12f); balance *= 3f; noQuit = true;
@@ -521,7 +545,7 @@ namespace RageEngine
         {
             if (!bioEnabled || xSpawnChance <= 0f || Random.value > xSpawnChance) return;
             var pool9 = new List<Comp>();
-            for (var x = Comp.NightSoldier; x < Comp.Count; x++) if (CompAllowed(x)) pool9.Add(x);
+            for (var x = Comp.NightSoldier; x < Comp.Count; x++) if (IsSerum(x) && CompAllowed(x)) pool9.Add(x);
             if (pool9.Count == 0) return;
             ApplyCompound(s, pool9[Random.Range(0, pool9.Count)], 1f, s.creature.transform.position);
         }

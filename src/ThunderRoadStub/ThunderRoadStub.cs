@@ -335,6 +335,7 @@ namespace ThunderRoad
     {
         public Mana mana;
         public void Despawn(float delay) { }
+        public void Teleport(Vector3 position, Quaternion rotation) { }
         public bool HasSkill(string id) => false;
         public bool HasSkill(SkillData skill) => false;
         public enum PushType { Magic = 0, Grab = 1, Hit = 2, Parry = 3 }

@@ -411,6 +411,7 @@ namespace RageEngine
             if (On("salts")) try { TickSalts(s, tn); } catch (System.Exception e) { Fail42("salts", e); }
             if (On("tick28")) try { Tick28(s, tn); } catch (System.Exception e) { Fail42("tick28", e); }
             if (On("tick42")) try { Tick42(s, tn); } catch (System.Exception e) { Fail42("tick42", e); }
+            if (On("tick43")) try { Tick43(s, tn); } catch (System.Exception e) { Fail42("tick43", e); }
             if (On("knockout")) try { TickKnockout(s, tn); } catch (System.Exception e) { Fail42("knockout", e); }
             if (On("pullout")) try { TickPullOut(s, tn); } catch (System.Exception e) { Fail42("pullout", e); }
             if (On("invite")) try { MaybeInviteFistfight(s, tn); } catch (System.Exception e) { Fail42("invite", e); }

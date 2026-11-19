@@ -14,7 +14,7 @@ namespace RageEngine
 {
     [Serializable] internal sealed class NpcRecord
     {
-        public string id, name, friends = ""; public bool female; public int scars, brokenLegs, ppZones; public string serum = ""; public int personality, adren, encounters, escapes; public bool defeated; public long lastSeen;
+        public string id, name, friends = ""; public bool female; public int scars, brokenLegs, ppZones; public string serum = ""; public int personality, adren, encounters, escapes; public bool defeated; public long lastSeen; public int prof;   // 0.43: weapon proficiency 1-100 (0 = not rolled yet)
     }
     [Serializable] internal sealed class Roster { public List<NpcRecord> npcs = new List<NpcRecord>(); }
 

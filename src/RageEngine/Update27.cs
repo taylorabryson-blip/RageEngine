@@ -119,6 +119,7 @@ namespace RageEngine
             if (s == null || s.finalKill) return false;
             var head = victim.ragdoll != null ? victim.ragdoll.headPart : null;
             if (head != null && head.isSliced) return false;
+            if (Lazarus43(s)) return true;                                                           // 0.43
             var part = hit != null ? hit.damageStruct.hitRagdollPart : null;
             bool headHit = part != null && Has(part.type, RagdollPart.Type.Head);
             if (Tank(s))

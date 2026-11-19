@@ -74,8 +74,8 @@ namespace RageEngine
         static int RandomSuperSerum()
         {
             var pool = new List<int>();
-            for (var x = Comp.NightSoldier; x < Comp.Count; x++) if (CompAllowed(x)) pool.Add((int)x);
-            if (pool.Count == 0) for (var x = Comp.NightSoldier; x < Comp.Count; x++) pool.Add((int)x);
+            for (var x = Comp.NightSoldier; x < Comp.Count; x++) if (IsSerum(x) && CompAllowed(x)) pool.Add((int)x);
+            if (pool.Count == 0) for (var x = Comp.NightSoldier; x < Comp.Count; x++) if (IsSerum(x)) pool.Add((int)x);
             return pool[Random.Range(0, pool.Count)];
         }
 

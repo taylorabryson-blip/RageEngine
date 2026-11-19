@@ -27,8 +27,8 @@ namespace RageEngine
 
         static int KindFor(int comp)
         {
-            if (comp < (int)Comp.NightSoldier) return 0;
-            int x = comp - (int)Comp.NightSoldier;
+            if (!IsSerum((Comp)comp)) return 0;
+            int x = comp >= (int)Comp.Juggernaut ? comp - (int)Comp.Juggernaut + 9 : comp - (int)Comp.NightSoldier;
             return x % 3 == 0 ? 1 : x % 3 == 1 ? 2 : 3;
         }
 

@@ -32,6 +32,24 @@ namespace RageEngine
             { 0f, 0.2f, 1.2f, 1.8f, 0f },    // Ravager
             { 1f, 0.3f, 1.15f, 1.2f, 0f },   // Overmind
             { 0f, 0.75f, 0.85f, 2.5f, 0f },  // Colossus
+            { 0f, 0.35f, 1f, 1f, 0f },       // Iron Skin
+            { 0f, 0f, 1.1f, 1f, 0f },        // Bloodhound
+            { 0f, 0.3f, 1.05f, 1.1f, 0f },   // Painless
+            { 0f, 0f, 1f, 1.2f, 0f },        // Static Charge
+            { 0f, 0f, 1.35f, 0.9f, 0f },     // Featherweight
+            { 0f, 0f, 0.9f, 0.9f, 1f },      // Rot
+            { 0f, 0f, 0.4f, 0.8f, 0f },      // Deep Sleep
+            { 0f, 0.6f, 0.95f, 1.9f, 0f },   // Juggernaut
+            { 0f, 0.2f, 1.25f, 2f, 0f },     // Berserker King
+            { 0f, 0f, 1.6f, 1.1f, 0f },      // Wraith
+            { 1f, 0.2f, 1.1f, 1.2f, 0f },    // Hivemind
+            { 4f, 0.3f, 1f, 1.3f, 0f },      // Bone Lord
+            { 0f, 0.1f, 1.1f, 1.4f, 0f },    // Magnet
+            { 2f, 0.3f, 1f, 1.2f, 0f },      // Lazarus
+            { 0f, 0.3f, 1f, 1.3f, 0f },      // Gravity Well
+            { 0f, 0.4f, 1f, 1.2f, 0f },      // Mirror
+            { 3f, 0.2f, 1.15f, 1.3f, 0f },   // Vampire
+            { 0f, 0.3f, 1f, 1.6f, 0f },      // Shockwave
         };
 
         static readonly object SelfHandler = new object();
@@ -180,7 +198,7 @@ namespace RageEngine
             else return;
             float k = Mathf.Clamp01(dose);
             selfRegen = regen * k; selfResist = resist * k; selfSpeed = Mathf.Lerp(1f, speed, k); selfPower = Mathf.Lerp(1f, power, k); selfDot = dot * k;
-            selfComp = comp; selfColor = col; selfRebirth = comp == (int)Comp.Phoenix;
+            selfComp = comp; selfColor = col; selfRebirth = comp == (int)Comp.Phoenix || comp == (int)Comp.Lazarus;
             selfUntil = Time.time + 75f * Mathf.Max(0.3f, k);
             selfLastHp = pc.currentHealth; selfNextTick = Time.time + 0.5f;
             var pl = Player.local;
