@@ -154,7 +154,7 @@ namespace RageEngine
             var cols = root.GetComponentsInChildren<Collider>(true);
             if (cols.Length == 0) return 0;
             Bounds b = cols[0].bounds; foreach (var c in cols) if (c != null && !c.isTrigger) b.Encapsulate(c.bounds);
-            int max = perfMode == "p" ? 12 : perfMode == "q" ? 40 : 26, added = 0;
+            int max = perfMode == "p" ? 10 : perfMode == "q" ? 36 : 20, added = 0;
             float step = 7f, top = b.max.y + 1f;
             var hits = new RaycastHit[12];
             for (float x = b.min.x + step * 0.5f; x < b.max.x && added < max; x += step)
@@ -177,6 +177,7 @@ namespace RageEngine
                         var lt = go.AddComponent<Light>(); lt.type = LightType.Point; lt.shadows = LightShadows.None;
                         lt.color = new Color(1f, 0.93f, 0.82f); lt.range = 8.5f; lt.intensity = 0.75f; lt.renderMode = LightRenderMode.Auto;
                         have.Add(at); added++;
+                        FillFixture44(root, at);
                     }
                 }
             return added;

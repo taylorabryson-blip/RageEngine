@@ -60,7 +60,7 @@ namespace RageEngine
             try
             {
                 string p = System.IO.Path.Combine(RageEngineScript.modFolder ?? "", "Textures", file);
-                if (System.IO.File.Exists(p)) { t = new Texture2D(2, 2); t.LoadImage(System.IO.File.ReadAllBytes(p)); }
+                if (System.IO.File.Exists(p)) { t = new Texture2D(2, 2); t.LoadImage(System.IO.File.ReadAllBytes(p)); t.anisoLevel = 4; t.filterMode = FilterMode.Trilinear; t.wrapMode = TextureWrapMode.Repeat; }
             }
             catch { }
             return meshTex[file] = t;
@@ -288,7 +288,7 @@ namespace RageEngine
         static Material skullMat, brainMat, toothMat;
         static Material SkullMat() => skullMat != null ? skullMat : skullMat = Mats.MakeTextured(GoreTex.MeshTex("RE_Skull.png") ?? TexGen.Bone(), null, Color.white, 0.35f, false);
         static Material BrainMat() => brainMat != null ? brainMat : brainMat = Mats.MakeTextured(GoreTex.MeshTex("RE_Brain.png"), null, Color.white, 0.75f, false);
-        static Material ToothMat() => toothMat != null ? toothMat : toothMat = Mats.Make(new Color(0.93f, 0.9f, 0.8f), 0.5f);
+        static Material ToothMat() { if (toothMat != null) return toothMat; var tx = GoreTex.MeshTex("RE_Tooth.png"); return toothMat = tx != null ? Mats.MakeTextured(tx, null, Color.white, 0.6f, false) : Mats.Make(new Color(0.93f, 0.9f, 0.8f), 0.5f); }
 
         static readonly List<GameObject> goreModels = new List<GameObject>();
 
@@ -300,7 +300,7 @@ namespace RageEngine
             for (int i = 0; i < count; i++)
             {
                 if (!faceCave && (prefix.StartsWith("RE_Skull") || prefix.StartsWith("RE_Brain") || prefix.StartsWith("RE_Jaw"))) return;      // 0.42: teeth and eyes always
-                Mesh m = BoneModels.Get(prefix) ?? BoneModels.Get(prefix + "_" + Random.Range(1, 7)) ?? BoneModels.Get(prefix + "_1");
+                Mesh m = BoneModels.Get(prefix) ?? BoneModels.Get(prefix + "_" + Random.Range(1, 7)) ?? BoneModels.Get(prefix + "_" + Random.Range(1, 5)) ?? BoneModels.Get(prefix + "_" + Random.Range(1, 3)) ?? BoneModels.Get(prefix + "_1");
                 if (m == null) return;
                 while (goreModels.Count > 0 && (goreModels.Count >= PerfGorePieces || goreModels[0] == null)) { if (goreModels[0] != null) Object.Destroy(goreModels[0]); goreModels.RemoveAt(0); }
                 var go = new GameObject("RageEngine_GorePiece");

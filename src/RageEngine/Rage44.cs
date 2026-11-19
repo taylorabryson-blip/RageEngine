@@ -187,3 +187,117 @@ namespace RageEngine
         }
     }
 }
+
+namespace RageEngine
+{
+    /// Intestines out of a belly wound: a chain of segments hanging from the wound (verlet), swinging as he moves;
+    /// it tears loose after a while and drops.
+    public sealed class GutChain44 : MonoBehaviour
+    {
+        public Transform anchor; public Vector3 local; public Transform[] segs; public float seg = 0.075f, tearAt;
+        Vector3[] p, q; bool loose;
+        void Start()
+        {
+            p = new Vector3[segs.Length + 1]; q = new Vector3[p.Length];
+            Vector3 a = anchor != null ? anchor.TransformPoint(local) : transform.position;
+            for (int i = 0; i < p.Length; i++) { p[i] = q[i] = a + Vector3.down * seg * i * 0.5f + Random.insideUnitSphere * 0.01f; }
+        }
+        void Update()
+        {
+            if (p == null) return;
+            float dt = Mathf.Min(Time.deltaTime, 0.033f);
+            if (!loose && (anchor == null || !anchor.gameObject.activeInHierarchy || Time.time >= tearAt)) { loose = true; RageEngineScript.Guard("guts.tear", () => Sfx.PlayAt("NRE_Squelch", p[0], 0.6f)); }
+            if (!loose) p[0] = anchor.TransformPoint(local);
+            for (int i = loose ? 0 : 1; i < p.Length; i++)
+            {
+                Vector3 v = (p[i] - q[i]) * 0.97f; q[i] = p[i]; p[i] += v + Physics.gravity * dt * dt;
+                if (Physics.Raycast(q[i] + Vector3.up * 0.05f, Vector3.down, out var h, 0.1f + v.magnitude, ~0, QueryTriggerInteraction.Ignore) && h.collider.GetComponentInParent<Creature>() == null && p[i].y < h.point.y + 0.012f) { p[i].y = h.point.y + 0.012f; q[i] = Vector3.Lerp(q[i], p[i], 0.6f); }   // rests on the floor
+            }
+            for (int k = 0; k < 4; k++)
+                for (int i = 0; i < p.Length - 1; i++)
+                {
+                    Vector3 d = p[i + 1] - p[i]; float m = d.magnitude; if (m < 1e-5f) continue;
+                    Vector3 corr = d * (1f - seg / m) * 0.5f;
+                    if (i == 0 && !loose) p[i + 1] -= corr * 2f; else { p[i] += corr; p[i + 1] -= corr; }
+                }
+            for (int i = 0; i < segs.Length; i++)
+            {
+                if (segs[i] == null) continue;
+                Vector3 a = p[i], b = p[i + 1];
+                segs[i].position = (a + b) * 0.5f;
+                if ((b - a).sqrMagnitude > 1e-6f) segs[i].rotation = Quaternion.FromToRotation(Vector3.up, b - a);
+            }
+        }
+    }
+
+    public sealed partial class RageEngineScript
+    {
+        static Material organMat44(string key)
+        {
+            if (organMats44.TryGetValue(key, out var m) && m != null) return m;
+            var tx = GoreTex.MeshTex(key + ".png");
+            return organMats44[key] = tx != null ? Mats.MakeTextured(tx, null, Color.white, 0.85f, false) : Mats.Make(new Color(0.6f, 0.12f, 0.14f), 0.85f);
+        }
+        static readonly Dictionary<string, Material> organMats44 = new Dictionary<string, Material>();
+        static readonly List<GameObject> guts44 = new List<GameObject>();
+
+        /// A punch (or any blow) to the throat: a hand goes to the neck, he coughs and gags; a hard one takes both hands.
+        void NeckGrab44(NpcState s, RagdollPart part, CollisionInstance hit, float severity)
+        {
+            var c = s.creature;
+            if (hit.damageStruct.damageType != DamageType.Blunt || severity < 0.3f || c.isKilled || s.knockedOut || Time.time < s.nextNeckGrab44) return;
+            s.nextNeckGrab44 = Time.time + 2.5f;
+            StartClutch(s, part, hit.contactPoint, null, false, false);
+            if (s.clutching) s.clutchUntil = Time.time + Random.Range(2f, 3.5f) + severity;
+            if (severity >= 0.9f) { Guard("second", () => SecondHand(s)); SetMelee(s, false, Time.time + 2f); }
+            Speak(s, "choke");
+            s.daze = Mathf.Max(s.daze, 0.3f * severity);
+            Log($"{WhoIs(s)}: hit in the throat - grabs his neck");
+        }
+
+        /// A deep cut low across the belly: his guts come out and hang from the wound.
+        void GutSpill44(NpcState s, RagdollPart part, CollisionInstance hit, float severity)
+        {
+            var c = s.creature;
+            if (s.gutsOut44 || severity < 0.9f || projectileHit34) return;
+            var chest = ChestPart(c) ?? part;
+            Vector3 p = hit.contactPoint;
+            if (Vector3.Dot(p - chest.transform.position, c.transform.up) > 0.02f) return;                 // only low on the belly
+            if (Random.value > 0.35f + 0.25f * (severity - 0.9f)) return;
+            s.gutsOut44 = true;
+            int n = perfMode == "p" ? 6 : 10;
+            while (guts44.Count > 0 && (guts44.Count >= 3 || guts44[0] == null)) { if (guts44[0] != null) Object.Destroy(guts44[0]); guts44.RemoveAt(0); }
+            var root = new GameObject("RageEngine_Guts");
+            var mesh = BoneModels.Get("RE_Organ_Gut"); var mat = organMat44("RE_Organ_Gut");
+            var segs = new Transform[n];
+            for (int i = 0; i < n; i++)
+            {
+                var g = new GameObject("Seg"); g.transform.SetParent(root.transform, false);
+                if (mesh != null) { g.AddComponent<MeshFilter>().sharedMesh = mesh; var r = g.AddComponent<MeshRenderer>(); r.sharedMaterial = mat; r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; }
+                g.transform.localScale = Vector3.one * Random.Range(0.85f, 1.05f);
+                segs[i] = g.transform;
+            }
+            var ch = root.AddComponent<GutChain44>();
+            ch.anchor = part.transform; ch.local = part.transform.InverseTransformPoint(p); ch.segs = segs; ch.seg = 0.075f; ch.tearAt = Time.time + Random.Range(20f, 40f);
+            guts44.Add(root); Object.Destroy(root, 90f);
+            Stamp(c, p, 0.08f, "torn_flesh", 1f);
+            Sfx.Play("NRE_GoreTear", part.transform, 1f); Sfx.Play("NRE_Squelch", part.transform, 0.9f);
+            for (int i = 0; i < 3; i++) Guard("blood", () => RageEngineScript.Blood(part.transform));
+            s.bleedRate += 0.6f * bleedingRate; s.pain = 1f;
+            StartClutch(s, part, p, null, false, true); if (s.clutching) s.clutchUntil = Time.time + 5f;
+            Scream(s, true);
+            if (severity >= 1.5f) SpawnGoreModels(p, c.transform.forward + Vector3.down * 0.3f, Random.value < 0.5f ? "RE_Organ_Liver" : "RE_Organ_Kidney", 1, organMat44(Random.value < 0.5f ? "RE_Organ_Liver" : "RE_Organ_Kidney"), 0.4f, c);
+            Log($"{WhoIs(s)}: GUTTED - his insides come out");
+        }
+
+        /// Fill lights get a lamp you can see (a fitting on the ceiling above them, lit by its own light).
+        static void FillFixture44(Transform root, Vector3 at)
+        {
+            if (!Physics.Raycast(at, Vector3.up, out var up, 3f, ~0, QueryTriggerInteraction.Ignore)) return;
+            var go = new GameObject("FillLamp"); go.transform.SetParent(root, true);
+            go.transform.position = up.point - Vector3.up * 0.03f; go.transform.localScale = new Vector3(0.5f, 0.05f, 0.5f);
+            go.AddComponent<MeshFilter>().sharedMesh = Cube26();
+            var r = go.AddComponent<MeshRenderer>(); r.sharedMaterial = MapMat26("light_panel", 0); r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        }
+    }
+}

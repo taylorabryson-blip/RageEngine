@@ -41,9 +41,9 @@ namespace RageEngine
                     Log($"{WhoIs(s)}: NOSE BROKEN");
                 }
                 // ---- teeth
-                if (s.teethLost < 12 && severity >= 0.85f && Vector3.Distance(p, mouth) < 0.085f)
+                if (s.teethLost < 14 && severity >= 0.65f && Vector3.Distance(p, mouth) < 0.1f)      // 0.44: easier to knock out
                 {
-                    int n = Random.Range(1, severity >= 1.4f ? 5 : 3);
+                    int n = Random.Range(1, severity >= 1.3f ? 5 : 3) + (severity >= 1.8f ? 1 : 0);
                     s.teethLost += n;
                     Sfx.PlayAt("NRE_Teeth", mouth, 0.7f);
                     Stamp(c, mouth, 0.03f, "blood_drip", 0.85f);
