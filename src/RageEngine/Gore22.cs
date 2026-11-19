@@ -408,7 +408,7 @@ namespace RageEngine
             var d = s.creature.brain?.instance?.GetModule<BrainModuleDefense>(false);
             if (d == null) return;
             float arms = Mathf.Max(Dead(s, Side.Left) ? 0f : ArmStrength(s, Side.Left), Dead(s, Side.Right) ? 0f : ArmStrength(s, Side.Right));
-            float fit = Mathf.Clamp(s.bioReact * (now < s.bioAllyBoostUntil ? 1.3f : 1f) * arms * (1f - 0.5f * Mathf.Clamp01(s.drunk)) * (1f - 0.35f * Mathf.Clamp01(s.pain * painIntensity)) * (s.ppCritical ? 0.4f : 1f), 0.15f, 1.8f);
+            float fit = Mathf.Clamp(s.bioReact * (now < s.bioAllyBoostUntil ? 1.3f : 1f) * arms * (1f - 0.5f * Mathf.Clamp01(s.drunk)) * (1f - 0.35f * Mathf.Clamp01(s.pain * painIntensity)) * (s.ppCritical ? 0.4f : 1f) * WearDefense44(s), 0.15f, 1.8f);
             ApplyDefense(s, d, fit);
         }
 

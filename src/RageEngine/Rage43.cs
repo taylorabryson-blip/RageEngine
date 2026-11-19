@@ -453,6 +453,7 @@ namespace RageEngine
                 }
             }
             if (!s.deepSleep43 && s.hound43 && !HasFx(s, Comp.Bloodhound)) { s.hound43 = false; Guard("hound.off", () => c.detectionFOVModifier.Remove(Hound43)); }
+            Guard("wear", () => Wear44(s, now));
             Guard("prof", () => ProfTick43(s));
             Guard("desp", () => Desperation43(s, now));
         }
@@ -475,7 +476,9 @@ namespace RageEngine
             s.prof43 = p;
             s.defSkill = Mathf.Clamp01(Mathf.Lerp(0.2f, 0.95f, p) + Random.Range(-0.05f, 0.05f));             // 0.43: parrying is skill, not personality
             s.profMelee43 = null; s.profHit43 = null;
-            Log($"{WhoIs(s)}: {ProfName(p)} with weapons ({p:0.00}), {s.personality.type}");
+            var pt = s.personality.type;
+            s.will44 = Random.value < 0.2f + (s.brave ? 0.15f : 0f) + (pt == PersonalityType.Aggressive || pt == PersonalityType.Confident ? 0.1f : 0f) + 0.15f * p;
+            Log($"{WhoIs(s)}: {(s.will44 ? "strong-willed, " : "")}{ProfName(p)} with weapons ({p:0.00}), {s.personality.type}");
         }
 
         /// Patches the game's melee tempo and hit recovery for his proficiency (re-applied if the brain is reloaded).
@@ -485,11 +488,11 @@ namespace RageEngine
             var inst = s.creature.brain != null ? s.creature.brain.instance : null;
             if (inst == null) return;
             var m = inst.GetModule<BrainModuleMelee>(false);
-            if (m != null && m != s.profMelee43)
+            if (m != null && m != s.profMelee43) { s.profMelee43 = m; s.profAnim43 = m.animationSpeedMultiplier; s.profDelay43 = m.nextAttackDelay; }
+            if (m != null)
             {
-                s.profMelee43 = m; s.profAnim43 = m.animationSpeedMultiplier; s.profDelay43 = m.nextAttackDelay;
-                m.animationSpeedMultiplier = s.profAnim43 * Mathf.Lerp(0.93f, 1.08f, s.prof43);                 // within the game's own animations
-                m.nextAttackDelay = s.profDelay43 * Mathf.Lerp(1.35f, 0.8f, s.prof43);
+                m.animationSpeedMultiplier = s.profAnim43 * Mathf.Lerp(0.93f, 1.08f, s.prof43) * WearAnim44(s);      // within the game's own animations; slower as he's hurt
+                m.nextAttackDelay = s.profDelay43 * Mathf.Lerp(1.35f, 0.8f, s.prof43) * WearDelay44(s);
             }
             var h = inst.GetModule<BrainModuleHitReaction>(false);
             if (h != null && h != s.profHit43)
@@ -504,6 +507,10 @@ namespace RageEngine
             if (s.profMelee43 != null) { s.profMelee43.animationSpeedMultiplier = s.profAnim43; s.profMelee43.nextAttackDelay = s.profDelay43; }
             if (s.profHit43 != null) s.profHit43.recoverySpeed = s.profRec43;
             s.profMelee43 = null; s.profHit43 = null; s.prof43 = 0f;
+            VomitHoldOff44(s);
+            var c = s.creature;
+            if (c != null && s.wearOn44) Guard("wear.off", () => c.locomotion.globalMoveSpeedMultiplier.Remove(WearHandler));
+            s.wearOn44 = false;
         }
 
         // ================================================================== desperation response

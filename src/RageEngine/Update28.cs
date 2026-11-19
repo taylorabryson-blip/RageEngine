@@ -141,7 +141,7 @@ namespace RageEngine
             s.daze = Mathf.Max(s.daze, 0.7f);
             var m0 = Mouth(c); if (m0 != null) Sfx.PlayAt("NRE_Retch", m0.position, 1f);
             s.vomitUntil = Time.time + 2.8f; s.nextVomitSpurt = Time.time + 0.6f;               // 0.41: retch first, then it comes up
-            Guard("vomit.stagger", () => Stagger(s, -c.transform.forward, BrainModuleHitReaction.PushBehaviour.Effect.StaggerMedium, RagdollPart.Type.Torso));
+            VomitHoldOn44(s);                                                                   // 0.44: he stops and bends over
             Log($"{WhoIs(s)}: gut shots - he throws up");
         }
 
@@ -158,12 +158,14 @@ namespace RageEngine
                 if (mouth != null)
                 {
                     bool first = s.nextVomitSpurt - now > 0f && s.vomitUntil - now > 1.9f;
-                    Guard("vomit", () => Spurt41(mouth.position, (c.transform.forward + Vector3.down * 0.55f).normalized, c, first));
+                    Guard("vomit.lean", () => VomitLean44(s, now));
+                    Vector3 fw = c.centerEyes != null ? c.centerEyes.forward : c.transform.forward;
+                    Vector3 vdir = (Vector3.ProjectOnPlane(fw, Vector3.up).normalized * 0.6f + Vector3.down).normalized;     // down toward the floor
+                    Guard("vomit", () => Spurt41(mouth.position, vdir, c, first));
                     if (first) Sfx.PlayAt("NRE_Vomit", mouth.position, 1f);
-                    var chest = ChestPart(c);
-                    if (chest != null && chest.physicBody != null && c.ragdoll.state == Ragdoll.State.Standing) chest.physicBody.AddForce((c.transform.forward * 0.8f + Vector3.down * 0.6f), ForceMode.VelocityChange);
                 }
             }
+            if (now >= s.vomitUntil && s.vomitHold44) VomitHoldOff44(s);
             // ---- choking on his own blood: airway full while he's flat out
             bool flat = c.ragdoll.state != Ragdoll.State.Standing;
             if (s.bloodInAirway && flat && (s.knockedOut || s.cantStand || s.paralysed || s.throatCutUntil > now))

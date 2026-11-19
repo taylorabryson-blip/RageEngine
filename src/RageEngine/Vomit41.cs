@@ -30,14 +30,12 @@ namespace RageEngine
                 float sz = Random.Range(0.012f, 0.03f);
                 go.transform.localScale = new Vector3(sz, sz * Random.Range(0.6f, 1f), sz);
                 go.AddComponent<MeshFilter>().sharedMesh = Blob41();
-                go.AddComponent<MeshRenderer>().sharedMaterial = (i % 3 == 0) ? mat2 : mat;
-                var col = go.AddComponent<SphereCollider>(); col.radius = 0.5f;
-                var rb = go.AddComponent<Rigidbody>(); rb.mass = 0.02f; rb.drag = 0.4f;
-                rb.velocity = (dir + Random.insideUnitSphere * 0.25f).normalized * Random.Range(2.0f, 3.6f);
-                Object.Destroy(go, Random.Range(2.5f, 4f));
+                var mr = go.AddComponent<MeshRenderer>(); mr.sharedMaterial = (i % 3 == 0) ? mat2 : mat; mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                var vb = go.AddComponent<VomitBlob44>();                                     // 0.44: lands on the floor, never on his body
+                vb.vel = (dir + Random.insideUnitSphere * 0.25f).normalized * Random.Range(1.4f, 2.8f);
             }
-            if (Physics.Raycast(mouth + dir * 0.3f, Vector3.down, out var hit, 3f, ~0, QueryTriggerInteraction.Ignore))
-                Puddle41(hit.point + dir * Random.Range(0.3f, 0.6f), hit.normal, first);
+            if (FloorBelow44(mouth + dir * 0.35f, out var hit))
+                Puddle41(hit.point + Vector3.ProjectOnPlane(dir, Vector3.up).normalized * Random.Range(0.15f, 0.4f), hit.normal, first);
         }
 
         static void Puddle41(Vector3 at, Vector3 normal, bool fresh)

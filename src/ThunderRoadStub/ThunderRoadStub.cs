@@ -430,13 +430,15 @@ namespace ThunderRoad
         public int currentValueIndex { get; }
         public void Apply(int index) { }
         public void RefreshUI() { }
+        public ModOptionParameter[] parameterValues;
+        public object GetValue(int index) => null;
     }
     public class ModOptionCategory : ModOptionAttribute { public ModOptionCategory(string category, int categoryOrder) { } }
     public class ModOptionOrder : ModOptionAttribute { public ModOptionOrder(int order) { } }
     public class ModOptionUI : ModOptionAttribute { protected ModOptionUI() { } public ModOptionUI(ModOption.InteractionType interactionType) { } }
     public class ModOptionSlider : ModOptionUI { public ModOptionSlider() { } }
     public class ModOptionButton : ModOptionUI { public ModOptionButton() { } }
-    public abstract class ModOptionParameter { }
+    public abstract class ModOptionParameter { public string title; public object value; }
     public class ModOptionString : ModOptionParameter { public ModOptionString(string title, string titleLocalizationId, string value) { } }
     public class ModOptionFloatValues : ModOptionAttribute { public ModOptionFloatValues(float startRange, float endRange, float step) { } }
 }

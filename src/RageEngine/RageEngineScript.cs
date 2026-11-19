@@ -10,7 +10,7 @@ namespace RageEngine
 {
     public sealed partial class RageEngineScript : ThunderScript
     {
-        public const string Version = "0.43";
+        public const string Version = "0.44";
         const int MaxTracked = 20;
         const float ScanInterval = 0.5f;
         const float TickInterval = 0.05f;
@@ -116,6 +116,7 @@ namespace RageEngine
             // 0.14 musculature, agony, eyes
             public float[] muscles = new float[2 * (int)Mu.Count]; public bool musclesDirty, gripBlockL, gripBlockR, eyesWereShut;
             public float holdFatigueL, holdFatigueR, agonyUntil, eyesShutUntil; public int blindEyes;
+            public bool will44, wearOn44, vomitHold44; public float wear44, wearSpeed44 = 1f, nextWear44;   // 0.44
             public bool hound43, deepSleep43; public float next43, rage43, burnout43, rageMaxAt43, magnetNext43, prof43, profAnim43, profDelay43, profRec43, despUntil43, despNext43; public int despPose43; public Item magnetItem43; public BrainModuleMelee profMelee43; public BrainModuleHitReaction profHit43; public Transform despL43, despR43;   // 0.43
             public int beatHits42; public float beatAt42, nextJawHold42, nextBlindSwing42; public bool blind42; public WaveSpawner wave42;   // 0.42
             // 0.15 hit director
@@ -367,6 +368,7 @@ namespace RageEngine
         {
             Guard("gouged", () => RestoreGouged(s));
             s.stealthKilled = s.punchedThrough = s.neckSnapped = s.paralysed = s.ally = s.castPrevL = s.castPrevR = s.neckGrabL = s.neckGrabR = s.spineShrugged = s.regenClean = s.crawlFlip = s.passedOut = s.knifeOut = s.knifePending = false; s.hasKnife = UnityEngine.Random.value < 0.4f; s.occiput = s.gutShots = s.nextVomit = s.vomitUntil = s.nextVomitSpurt = s.chokeBloodSince = s.nextChokeCough = s.convulseUntil = s.nextConvulse = s.hpOverride = 0f; s.hpT = 1f; s.eyeDmg[0] = s.eyeDmg[1] = 0f; s.headSaves = 0; s.saltsT = 0f; ClearKnots(s); s.ribsL = s.ribsR = s.bodyShots = s.faceStage = s.fingersOut = s.ribsOut = 0; s.faceDepth = s.nextShrugLog = s.groundSince = s.nextGroundAct = s.groundSwingUntil = s.faceDmg = s.nextFaceCave = 0f; s.comboPlan = s.comboLast = null; s.nextSpineShrug = 0f; s.neckGrabAt = s.neckSnapUsedAt = s.injectFlashUntil = s.nextRegenStep = s.regenGlowUntil = 0f; s.eyeTintKey = -1f; if (s.fxMark != null) UnityEngine.Object.Destroy(s.fxMark); s.fxMark = null; s.mouthT = s.nextIntegrityTrip = 0f; s.integrity = 100f; System.Array.Clear(s.blackEye, 0, s.blackEye.Length);
+            s.will44 = s.wearOn44 = s.vomitHold44 = false; s.wear44 = 0f; s.wearSpeed44 = 1f; s.nextWear44 = 0f;
             s.hound43 = s.deepSleep43 = false; s.next43 = s.rage43 = s.burnout43 = s.rageMaxAt43 = s.magnetNext43 = s.despUntil43 = s.despNext43 = 0f; s.despPose43 = 0; s.magnetItem43 = null;
             if (s.despL43 != null) UnityEngine.Object.Destroy(s.despL43.gameObject); if (s.despR43 != null) UnityEngine.Object.Destroy(s.despR43.gameObject); s.despL43 = s.despR43 = null;
             s.beatHits42 = 0; s.beatAt42 = s.nextJawHold42 = s.nextBlindSwing42 = 0f; s.blind42 = false; s.wave42 = null;

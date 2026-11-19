@@ -98,25 +98,51 @@ namespace RageEngine
         }
 
         static float customHp29 = -1f, customStay29, customPunch29;
-        /// 0.41: presets hold while picked; Custom gives you back your own sliders.
+        static float presetHp29, presetStay29, presetPunch29; static bool presetSet29;
+        static void Preset29(string st, out float hp, out float stay, out float punch)
+        {
+            switch (st)
+            {
+                case "brute": hp = 900f; stay = 2.5f; punch = 0.25f; break;
+                case "light": hp = 100f; stay = 0.5f; punch = 1f; break;
+                default: hp = 300f; stay = 1f; punch = 0.5f; break;
+            }
+        }
+        /// 0.44: presets hold while picked, the menu sliders show them, and NPCs already out there change too.
+        /// Move one of the three sliders yourself and the style switches to Custom (keeping what you set).
         static void ApplyStyle29()
         {
+            bool changed = styleSeen29 != null && styleSeen29 != style;
+            if (style != "custom" && presetSet29 && !changed && styleSeen29 == style && settingsApplied && Time.unscaledTime > settingsReadyAt + 4f
+                && (Mathf.Abs(npcHealth - presetHp29) > 1f || Mathf.Abs(stayOnFeet - presetStay29) > 0.01f || Mathf.Abs(punchDamage - presetPunch29) > 0.01f))
+            {
+                style = "custom"; changed = true;                                                   // you moved a slider: that's Custom
+                customHp29 = npcHealth; customStay29 = stayOnFeet; customPunch29 = punchDamage;
+                Guard("style.ui", () => SetOptionUi44("Style", "custom"));
+            }
             if (style == "custom")
             {
-                if (styleSeen29 != null && styleSeen29 != "custom" && customHp29 >= 0f) { npcHealth = customHp29; stayOnFeet = customStay29; punchDamage = customPunch29; }
+                if (changed && customHp29 >= 0f) { npcHealth = customHp29; stayOnFeet = customStay29; punchDamage = customPunch29; }
                 customHp29 = npcHealth; customStay29 = stayOnFeet; customPunch29 = punchDamage;
+                presetSet29 = false;
             }
             else
             {
                 if (customHp29 < 0f) { customHp29 = npcHealth; customStay29 = stayOnFeet; customPunch29 = punchDamage; }
-                switch (style)
+                Preset29(style, out presetHp29, out presetStay29, out presetPunch29);
+                bool differs = Mathf.Abs(npcHealth - presetHp29) > 1f || Mathf.Abs(stayOnFeet - presetStay29) > 0.01f || Mathf.Abs(punchDamage - presetPunch29) > 0.01f;
+                npcHealth = presetHp29; stayOnFeet = presetStay29; punchDamage = presetPunch29; presetSet29 = true;
+                if (differs || changed)
                 {
-                    case "brute": npcHealth = 700f; stayOnFeet = 2f; punchDamage = 0.35f; break;
-                    case "light": npcHealth = 100f; stayOnFeet = 0.6f; punchDamage = 0.8f; break;
-                    default: npcHealth = 300f; stayOnFeet = 1f; punchDamage = 0.5f; break;
+                    Guard("style.ui", () => { SetOptionUi44("NPC HP", presetHp29); SetOptionUi44("Stay on feet", presetStay29); SetOptionUi44("Your punch damage", presetPunch29); });
                 }
             }
-            if (styleSeen29 != null && styleSeen29 != style) Notify($"Style: {style} - NPCs that spawn from now on");
+            if (changed)
+            {
+                Guard("style.npcs", () => instance?.Restyle44());
+                string nm = style == "brute" ? "Brute NPCs" : style == "light" ? "Lightweights" : style == "custom" ? "Custom" : "Default";
+                Notify($"Style: {nm}\nNPC HP {npcHealth:0}  -  stay on feet x{stayOnFeet:0.##}  -  your punch damage {punchDamage:0.##}\nApplied to everyone already out there too.");
+            }
             styleSeen29 = style;
         }
 

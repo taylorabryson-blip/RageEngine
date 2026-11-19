@@ -42,8 +42,24 @@ namespace RageEngine
             s.prevState = st;
             if (!blockCheapKnockdowns || prev != Ragdoll.State.Standing || (st != Ragdoll.State.Destabilized && st != Ragdoll.State.Inert)) return;
             // 0.41: he stays up unless knocked out, dying, a leg is broken, or a big hit landed on his legs or stomach
-            if (c.isKilled || s.dying || Time.time - s.bigHitAt < 1.2f || s.spineBroken || s.lostLeg || Has(s.brokenParts, LegParts)
+            if (c.isKilled || s.dying || s.spineBroken || s.lostLeg || Has(s.brokenParts, LegParts)
                 || s.knockedOutUntil > 0f || s.shockDeathAt > 0f) return;
+            // 0.44: a power shot drops him - unless he's strong-willed and still has something left; low on HP, even an
+            // ordinary hit can put him down
+            if (Time.time - s.bigHitAt < 1.2f)
+            {
+                float hp = HpFrac(c);
+                bool powers = (s.will44 || Tank(s)) && hp > 0.15f && Random.value < Mathf.Lerp(0.25f, 0.9f, hp);
+                if (!powers) return;
+                s.bigHitAt = -10f;
+                Speak(s, "attackmelee");
+                Log($"{WhoIs(s)}: strong will - powers through the power shot ({hp * 100f:0}% HP)");
+            }
+            else
+            {
+                float hp = HpFrac(c);
+                if (hp < 0.4f && Random.value < (0.4f - hp) / 0.4f * 0.7f * (s.will44 ? 0.5f : 1f)) return;
+            }
             if (rag.handlers != null && rag.handlers.Count > 0) return;            // you're holding them: grabs and throws are yours
             // 0.28: anything that happens near you is yours too - spells (gravity push), kicks, shoves, other mods. This guard
             // was undoing them, which is why vanilla effects 'did nothing'. It now only catches trips far away from the fight.
