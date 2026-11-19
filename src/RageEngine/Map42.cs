@@ -108,14 +108,34 @@ namespace RageEngine
 
         // ------------------------------------------------------------------ lights
         static object urpAsset42; static System.Reflection.PropertyInfo urpMaxProp42; static int urpMaxOrig42 = -1;
+        /// 0.45: every map gets its own lighting: brightness, reach, a colour grade on its lamps, and the colour/strength of
+        /// the fill light in dark spots. (intensity x, range x, tint, tint amount, fill colour, fill intensity)
+        sealed class Mood45 { public float k, r, ta, fi; public Color tint, fill; public Mood45(float k, float r, Color tint, float ta, Color fill, float fi) { this.k = k; this.r = r; this.tint = tint; this.ta = ta; this.fill = fill; this.fi = fi; } }
+        static readonly Dictionary<string, Mood45> moods45 = new Dictionary<string, Mood45>
+        {
+            { "RedRoomDiner",   new Mood45(1.30f, 1.20f, new Color(1f, 0.85f, 0.7f), 0.15f, new Color(1f, 0.85f, 0.7f), 0.70f) },   // warm diner, red neon
+            { "BurgerJoint",    new Mood45(1.40f, 1.20f, new Color(0.95f, 1f, 1f), 0.20f, new Color(0.95f, 0.98f, 1f), 0.80f) },    // crisp fluorescent
+            { "Skybar",         new Mood45(1.15f, 1.30f, new Color(1f, 0.75f, 0.45f), 0.30f, new Color(1f, 0.7f, 0.45f), 0.50f) },   // moody amber lounge
+            { "RewindVideo",    new Mood45(1.35f, 1.20f, new Color(0.85f, 0.95f, 1f), 0.20f, new Color(0.85f, 0.9f, 1f), 0.70f) },   // cool shop strip lights
+            { "StarliteArcade", new Mood45(1.50f, 1.30f, Color.white, 0f, new Color(0.6f, 0.4f, 1f), 0.45f) },                       // dark, pools of neon
+            { "RageBlock",      new Mood45(1.30f, 1.30f, new Color(1f, 0.7f, 0.4f), 0.25f, new Color(1f, 0.75f, 0.5f), 0.55f) },     // sodium street lamps
+            { "GasAndGo",       new Mood45(1.45f, 1.25f, new Color(1f, 1f, 0.95f), 0.10f, Color.white, 0.70f) },                     // bright canopy
+            { "ClubMillennium", new Mood45(1.60f, 1.30f, Color.white, 0f, new Color(1f, 0.3f, 0.8f), 0.40f) },                       // saturated club colour
+            { "RageTower",      new Mood45(1.35f, 1.20f, new Color(1f, 0.97f, 0.9f), 0.10f, new Color(0.75f, 0.85f, 1f), 0.60f) },   // work lights, cold city
+        };
+        static Mood45 mood45;
+
         void LightPass42(Transform root)
         {
             int n = 0;
-            float boost = perfMode == "p" ? 1.1f : 1.35f, reach = perfMode == "p" ? 1.05f : 1.25f;
+            if (!moods45.TryGetValue(map26Built ?? "", out mood45)) mood45 = new Mood45(1.35f, 1.25f, Color.white, 0f, new Color(1f, 0.93f, 0.82f), 0.75f);
+            float perf = perfMode == "p" ? 0.85f : 1f;
+            float boost = mood45.k * perf, reach = mood45.r * (perfMode == "p" ? 0.9f : 1f);
             foreach (var l in root.GetComponentsInChildren<Light>(true))
             {
                 if (l == null) continue;
                 l.intensity *= boost; l.range *= reach; n++;
+                if (mood45.ta > 0f) l.color = Color.Lerp(l.color, l.color * mood45.tint, mood45.ta);
                 l.renderMode = n <= 8 ? LightRenderMode.ForcePixel : LightRenderMode.Auto;
             }
             int fill = 0; Guard("map.fill", () => fill = FillLights42(root));
@@ -175,7 +195,7 @@ namespace RageEngine
                         if (lit) continue;
                         var go = new GameObject("FillLight"); go.transform.SetParent(root, true); go.transform.position = at;
                         var lt = go.AddComponent<Light>(); lt.type = LightType.Point; lt.shadows = LightShadows.None;
-                        lt.color = new Color(1f, 0.93f, 0.82f); lt.range = 8.5f; lt.intensity = 0.75f; lt.renderMode = LightRenderMode.Auto;
+                        lt.color = mood45 != null ? mood45.fill : new Color(1f, 0.93f, 0.82f); lt.range = 8.5f; lt.intensity = mood45 != null ? mood45.fi : 0.75f; lt.renderMode = LightRenderMode.Auto;
                         have.Add(at); added++;
                         FillFixture44(root, at);
                     }
