@@ -218,6 +218,7 @@ namespace ThunderRoad
     public class Ragdoll : ThunderBehaviour
     {
         public enum State { Inert = 0, Destabilized = 1, Frozen = 2, Standing = 3, Kinematic = 4, NoPhysic = 5, Disabled = 6 }
+        public bool isGrabbed, isTkGrabbed, isSliced;
         public class Region { }
         public class Bone { public Transform mesh; public ConfigurableJoint animationJoint; public RagdollPart part; }
         public List<RagdollPart> parts;

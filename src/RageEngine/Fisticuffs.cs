@@ -61,7 +61,11 @@ namespace RageEngine
             s.prevState = st;
             if (c.isKilled || s.dying || s.shockDeathAt > 0f || s.lostLeg || s.spineBroken
                 || s.knockedOut || s.passedOut || Time.time < s.mustFall49) { s.downSince49 = 0f; return; }
-            if (rag.handlers != null && rag.handlers.Count > 0) { s.downSince49 = 0f; return; }   // you're holding him
+            bool held = rag.handlers != null && rag.handlers.Count > 0;
+            try { held |= rag.isGrabbed || rag.isTkGrabbed; } catch { }
+            if (held) s.heldAt49 = Time.time;
+            if (held || Time.time - s.heldAt49 < 3f) { s.downSince49 = 0f; return; }       // you're holding / threw him (hands or telekinesis)
+            try { if (rag.isSliced) return; } catch { }                                       // missing limbs
             if (Time.time - lastCastAt < 1.5f) return;                                           // your spells
             bool down = st == Ragdoll.State.Destabilized || st == Ragdoll.State.Inert;
             if (!down) { s.downSince49 = 0f; return; }

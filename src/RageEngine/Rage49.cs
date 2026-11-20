@@ -102,7 +102,7 @@ namespace RageEngine
             wounds49.Add(new Wound49 { c = c, part = part, local = part.transform.InverseTransformPoint(p), region = region, at = Time.time });
         }
 
-        sealed class Held49 { public GameObject go; public RagdollHand hand; }
+        sealed class Held49 { public GameObject go; public RagdollHand hand; public float at; }
         readonly Held49[] held49 = new Held49[2];
         readonly bool[] gripWas49 = new bool[2];
 
@@ -127,7 +127,8 @@ namespace RageEngine
                 if (h != null)
                 {
                     if (h.go == null) { held49[k] = null; continue; }
-                    if (!grip) Release49(k);
+                    if (!grip) { Release49(k); continue; }
+                    if (Time.time - h.at < 0.5f && hand.grabbedHandle is HandleRagdoll) { var hh = hand; Guard("ungrab", () => hh.UnGrab(false)); }   // the game grabbed his body too
                     continue;
                 }
                 if (!pressed || !ripOrgans49 || wounds49.Count == 0) continue;
@@ -197,7 +198,7 @@ namespace RageEngine
             go.transform.SetParent(hand.transform, true);
             Vector3 palm = hand.grip != null ? hand.grip.position : hand.transform.position;
             go.transform.position = palm;
-            held49[k] = new Held49 { go = go, hand = hand };
+            held49[k] = new Held49 { go = go, hand = hand, at = Time.time };
             w.taken++;
             // the body
             Stamp(c, p, 0.08f, "torn_flesh", 1f);
