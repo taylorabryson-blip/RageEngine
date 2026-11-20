@@ -27,7 +27,10 @@ namespace RageEngine
 
         // ---------------- knockdown guard ----------------
         /// Lets the next knockdown of this NPC through (it's one Rage Engine or the player meant).
-        internal static void AllowFall(NpcState s, float seconds) { if (s != null) s.allowFallUntil = Mathf.Max(s.allowFallUntil, Time.time + seconds); }
+        /// Rage Engine (or you) means him to go down: a knockout, a takedown, a choke-out, a sink, a cut hamstring...
+        internal static void AllowFall(NpcState s, float seconds) { if (s != null) { s.allowFallUntil = Mathf.Max(s.allowFallUntil, Time.time + seconds); s.forceFall47 = Mathf.Max(s.forceFall47, Time.time + seconds); } }
+        /// 0.47: a hit reaction that may take his legs - only if he's already hurt (a healthy man stays up).
+        internal static void AllowFallHurt(NpcState s, float seconds) { if (s != null) s.allowFallUntil = Mathf.Max(s.allowFallUntil, Time.time + seconds); }
 
         /// Every frame: if the game drops a standing NPC on its own (an ordinary hit, a shove, a stagger that turned into
         /// a fall), put them straight back on their feet - unless Rage Engine or the player meant it.
@@ -45,7 +48,7 @@ namespace RageEngine
             // go down once he's hurt - from a power shot, a big hit to the legs or gut, or something Rage Engine meant -
             // and the lower his HP the likelier; strong-willed men can still power through while they've got something left.
             if (c.isKilled || s.dying || s.spineBroken || s.lostLeg || Has(s.brokenParts, LegParts)
-                || s.knockedOutUntil > 0f || s.shockDeathAt > 0f) return;
+                || s.knockedOutUntil > 0f || s.knockedOut || s.passedOut || s.shockDeathAt > 0f || Time.time < s.forceFall47) return;
             {
                 float hp = HpFrac(c);
                 float line = 0.45f / Mathf.Sqrt(Tough33(s));

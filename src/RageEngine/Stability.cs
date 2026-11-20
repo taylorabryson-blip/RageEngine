@@ -88,7 +88,7 @@ namespace RageEngine
             }
             // end of the stumble: balance check
             s.stumbleUntil = 0f;
-            if (s.balance < 0.2f && Random.value > s.balanceStability * 0.8f) { AllowFall(s, 1.5f); Fall(s, s.stumbleDir, 1.2f); Log($"{WhoIs(s)} couldn't catch himself"); }
+            if (s.balance < 0.2f && Random.value > s.balanceStability * 0.8f) { AllowFallHurt(s, 1.5f); Fall(s, s.stumbleDir, 1.2f); Log($"{WhoIs(s)} couldn't catch himself"); }
             else { s.balance = Mathf.Max(s.balance, 0.55f); AddTag(s, Tag.Recovering, 1f / Mathf.Max(0.5f, s.personality.recoveryMult)); Log($"{WhoIs(s)} catches his balance"); }
         }
 

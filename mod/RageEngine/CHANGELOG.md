@@ -1,5 +1,11 @@
 # Rage Engine changelog
 
+## 0.48 — Polish
+- Healthy NPCs no longer drop from ordinary hit reactions; only hurt NPCs (low HP) can be knocked down by normal hits. Knockouts, chokes, takedowns and other "meant" falls still work.
+- Knocked-out / passed-out NPCs are no longer fought by the stand-up guard.
+- NPCs and Magnet no longer pull weapons that are holstered or held with telekinesis.
+- Small stability fixes.
+
 ## 0.47.0 - fewer things, done better
 - We're trimming some content to focus on quality. Maps: Rage Tower, Skybar and Red Room Diner.
 - Fixed: NPCs spawned from the book could collapse like they'd lost their bones (and sometimes bleed) a few spawns in.

@@ -212,7 +212,7 @@ namespace RageEngine
         {
             var c = s.creature;
             bool ok = false;
-            AllowFall(s, 1f);
+            AllowFallHurt(s, 1f);
             Guard("fall", () => { c.ragdoll.SetState(Ragdoll.State.Destabilized); ok = true; });
             if (!ok) { Stagger(s, flat, Effect.Destabilize, RagdollPart.Type.Torso); return; }
             PushBody(c, flat + Vector3.up * 0.1f, Mathf.Clamp(1f + eff * 0.6f, 1f, 4f) * Mathf.Max(0.3f, reactionStrength));
@@ -242,7 +242,7 @@ namespace RageEngine
         {
             var c = s.creature;
             bool ok = false;
-            if (effect == Effect.Destabilize) AllowFall(s, 1f);
+            if (effect == Effect.Destabilize) AllowFallHurt(s, 1f);
             Guard("stagger", () => { c.ForceStagger(dir, effect, part); ok = true; });
             if (!ok && effect == Effect.Destabilize) Guard("fall", () => c.ragdoll.SetState(Ragdoll.State.Destabilized));
             Log($"{c.name} {effect}");

@@ -333,7 +333,7 @@ namespace ThunderRoad
         public Handle mainHandleRight;
         public Handle GetMainHandle(Side side) => null;
         public List<RagdollHand> handlers;
-        public Holder holder;
+        public Holder holder; public bool isTelekinesisGrabbed;
         public bool isBrokenPiece;
         public bool isFlying;
         public bool IsHanded() => false;

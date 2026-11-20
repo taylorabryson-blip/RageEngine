@@ -78,7 +78,7 @@ namespace RageEngine
                 // spear: the thrust drives the whole body back along the shaft; a hard one takes them off their feet
                 Vector3 drive = Vector3.ProjectOnPlane(hit.impactVelocity.sqrMagnitude > 0.25f ? hit.impactVelocity : away, Vector3.up).normalized;
                 if (standing) ShoveBody(s, drive, Mathf.Lerp(1.2f, 2.4f, k));
-                if (standing && k > 0.8f && !s.brave) { AllowFall(s, 1.5f); Fall(s, drive, 2f + k); }
+                if (standing && k > 0.8f && !s.brave) { AllowFallHurt(s, 1.5f); Fall(s, drive, 2f + k); }
                 else DoubleOver(s, part, point, drive, k, standing);
                 QueueClutch(s, part, point, true, 0.15f);
                 what = "spear thrust";

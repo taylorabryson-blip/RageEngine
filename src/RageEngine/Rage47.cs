@@ -246,7 +246,7 @@ namespace RageEngine
                     Item best = null; float bd = 1.9f * 1.9f;
                     foreach (var it in Item.allActive)
                     {
-                        if (it == null || it.data == null || it.data.type != ItemData.Type.Weapon || it.IsHanded() || it.physicBody == null || it.data.id == null || it.data.id.StartsWith("RE_")) continue;
+                        if (it == null || it.data == null || it.data.type != ItemData.Type.Weapon || it.IsHanded() || it.holder != null || it.isTelekinesisGrabbed || it.physicBody == null || it.data.id == null || it.data.id.StartsWith("RE_")) continue;
                         float d2 = (it.transform.position - c.transform.position).sqrMagnitude;
                         if (d2 < bd) { bd = d2; best = it; }
                     }
@@ -272,7 +272,7 @@ namespace RageEngine
         void PickupStep47(NpcState s)
         {
             var it = s.magnetItem43; var c = s.creature;
-            if (it == null || it.IsHanded() || HasRealWeapon42(s)) { s.magnetItem43 = null; return; }
+            if (it == null || it.IsHanded() || it.holder != null || it.isTelekinesisGrabbed || HasRealWeapon42(s)) { s.magnetItem43 = null; return; }
             Side side = HandUsable(s, Side.Right) ? Side.Right : Side.Left;
             var hand = Hand(c, side);
             if (hand == null || hand.grabbedHandle != null) { s.magnetItem43 = null; return; }

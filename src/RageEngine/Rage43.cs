@@ -270,7 +270,7 @@ namespace RageEngine
                 for (int i = 0; i < all.Count; i++)
                 {
                     var x = all[i];
-                    if (x == null || x.data == null || x.data.type != ItemData.Type.Weapon || x.physicBody == null || x.data.id == null || x.data.id.StartsWith("RE_")) continue;
+                    if (x == null || x.data == null || x.data.type != ItemData.Type.Weapon || x.holder != null || x.isTelekinesisGrabbed || x.physicBody == null || x.data.id == null || x.data.id.StartsWith("RE_")) continue;
                     if (x.IsHanded())
                     {
                         var hc = x.mainHandler != null && x.mainHandler.ragdoll != null ? x.mainHandler.ragdoll.creature : null;
