@@ -493,6 +493,7 @@ namespace RageEngine
             var c = s.creature;
             if (c.isKilled) return;
             Taunt49(s, now);
+            MapReach49(s, now);
             if ((s.fleeing || s.surrendered) && !s.knockedOut && now >= s.nextFearVoice49) FearVoice49(s);
         }
 
@@ -501,6 +502,53 @@ namespace RageEngine
             if (impales49.Count > 0) Guard("impale", TickImpale49);
             Guard("rip", TickRip49);
             if (pendingKill49.Count > 0) TickPendingKill49();
+        }
+    }
+}
+
+namespace RageEngine
+{
+    public sealed partial class RageEngineScript
+    {
+        // ================================================================== maps: NPCs that can't reach you
+        /// On a Rage Engine map: an NPC on another floor with no walkable path to you for ~6 s is moved to a spawn
+        /// point on your floor, out of your face. Stops NPCs being stranded up top or down below.
+        static readonly UnityEngine.AI.NavMeshPath path49 = new UnityEngine.AI.NavMeshPath();
+        void MapReach49(NpcState s, float now)
+        {
+            if (map26Root == null || map26Spawns.Count == 0 || now < s.nextReach49) return;
+            s.nextReach49 = now + 2f;
+            var c = s.creature;
+            if (c.isKilled || s.knockedOut || s.ally || s.impaled49 || c.ragdoll.state != Ragdoll.State.Standing) { s.stuckReach49 = 0; return; }
+            var pc = Player.local != null ? Player.local.creature : null; if (pc == null) return;
+            Vector3 me = c.transform.position, you = pc.transform.position;
+            if (me.y < map26Origin.y - 20f) return;                                         // not on the map
+            float dy = Mathf.Abs(me.y - you.y);
+            if (dy < 2f) { s.stuckReach49 = 0; return; }
+            bool ok = false;
+            try
+            {
+                if (UnityEngine.AI.NavMesh.SamplePosition(me, out var a, 2f, UnityEngine.AI.NavMesh.AllAreas) && UnityEngine.AI.NavMesh.SamplePosition(you, out var b, 2f, UnityEngine.AI.NavMesh.AllAreas))
+                    ok = UnityEngine.AI.NavMesh.CalculatePath(a.position, b.position, UnityEngine.AI.NavMesh.AllAreas, path49) && path49.status == UnityEngine.AI.NavMeshPathStatus.PathComplete;
+            }
+            catch { ok = true; }
+            if (ok) { s.stuckReach49 = 0; return; }
+            if (++s.stuckReach49 < 3) return;
+            s.stuckReach49 = 0;
+            Vector3 best = Vector3.zero; float bd = float.MaxValue;
+            foreach (var sp in map26Spawns)
+            {
+                Vector3 w = map26Origin + sp;
+                if (Mathf.Abs(w.y - you.y) > 1.6f) continue;
+                float d = Vector3.Distance(w, you);
+                if (d < 6f) continue;
+                float score = Mathf.Abs(d - 10f) + Random.value * 3f;
+                if (score < bd) { bd = score; best = w; }
+            }
+            if (bd == float.MaxValue) return;
+            var dest = best + Vector3.up * 0.1f; var rot = Quaternion.LookRotation(Vector3.ProjectOnPlane(you - best, Vector3.up).normalized + Vector3.forward * 1e-4f);
+            Guard("reach.tp", () => c.Teleport(dest, rot));
+            Log($"{WhoIs(s)}: no way to reach you - moved to your floor");
         }
     }
 }
