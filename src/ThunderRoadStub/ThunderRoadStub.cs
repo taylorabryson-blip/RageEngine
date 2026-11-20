@@ -136,7 +136,7 @@ namespace ThunderRoad
     }
     public class FloatHandler : ValueHandler<float> { }
     public class BoolHandler : ValueHandler<bool> { public BoolHandler(bool defaultValue) { } public void Add(object handler) { } }
-    public class CreatureEye : MonoBehaviour { public float closeAmount; public string eyeTag; public void SetClose() { } }
+    public class CreatureEye : MonoBehaviour { public float closeAmount; public string eyeTag; public void SetClose() { } public List<EyeMoveable> eyeParts; public class EyeMoveable { public string name; public Transform transform; } }
 
     public class PhysicBody
     { public void AddTorque(Vector3 torque, ForceMode mode) { }

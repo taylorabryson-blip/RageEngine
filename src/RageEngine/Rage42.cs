@@ -159,6 +159,7 @@ namespace RageEngine
             Vector3 ep = e.transform.position;
             Vector3 outv = (ep - head.transform.position).normalized;
             e.transform.localScale = Vector3.zero;
+            Guard("eye.hide", () => HideEye49(c, e, ep, head.transform));                              // 0.49: the socket is really empty
             Stamp(c, ep, 0.03f, "stab", 0.95f);
             Stamp(c, ep - Vector3.up * 0.035f, 0.04f, "blood_drip", 0.9f);
             Sfx.Play("NRE_Squelch", head.transform, 1f, 1.25f);

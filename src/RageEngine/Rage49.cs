@@ -559,3 +559,86 @@ namespace RageEngine
         }
     }
 }
+
+namespace RageEngine
+{
+    public sealed partial class RageEngineScript
+    {
+        // ================================================================== an empty eye socket
+        /// 0.49: the eyeball itself is gone from the socket - every eye transform and eye bone on that side is collapsed
+        /// (re-applied every frame, the animator can't put it back) and a dark wet hole sits where it was.
+        sealed class EyeHide49 { public Creature c; public List<(Transform t, Vector3 scale)> parts = new List<(Transform, Vector3)>(); public GameObject hole; }
+        static readonly List<EyeHide49> eyeHides49 = new List<EyeHide49>();
+        static Material socketMat49;
+
+        internal static void HideEye49(Creature c, CreatureEye e, Vector3 ep, Transform head)
+        {
+            if (c == null || e == null) return;
+            var h = new EyeHide49 { c = c };
+            var seen = new HashSet<Transform>();
+            void Add(Transform t) { if (t != null && seen.Add(t)) h.parts.Add((t, t.localScale)); }
+            Add(e.transform);
+            if (e.eyeParts != null)
+                foreach (var p in e.eyeParts)
+                {
+                    if (p == null || p.transform == null) continue;
+                    string n = (p.name ?? p.transform.name ?? "").ToLowerInvariant();
+                    if (n.Contains("lid") || n.Contains("lash") || n.Contains("brow")) continue;
+                    Add(p.transform);
+                }
+            // eye bones of the head mesh on this side (some heads skin the eyeball to a bone, not the CreatureEye)
+            foreach (var sm in c.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                if (sm == null || sm.bones == null) continue;
+                foreach (var b in sm.bones)
+                {
+                    if (b == null) continue;
+                    string n = b.name.ToLowerInvariant();
+                    if (!n.Contains("eye") || n.Contains("lid") || n.Contains("lash") || n.Contains("brow")) continue;
+                    if ((b.position - ep).sqrMagnitude < 0.025f * 0.025f) Add(b);
+                }
+            }
+            if (head != null)
+            {
+                if (socketMat49 == null) socketMat49 = Mats.Make(new Color(0.16f, 0.01f, 0.015f), 0.9f);
+                var hole = GameObject.CreatePrimitive(PrimitiveType.Sphere); Object.Destroy(hole.GetComponent<Collider>());
+                hole.name = "RageEngine_EmptySocket";
+                hole.transform.SetParent(head, true);
+                Vector3 outv = (ep - head.position).normalized;
+                hole.transform.position = ep - outv * 0.004f;
+                hole.transform.rotation = Quaternion.LookRotation(outv);
+                hole.transform.localScale = Vector3.one;
+                Vector3 ls = head.lossyScale; float k = 1f / Mathf.Max(0.0001f, (ls.x + ls.y + ls.z) / 3f);
+                hole.transform.localScale = new Vector3(0.024f, 0.02f, 0.012f) * k;
+                hole.GetComponent<Renderer>().sharedMaterial = socketMat49;
+                hole.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                h.hole = hole;
+            }
+            eyeHides49.Add(h);
+            foreach (var (t, _) in h.parts) t.localScale = Vector3.zero;
+        }
+
+        static void LateUpdateEyeHides49()
+        {
+            for (int i = eyeHides49.Count - 1; i >= 0; i--)
+            {
+                var h = eyeHides49[i];
+                if (h.c == null) { if (h.hole != null) Object.Destroy(h.hole); eyeHides49.RemoveAt(i); continue; }
+                foreach (var (t, _) in h.parts) if (t != null && t.localScale != Vector3.zero) t.localScale = Vector3.zero;
+            }
+        }
+
+        /// Body recycled: put the eyes back, remove the holes.
+        internal static void RestoreEyes49(Creature c)
+        {
+            for (int i = eyeHides49.Count - 1; i >= 0; i--)
+            {
+                var h = eyeHides49[i];
+                if (h.c != c) continue;
+                foreach (var (t, sc) in h.parts) if (t != null) t.localScale = sc;
+                if (h.hole != null) Object.Destroy(h.hole);
+                eyeHides49.RemoveAt(i);
+            }
+        }
+    }
+}

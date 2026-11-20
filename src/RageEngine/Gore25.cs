@@ -155,6 +155,7 @@ namespace RageEngine
             }
             Vector3 ep = e.transform.position;
             e.transform.localScale = Vector3.zero;                                              // the eye is gone
+            Guard("eye.hide", () => HideEye49(c, e, ep, c.ragdoll.headPart != null ? c.ragdoll.headPart.transform : null));
             Stamp(c, ep, 0.03f, "stab", 0.95f);
             Stamp(c, ep - Vector3.up * 0.03f, 0.04f, "blood_drip", 0.9f);
             Sfx.Play("NRE_Squelch", c.ragdoll.headPart.transform, 1f, 1.15f);
@@ -175,6 +176,7 @@ namespace RageEngine
         static void RestoreGouged(NpcState s)
         {
             var c = s.creature;
+            if (c != null) RestoreEyes49(c);
             if (s.eyeScale != null && c != null && c.allEyes != null)
                 for (int k = 0; k < c.allEyes.Count && k < s.eyeScale.Length; k++) if (c.allEyes[k] != null && (s.gouged & (1 << k)) != 0) c.allEyes[k].transform.localScale = s.eyeScale[k];
             s.eyeScale = null; s.gouged = 0; s.gougeT = 0f;
