@@ -17,7 +17,7 @@ namespace RageEngine
     {
         public static bool faceCave = true;
         public static bool bonesOut = true;
-        [ModOptionCategory("Rage", 0), ModOptionOrder(3)]
+        [ModOptionCategory("Gore", 1), ModOptionOrder(3)]
         [ModOption("Mod blood spray", "ON: Rage Engine's dark red blood spray. OFF: the game's own blood.", defaultValueIndex = 0)]
         public static bool ownBlood = false;
 
@@ -187,7 +187,7 @@ namespace RageEngine
         /// Blood at a body part: the game's effect, or the mod's own spray (option / fallback).
         internal static void Blood(Transform at)
         {
-            if (at == null) return;
+            if (at == null || ExternalGore) return;
             if (ownBlood) Guard("ownblood", () => BloodBurst(at.position, Vector3.up, 16));
             else Effects.Blood(at);
         }

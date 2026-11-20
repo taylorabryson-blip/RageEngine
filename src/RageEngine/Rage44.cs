@@ -58,7 +58,7 @@ namespace RageEngine
     {
         // ------------------------------------------------------------------ settings
         public static ModOptionString[] wearValues = { new ModOptionString("Off", null, "0"), new ModOptionString("Light", null, "1"), new ModOptionString("Medium", null, "2"), new ModOptionString("Heavy", null, "3") };
-        [ModOptionCategory("Rage", 0), ModOptionOrder(7)]
+        [ModOptionCategory("Gore", 1), ModOptionOrder(7)]
         [ModOption("Injury effects", "How much getting hurt slows them down - movement, attacks and blocking get worse gradually as they lose HP, break bones and bleed.", valueSourceName = nameof(wearValues), defaultValueIndex = 2)]
         public static string injuryEffects = "2";
         static float WearK => injuryEffects == "0" ? 0f : injuryEffects == "1" ? 0.5f : injuryEffects == "3" ? 1.6f : 1f;

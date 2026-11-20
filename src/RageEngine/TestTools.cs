@@ -334,7 +334,7 @@ namespace RageEngine
                 float f = 1f - Vector3.Distance(root, pos) / radius;
                 if (f <= 0f) continue;
                 if (instance != null) instance.PhysicalNow(c, 5f);
-                if (instance != null && instance.TryGet(c, out var fs)) AllowFall(fs, 3f);
+                if (instance != null && instance.TryGet(c, out var fs)) AllowFallAlways(fs, 3f);
                 if (f > 0.15f) Guard("fall", () => c.ragdoll.SetState(Ragdoll.State.Destabilized));
                 if (f > 0.6f && instance != null && instance.TryGet(c, out var gs)) Guard("gore", () => instance.TearFlesh(gs, rp, rp.transform.position, (rp.transform.position - pos).normalized, 4f * f * power));
                 if (instance != null && instance.TryGet(c, out var s)) { s.balance = MinBalance; s.pain = Mathf.Min(1f, s.pain + f); s.lastHitDir = (root - pos).normalized; }

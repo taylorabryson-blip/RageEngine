@@ -89,7 +89,7 @@ namespace RageEngine
                 else
                 {
                     Guard("brain", () => c.brain.Stop());
-                    { AllowFall(s, 1.5f); Guard("fall", () => c.ragdoll.SetState(Ragdoll.State.Destabilized)); }
+                    { AllowFallAlways(s, 1.5f); Guard("fall", () => c.ragdoll.SetState(Ragdoll.State.Destabilized)); }
                     s.knockedOutUntil = Time.time + KnockoutSeconds;
                 }
                 Log($"{c.name} choked out");

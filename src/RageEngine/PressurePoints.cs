@@ -248,7 +248,7 @@ namespace RageEngine
         {
             var c = s.creature;
             if (c.ragdoll.state != Ragdoll.State.Standing) return;
-            if (!ppSmooth) { AllowFall(s, 3f); Guard("fall", () => c.ragdoll.SetState(Ragdoll.State.Destabilized)); return; }
+            if (!ppSmooth) { AllowFallAlways(s, 3f); Guard("fall", () => c.ragdoll.SetState(Ragdoll.State.Destabilized)); return; }
             s.ppSinkStart = now; s.ppSinkUntil = now + 0.7f;
             Speak(s, "falling");
         }
@@ -259,7 +259,7 @@ namespace RageEngine
             s.ppSinkUntil = 0f;
             var c = s.creature;
             if (c.isKilled || c.ragdoll.state != Ragdoll.State.Standing) return;
-            AllowFall(s, 3f);
+            AllowFallAlways(s, 3f);
             Guard("fall", () => c.ragdoll.SetState(Ragdoll.State.Destabilized));
             ShoveBodyQuiet(s, -c.transform.forward, 0.3f);
         }

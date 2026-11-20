@@ -23,7 +23,7 @@ namespace RageEngine
     {
         // ------------------------------------------------------------------ settings
         public static ModOptionString[] despValues = { new ModOptionString("Off", null, "0"), new ModOptionString("Subtle", null, "1"), new ModOptionString("Normal", null, "2"), new ModOptionString("Intense", null, "3") };
-        [ModOptionCategory("Rage", 0), ModOptionOrder(16)]
+        [ModOptionCategory("NPCs", 2), ModOptionOrder(16)]
         [ModOption("Desperation", "How often badly hurt NPCs beg, hesitate, back off, call for help or turn defiant (body language and real voices).", valueSourceName = nameof(despValues), defaultValueIndex = 2)]
         public static string desperation = "2";
         static float DespK => desperation == "0" ? 0f : desperation == "1" ? 0.5f : desperation == "3" ? 1.8f : 1f;
@@ -456,6 +456,7 @@ namespace RageEngine
             Guard("wear", () => Wear44(s, now));
             Guard("loadout", () => Loadout47(s, now));
             Guard("smart", () => Smart47(s, now));
+            Guard("tick49", () => Tick49(s, now));
             Guard("prof", () => ProfTick43(s));
             Guard("desp", () => Desperation43(s, now));
         }
@@ -563,7 +564,7 @@ namespace RageEngine
             switch (act)
             {
                 case "voice":
-                    if (Random.value < 0.6f) Scream(s, false); else Speak(s, Random.value < 0.5f ? "grappled" : "choke");
+                    if (Random.value < 0.6f) FearVoice49(s, true); else Speak(s, Random.value < 0.5f ? "grappled" : "choke");
                     break;
                 case "hesitate":
                     SetMelee(s, false, now + Random.Range(1.2f, 2.8f) * Mathf.Lerp(0.8f, 1.3f, distress));
@@ -573,12 +574,12 @@ namespace RageEngine
                     SetMelee(s, false, now + 2f); ShoveBodyQuiet(s, away, 0.7f); Gesture43(s, 2, 1.6f);
                     break;
                 case "beg":
-                    SetMelee(s, false, now + 3f); Gesture43(s, 1, Random.Range(2f, 3.5f)); Speak(s, "grappled");
+                    SetMelee(s, false, now + 3f); Gesture43(s, 1, Random.Range(2f, 3.5f)); FearVoice49(s, true);
                     AddTag(s, Tag.Fear, 8f, 0.5f * K);                                                         // edges him toward surrender
                     Guard("face", () => c.brain.instance?.GetModule<BrainModuleExpression>(false)?.SetFaceExpression(FaceAnimator.Expression.Fear, 0, null));
                     break;
                 case "stop":
-                    SetMelee(s, false, now + 2.5f); Gesture43(s, 3, Random.Range(1.5f, 2.5f)); ShoveBodyQuiet(s, away, 0.4f); Scream(s, false);
+                    SetMelee(s, false, now + 2.5f); Gesture43(s, 3, Random.Range(1.5f, 2.5f)); ShoveBodyQuiet(s, away, 0.4f); FearVoice49(s, true);
                     break;
                 case "callhelp":
                     if (ally != null)
@@ -590,7 +591,7 @@ namespace RageEngine
                     }
                     break;
                 case "flee":
-                    Panic(s, Random.Range(3f, 6f));
+                    Panic(s, Random.Range(3f, 6f)); FearVoice49(s, true);
                     break;
                 case "defiant":
                     Speak(s, Random.value < 0.5f ? "taunt" : "attackmelee"); AddTag(s, Tag.Anger, 6f, 1f);
@@ -623,14 +624,17 @@ namespace RageEngine
             {
                 if (Dead(s, side)) continue;
                 var hand = Hand(c, side);
-                if (hand != null && hand.grabbedHandle != null && s.despPose43 != 2) continue;               // still holding a weapon in that hand
+                if (hand != null && hand.grabbedHandle != null && s.despPose43 != 2 && s.despPose43 != 5) continue;               // still holding a weapon in that hand
                 float sg = side == Side.Left ? -1f : 1f;
                 var a = side == Side.Left ? s.despL43 : s.despR43;
                 Vector3 h = head.transform.position;
+                float beck = 0.5f + 0.5f * Mathf.Sin(now * 9f);                                              // 0.49: "come on" curl
                 a.position = s.despPose43 == 1 ? h - Vector3.up * 0.35f + right * sg * 0.22f + fwd * 0.42f
                            : s.despPose43 == 2 ? h + Vector3.up * 0.05f + right * sg * 0.1f + fwd * 0.12f
+                           : s.despPose43 == 4 ? h - Vector3.up * (0.3f + 0.04f * beck) + right * sg * 0.2f + fwd * (0.3f + 0.16f * beck)
+                           : s.despPose43 == 5 ? h - Vector3.up * 0.32f + right * sg * 0.55f + fwd * 0.12f
                            : h - Vector3.up * 0.15f + right * sg * 0.2f + fwd * 0.48f;
-                a.position += Vector3.up * shake;
+                if (s.despPose43 < 4) a.position += Vector3.up * shake;
                 a.rotation = Quaternion.LookRotation(fwd, Vector3.up);
                 ik.SetHandAnchor(side, a); ik.SetHandState(side, true, true);
             }

@@ -15,7 +15,7 @@ namespace RageEngine
 {
     public sealed partial class RageEngineScript
     {
-        [ModOptionCategory("Rage", 0), ModOptionOrder(5)]
+        [ModOptionCategory("NPCs", 2), ModOptionOrder(5)]
         [ModOption("Stay on feet", "How hard NPCs are to knock over. 1 = default, higher = they stay standing more, lower = they drop easier.", defaultValueIndex = 3)]
         [ModOptionSlider, ModOptionFloatValues(0.25f, 3f, 0.25f)]
         public static float stayOnFeet = 1f;

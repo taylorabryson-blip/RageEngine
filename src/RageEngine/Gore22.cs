@@ -75,6 +75,7 @@ namespace RageEngine
         /// Paints a texture stamp (its own colours) at a random angle. Falls back silently.
         static bool Stamp(Creature c, Vector3 at, float radius, string prefix, float alpha = 0.95f, bool cloth = false, float rot = float.NaN)
         {
+            if (ExternalGore) return false;
             if (bareHit34) return false;                                                       // 0.40: fists leave no painted circles
             if (!bruiseMarks && prefix.StartsWith("bruise")) return false;
             var t = GoreTex.Pick(prefix);
@@ -183,6 +184,7 @@ namespace RageEngine
         /// A blood decal on the ground under 'from' (raycast down). Returns the decal (to grow) or null.
         static GameObject GroundBlood(Vector3 from, string prefix, float size, Creature ignore)
         {
+            if (ExternalGore) return null;
             if (!groundBlood) return null;
             var t = GoreTex.Pick(prefix);
             var mat = DecalMat(t);
@@ -242,9 +244,17 @@ namespace RageEngine
         /// Heavy blunt hit to the head: crack the skull, or smash it. Returns true if it did either.
         bool SkullHit(NpcState s, CollisionInstance hit, RagdollPart head, float dmg, Vector3 dir)
         {
-            if (!headCrush || s.headCrushed) return false;
+            if (!headCrush || s.headPopped49) return false;
             var col = hit.sourceCollider;
             bool fist = col != null && col.GetComponentInParent<RagdollHand>() != null;
+            if (s.headCrushed)
+            {
+                // 0.49: a caved-in skull that keeps taking blunt hits (stomps, hammer, even fists) turns to goo
+                float m0 = col != null && col.attachedRigidbody != null ? col.attachedRigidbody.mass : 1f;
+                float b0 = dmg * Mathf.Clamp(m0 / 2.5f, 0.4f, 2.5f) * Mathf.Clamp(hit.impactVelocity.magnitude / 6f, 0.5f, 1.6f) * headCrushEase;
+                if (b0 >= (fist ? 6f : 8f)) { HeadPop49(s, head, hit.contactPoint, hit.impactVelocity.normalized); return true; }
+                return false;
+            }
             if (fist) return false;                                                            // fists never smash skulls
             float mass = col != null && col.attachedRigidbody != null ? col.attachedRigidbody.mass : 1f;
             float massF = Mathf.Clamp(mass / 2.5f, 0.4f, 2.5f);                               // a hammer/mace hits much harder than a dagger pommel
@@ -295,6 +305,7 @@ namespace RageEngine
         /// Throws real modelled pieces (skull fragments, brain, teeth) with physics. names: prefix, picks _1.._N.
         internal static void SpawnGoreModels(Vector3 point, Vector3 dir, string prefix, int count, Material mat, float speed, Creature c)
         {
+            if (ExternalGore) return;
             var bodyCols = new List<Collider>();
             if (c != null && c.ragdoll != null) bodyCols.AddRange(c.ragdoll.GetComponentsInChildren<Collider>());
             for (int i = 0; i < count; i++)
@@ -320,6 +331,44 @@ namespace RageEngine
         }
 
         /// Extra gore on a smashed skull: fragments, brain, teeth, blood on the ground.
+        /// 0.49: the head turns to goo - the skull collapses (head shrinks to nothing), brain and bone everywhere, the
+        /// neck fountains.
+        void HeadPop49(NpcState s, RagdollPart head, Vector3 point, Vector3 dir)
+        {
+            if (s.headPopped49 || head == null) return;
+            var c = s.creature;
+            s.headPopped49 = true; s.headCrushed = true;
+            s.finalKill = true; s.dying = false; s.noGasp = true;
+            if (dir.sqrMagnitude < 0.01f) dir = Vector3.down;
+            Vector3 hp = head.transform.position;
+            Sfx.PlayAt("NRE_HeadCrush", hp, 1f, 0.85f);
+            Sfx.PlayAt("NRE_Squelch", hp, 1f, 0.8f);
+            Sfx.PlayAt("NRE_GoreTear", hp, 0.9f);
+            Transform mesh = head.meshBone != null ? head.meshBone : head.bone != null ? head.bone.mesh : null;
+            if (mesh != null)
+            {
+                if (s.headMesh == null) { s.headMesh = mesh; s.headScale = mesh.localScale; }
+                Vector3 small = s.headScale * 0.04f;
+                mesh.localScale = small;
+                crushedHeads.Add((mesh, small));
+            }
+            Vector3 outv = (-dir + Vector3.up * 0.6f).normalized;
+            SpawnGoreModels(hp, outv, "RE_Skull_Frag", Random.Range(8, 12), SkullMat(), 1.6f, c);
+            SpawnGoreModels(hp, outv, "RE_Brain", Random.Range(4, 7), BrainMat(), 1.3f, c);
+            if (c.jaw != null) SpawnGoreModels(hp, outv, "RE_Tooth", Random.Range(4, 8), ToothMat(), 1.4f, c);
+            SpawnChunks(hp, outv, 10, 4.5f, 1.2f, c);
+            SpawnChunks(hp, Vector3.ProjectOnPlane(Random.onUnitSphere, Vector3.up).normalized, 6, 3.5f, 1f, c, true);
+            for (int i = 0; i < 6; i++) RageEngineScript.Blood(head.transform);
+            var neck = PartOf(c, RagdollPart.Type.Neck);
+            if (neck != null) for (int i = 0; i < 4; i++) RageEngineScript.Blood(neck.transform);
+            GroundBlood(hp, "blood_ground_splat", 1.2f, c);
+            GroundBlood(hp + Random.insideUnitSphere * 0.5f, "blood_ground_splat", 0.8f, c);
+            s.bleedRate += 3f * bleedingRate;
+            if (!c.isKilled) Guard("kill", () => c.Kill());
+            RageMoment("head popped");
+            Log($"{WhoIs(s)}: HEAD TURNED TO GOO");
+        }
+
         void SkullSmashExtras(NpcState s, RagdollPart head, Vector3 point, Vector3 dir)
         {
             var c = s.creature;

@@ -55,7 +55,7 @@ namespace RageEngine
         internal static bool OrgansOnly => rageMode == "organs";
 
         public static ModOptionString[] loadoutValues = { new ModOptionString("Game default", null, "0"), new ModOptionString("Mixed (some switch it up)", null, "1"), new ModOptionString("Anything in the game", null, "2") };
-        [ModOptionCategory("Rage", 0), ModOptionOrder(10)]
+        [ModOptionCategory("NPCs", 2), ModOptionOrder(10)]
         [ModOption("NPC weapons", "What NPCs carry - in waves, dungeons, anywhere. Mixed: about 4 in 10 swap their faction's weapon for any melee weapon in the game (mods included). Anything: every NPC does.", valueSourceName = nameof(loadoutValues), defaultValueIndex = 1)]
         public static string npcWeapons = "1";
 
@@ -79,10 +79,11 @@ namespace RageEngine
         /// cut drops lung / heart pieces, a crushing blast throws organs out. s may be null (organs-only mode).
         void Organs47(NpcState s, Creature c, RagdollPart part, CollisionInstance hit, float severity)
         {
-            if (!OrgansOn || !Has(part.type, RagdollPart.Type.Torso)) return;
+            if (!OrgansOn || ExternalGore || !Has(part.type, RagdollPart.Type.Torso)) return;
             var dt = hit.damageStruct.damageType;
             bool cut = dt == DamageType.Slash || dt == DamageType.Pierce && severity >= 1.2f;
             bool blast = dt == DamageType.Blunt && severity >= 3f;
+            if (dt == DamageType.Slash && severity >= 0.6f || dt == DamageType.Pierce && severity >= 0.9f) AddWound49(c, part, hit.contactPoint);   // 0.49: you can reach in
             if (!cut && !blast) return;
             if (s != null && projectileHit34 && !blast) return;
             var chest = ChestPart(c) ?? part;
@@ -104,8 +105,8 @@ namespace RageEngine
                 if (Time.time - last < 6f || Random.value > 0.3f + 0.2f * (severity - 1.1f)) return;
                 chestOpen47[c] = Time.time;
                 Stamp(c, p, 0.07f, "rib_wound", 1f);
-                string o = Random.value < 0.6f ? "RE_Organ_Lung" : "RE_Organ_Heart";
-                SpawnGoreModels(p, outDir + Vector3.down * 0.4f, o, 1, organMat44(o), 0.45f, c);
+                string o = OrganAt49(c, chest, p, Region49(c, chest, p));                              // 0.49: what's actually behind the cut
+                Organ49(o, p, outDir, c, 0.6f);
                 Sfx.Play("NRE_GoreTear", part.transform, 1f); Sfx.Play("NRE_Squelch", part.transform, 0.8f, 0.9f);
                 if (s != null) { s.bleedRate += 0.4f * bleedingRate; s.pain = 1f; Scream(s, true); }
                 Log($"{c.name}: chest cut open - {o.Substring(9).ToLower()} out");
@@ -118,7 +119,12 @@ namespace RageEngine
                 chestOpen47[c] = Time.time;
                 string[] all = { "RE_Organ_Gut", "RE_Organ_Liver", "RE_Organ_Kidney", "RE_Organ_Lung", "RE_Organ_Heart" };
                 int n = perfMode == "p" ? 2 : 3;
-                for (int i = 0; i < n; i++) { string o = all[Random.Range(0, all.Length)]; SpawnGoreModels(p, outDir + Random.insideUnitSphere * 0.5f, o, 1, organMat44(o), 0.9f, c); }
+                for (int i = 0; i < n; i++)
+                {
+                    int rg = Region49(c, chest, p + Random.insideUnitSphere * 0.08f);
+                    string o = i == 0 ? OrganAt49(c, chest, p, rg) : all[Random.Range(0, all.Length)];
+                    Organ49(o, p + Random.insideUnitSphere * 0.04f, (outDir + Random.insideUnitSphere * 0.35f).normalized, c, Random.Range(1.2f, 2.4f));
+                }
                 Stamp(c, p, 0.09f, "torn_flesh", 1f);
                 Sfx.Play("NRE_GoreTear", part.transform, 1f);
                 Log($"{c.name}: blown open");
@@ -151,7 +157,7 @@ namespace RageEngine
                 StartClutch(s, part, p, null, false, true); if (s.clutching) s.clutchUntil = Time.time + 5f;
                 Scream(s, true);
             }
-            if (severity >= 1.5f) { string o = Random.value < 0.5f ? "RE_Organ_Liver" : "RE_Organ_Kidney"; SpawnGoreModels(p, c.transform.forward + Vector3.down * 0.3f, o, 1, organMat44(o), 0.4f, c); }
+            if (severity >= 1.3f) { var ch2 = ChestPart(c) ?? part; Vector3 ov = Vector3.ProjectOnPlane(p - ch2.transform.position, c.transform.up); if (ov.sqrMagnitude < 1e-4f) ov = c.transform.forward; Organ49(OrganAt49(c, ch2, p, 1) == "RE_Organ_Gut" ? "RE_Organ_Liver" : OrganAt49(c, ch2, p, 1), p, ov.normalized, c, 0.5f); }
             Log($"{c.name}: GUTTED - his insides come out");
         }
 

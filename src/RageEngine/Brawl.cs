@@ -76,16 +76,17 @@ namespace RageEngine
         }
 
         // ---------------- knockout ----------------
-        void Knockout(NpcState s, Vector3 dir, bool byPlayer)
+        void Knockout(NpcState s, Vector3 dir, bool byPlayer, bool force = false)
         {
-            if (!knockouts) return;                                                       // 0.34: switch
+            if (!knockouts && !force) return;                                             // 0.34: switch
             var c = s.creature;
             if (s.knockedOut || c.isKilled) return;
-            if (TankShrug(s, "a knockout blow")) return;
+            if (!force && !CanDrop49(s)) return;                                          // 0.49: healthy men don't get knocked out
+            if (!force && TankShrug(s, "a knockout blow")) return;
             s.knockedOut = true;
             if (knockoutKills) { s.finalKill = true; s.dying = false; s.noGasp = true; }
             s.koLimbs = s.limpParts;
-            AllowFall(s, 10f);
+            AllowFallAlways(s, 10f);
             Guard("ko", () => c.ragdoll.SetState(Ragdoll.State.Destabilized));
             MakeLimp(s, ArmParts | LegParts);
             Loosen(s, RagdollPart.Type.Head | RagdollPart.Type.Neck | RagdollPart.Type.Torso, 0.95f, 30f);

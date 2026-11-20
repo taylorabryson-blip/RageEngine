@@ -6,25 +6,25 @@ namespace RageEngine
 {
     public sealed partial class RageEngineScript
     {
-        [ModOptionCategory("Rage", 0), ModOptionOrder(3)]
+        [ModOptionCategory("NPCs", 2), ModOptionOrder(3)]
         [ModOption("Mod voices", "ON: Rage Engine's screams, pain groans and gasps. OFF: only the game's own voices.", defaultValueIndex = 1)]
         public static bool modVoices = true;
 
         public static bool fistFighting = false;                                  // 0.36: fisticuffs removed - unarmed NPCs are the game's again
 
-        [ModOptionCategory("Rage", 0), ModOptionOrder(11)]
+        [ModOptionCategory("Gore", 1), ModOptionOrder(11)]
         [ModOption("Bones through skin", "ON: weapons, falls and crushing blows can push broken bones out. Never from punches or kicks.", defaultValueIndex = 1)]
         public static bool bonesOutOpt = true;
 
-        [ModOptionCategory("Rage", 0), ModOptionOrder(12)]
+        [ModOptionCategory("Gore", 1), ModOptionOrder(12)]
         [ModOption("Face cave-in & skull bits", "ON: repeated blunt blows cave the face in and a crushed skull throws bits. Never from one shot. OFF: none of it, no bits.", defaultValueIndex = 1)]
         public static bool faceCaveOpt = true;
 
-        [ModOptionCategory("Rage", 0), ModOptionOrder(13)]
+        [ModOptionCategory("NPCs", 2), ModOptionOrder(13)]
         [ModOption("Knockouts & passing out", "ON: big head shots can knock them out, and a man beaten half to death may pass out. OFF: never.", defaultValueIndex = 1)]
         public static bool knockouts = true;
 
-        [ModOptionCategory("Rage", 0), ModOptionOrder(14)]
+        [ModOptionCategory("Gore", 1), ModOptionOrder(14)]
         [ModOption("Bruise marks", "ON: painted bruises and black eyes on the skin. OFF: no marks (wounds and blood still show).", defaultValueIndex = 0)]
         public static bool bruiseMarks = false;
 

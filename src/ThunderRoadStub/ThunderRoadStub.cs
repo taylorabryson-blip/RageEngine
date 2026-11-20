@@ -267,6 +267,7 @@ namespace ThunderRoad
     public class BrainModuleSpeak : BrainData.Module
     {
         public bool moveMouth;
+        public VoiceData voiceData;
         public void Play(string dialogId, bool abnormalNoise, bool checkMuffled = true, int forceHash = -1) { }
     }
     public class BrainModuleStance : BrainData.Module
@@ -295,7 +296,8 @@ namespace ThunderRoad
     public class BrainModuleEquipment : BrainData.Module { public bool allowArmGrabDisarm; public bool allowArmStabDisarm; }
     public class BrainModuleElectrocute : BrainData.Module { public Coroutine coroutine; public float lastElectrocuteTime; }
     public class BrainModuleExpression : BrainData.Module { public bool SetFaceExpression(FaceAnimator.Expression expression, int faceIndex = 0, float? neutralExpressionTime = null) => false; }
-    public class BrainModuleFear : BrainData.Module { public void Panic(float duration = -1f) { } }
+    public class VoiceData : CatalogData { public List<Dialog> dialogs; public class Dialog { public string id; } }
+    public class BrainModuleFear : BrainData.Module { public string panicScreamDialogID; public void Panic(float duration = -1f) { } }
     public class BrainModuleHitReaction : BrainData.Module
     {
         public float recoverySpeed;

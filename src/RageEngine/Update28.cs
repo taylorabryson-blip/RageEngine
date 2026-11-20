@@ -21,7 +21,7 @@ namespace RageEngine
 {
     public sealed partial class RageEngineScript
     {
-        [ModOptionCategory("Rage", 0), ModOptionOrder(6)]
+        [ModOptionCategory("You", 3), ModOptionOrder(6)]
         [ModOption("Your punch damage", "Extra damage from your fists and feet for really fast punches. 0 = the game's own damage only.", defaultValueIndex = 2)]
         [ModOptionSlider, ModOptionFloatValues(0f, 3f, 0.25f)]
         public static float punchDamage = 0.5f;
@@ -30,7 +30,7 @@ namespace RageEngine
         [ModOptionCategory("Rage", 0), ModOptionOrder(1)]
         [ModOption("Save cheat settings", "ON: your cheats (infinite focus, invincibility, free climb...) are remembered between sessions.", defaultValueIndex = 1)]
         public static bool rememberCheats = true;
-        [ModOptionCategory("Rage", 0), ModOptionOrder(2)]
+        [ModOptionCategory("Gore", 1), ModOptionOrder(2)]
         [ModOption("Mod sound effects", "ON: Rage Engine's bone cracks, crunches and gurgles. OFF: only the game's own sounds.", defaultValueIndex = 1)]
         public static bool modSfx = true;
 
@@ -205,13 +205,20 @@ namespace RageEngine
                 }
             }
             // ---- the knife
-            if (pullKnife && s.hasKnife && !s.knifeOut && !s.knifePending && c.ragdoll.state == Ragdoll.State.Standing && !s.knockedOut && !s.ally
-                && s.unarmedSince > 0f && now - s.unarmedSince > 1.5f && now - s.trackedAt > 6f
-                && s.beatHits42 >= 2 && now - s.beatAt42 < 6f && !HasRealWeapon42(s))
+            // 0.49: was far too strict (almost never fired). Unarmed + you close + he's been hit once, or he's just been
+            // standing there empty-handed in a fight for a few seconds -> the blade comes out.
+            if (pullKnife && s.hasKnife && !s.knifeOut && !s.knifePending && now >= s.nextKnife49 && !s.knockedOut && !s.ally && !s.surrendered
+                && c.ragdoll.state == Ragdoll.State.Standing && now - s.trackedAt > 3f && !HasRealWeapon42(s))
             {
+                if (s.unarmedSince <= 0f) s.unarmedSince = now;
                 var pc = Player.local != null ? Player.local.creature : null;
-                if (pc != null && (pc.transform.position - c.transform.position).sqrMagnitude < 3f * 3f) Guard("knife", () => PullKnife(s));
+                float d2 = pc != null ? (pc.transform.position - c.transform.position).sqrMagnitude : 999f;
+                bool beaten = s.beatHits42 >= 1 && now - s.beatAt42 < 10f;
+                bool waiting = now - s.unarmedSince > 4f;
+                if (d2 < 5f * 5f && (beaten || waiting) && now - s.unarmedSince > 0.8f)
+                { s.nextKnife49 = now + 3f; Guard("knife", () => PullKnife(s)); }
             }
+            if (s.knifeOut && !HasRealWeapon42(s)) { s.knifeOut = false; s.hasKnife = Random.value < 0.35f; s.nextKnife49 = now + 8f; }   // lost it - maybe a spare
         }
 
         static Material sprayMat28; static readonly Dictionary<int, Material> sprayMats28 = new Dictionary<int, Material>();

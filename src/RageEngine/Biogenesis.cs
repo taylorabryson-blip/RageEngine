@@ -362,7 +362,7 @@ namespace RageEngine
             if (s.knockedOut) return;
             s.knockedOut = true; s.koWakeAt = Time.time + seconds; s.koLimbs = s.limpParts; s.eyesShutUntil = float.MaxValue;
             Guard("brain", () => c.brain.Stop());
-            AllowFall(s, 3f); Guard("fall", () => c.ragdoll.SetState(Ragdoll.State.Destabilized));
+            AllowFallAlways(s, 3f); Guard("fall", () => c.ragdoll.SetState(Ragdoll.State.Destabilized));
             Log($"{WhoIs(s)} slips UNCONSCIOUS ({seconds:0} s)");
         }
 

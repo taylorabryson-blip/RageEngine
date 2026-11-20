@@ -238,7 +238,7 @@ namespace RageEngine
                         s.knockedOut = true; s.koWakeAt = now + 35f; s.koLimbs = s.limpParts;
                         s.eyesShutUntil = float.MaxValue;
                         Guard("brain", () => c.brain.Stop());
-                        AllowFall(s, 3f); Guard("fall", () => c.ragdoll.SetState(Ragdoll.State.Destabilized));
+                        AllowFallAlways(s, 3f); Guard("fall", () => c.ragdoll.SetState(Ragdoll.State.Destabilized));
                         Log($"{WhoIs(s)} falls ASLEEP - sedative");
                     }
                     if (s.toxStage >= 1 && !s.knockedOut) EndToxin(s, "wakes from the sedative");

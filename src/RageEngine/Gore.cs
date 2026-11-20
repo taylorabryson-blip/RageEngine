@@ -228,6 +228,7 @@ namespace RageEngine
 
         static void SpawnChunks(Vector3 point, Vector3 dir, int n, float speed, float size, Creature from = null, bool skull = false)
         {
+            if (RageEngineScript.ExternalGore) return;
             if (chunkMeshes == null) BuildChunkMeshes();
             int max = Mathf.RoundToInt(maxGoreChunks);
             Color skin = from != null ? Mats.SkinOf(from) : new Color(0.78f, 0.58f, 0.48f);
@@ -332,6 +333,7 @@ namespace RageEngine
             SpawnChunks(point, (-into + Vector3.up * 0.3f).normalized, 5, 3.5f, 0.9f, c, true);
             Log($"{c.name}: skull caved in ({dented} mesh{(dented == 1 ? "" : "es")} deformed)");
             Guard("skullgore", () => SkullSmashExtras(s, head, point, dir));
+            if (severity >= headCrushForce * 1.6f) { Guard("headpop", () => HeadPop49(s, head, point, dir)); return; }   // 0.49: big enough - goo
             RageMoment("skull crushed");
             if (c.jaw != null) { s.jawBroken = s.jawTorn = true; s.jawRest = c.jaw.localRotation; }
             if (!c.isKilled) Guard("kill", () => c.Kill());

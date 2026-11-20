@@ -34,47 +34,58 @@ namespace RageEngine
 
         /// Every frame: if the game drops a standing NPC on its own (an ordinary hit, a shove, a stagger that turned into
         /// a fall), put them straight back on their feet - unless Rage Engine or the player meant it.
+        /// 0.49: below this much HP a man can be put down by hits. Above it he stays on his feet, full stop.
+        internal const float DropLine49 = 0.2f;
+        /// 0.49: falls that must happen whatever his HP (sleep serum, poison, choked out, pressure points, lost leg, spine).
+        internal static void AllowFallAlways(NpcState s, float seconds) { if (s != null) { s.allowFallUntil = Mathf.Max(s.allowFallUntil, Time.time + seconds); s.mustFall49 = Mathf.Max(s.mustFall49, Time.time + seconds); } }
+        /// 0.49: may a hit knock him down right now? Only when he's very low; the lower he is the less he tanks it.
+        internal static bool CanDrop49(NpcState s)
+        {
+            var c = s.creature; if (c == null) return false;
+            if (c.isKilled || s.dying) return true;
+            float hp = HpFrac(c);
+            if (hp >= DropLine49) return false;
+            float resist = Mathf.Lerp(0f, 0.8f, hp / DropLine49) + (s.will44 ? 0.15f : 0f) + (Tank(s) ? 0.15f : 0f);
+            return Random.value > resist;
+        }
+
+        /// Every frame: NPCs stay on their feet. They only go down when they die, when they're very low on HP (and lose
+        /// the roll), or when something meant to put them down for sure (sleep serum, poison, choke-out, lost leg...).
         void GuardKnockdown(NpcState s)
         {
             var c = s.creature;
             var rag = c.ragdoll;
             if (rag == null) return;
             var st = rag.state;
-            if (st == s.prevState) return;
             var prev = s.prevState;
             s.prevState = st;
-            if (!blockCheapKnockdowns || prev != Ragdoll.State.Standing || (st != Ragdoll.State.Destabilized && st != Ragdoll.State.Inert)) return;
-            // 0.47: back to the 0.31-0.38 rule (the one players liked): a healthy man stays on his feet, full stop. He can
-            // go down once he's hurt - from a power shot, a big hit to the legs or gut, or something Rage Engine meant -
-            // and the lower his HP the likelier; strong-willed men can still power through while they've got something left.
-            if (c.isKilled || s.dying || s.spineBroken || s.lostLeg || Has(s.brokenParts, LegParts)
-                || s.knockedOutUntil > 0f || s.knockedOut || s.passedOut || s.shockDeathAt > 0f || Time.time < s.forceFall47) return;
+            if (c.isKilled || s.dying || s.shockDeathAt > 0f || s.lostLeg || s.spineBroken
+                || s.knockedOut || s.passedOut || Time.time < s.mustFall49) { s.downSince49 = 0f; return; }
+            if (rag.handlers != null && rag.handlers.Count > 0) { s.downSince49 = 0f; return; }   // you're holding him
+            if (Time.time - lastCastAt < 1.5f) return;                                           // your spells
+            bool down = st == Ragdoll.State.Destabilized || st == Ragdoll.State.Inert;
+            if (!down) { s.downSince49 = 0f; return; }
+            bool fresh = prev == Ragdoll.State.Standing;
+            if (fresh)
             {
-                float hp = HpFrac(c);
-                float line = 0.45f / Mathf.Sqrt(Tough33(s));
-                bool hurt = hp < line;
-                bool meant = Time.time < s.allowFallUntil || Time.time - s.bigHitAt < 1.2f || Time.time - s.powerHitAt < 1f;
-                if (hurt && meant)
+                if (HpFrac(c) < DropLine49)
                 {
-                    bool powers = (s.will44 || Tank(s)) && hp > 0.15f && Random.value < Mathf.Lerp(0.2f, 0.7f, hp / line);
-                    if (!powers) return;
-                    s.bigHitAt = -10f; s.powerHitAt = -10f;
-                    Speak(s, "attackmelee");
-                    Log($"{WhoIs(s)}: strong will - stays up ({hp * 100f:0}% HP)");
+                    bool hit = Time.time < s.allowFallUntil || Time.time - s.bigHitAt < 1.2f || Time.time - s.powerHitAt < 1f;
+                    if (hit && CanDrop49(s)) { s.lowDrop49 = Time.time + 6f; return; }
+                    if (hit) { Speak(s, "attackmelee"); Log($"{WhoIs(s)}: hangs on ({HpFrac(c) * 100f:0}% HP)"); }
                 }
-                else if (hurt && Random.value < (1f - hp / line) * 0.35f * (s.will44 ? 0.5f : 1f)) return;
             }
-            if (rag.handlers != null && rag.handlers.Count > 0) return;            // you're holding them: grabs and throws are yours
-            // 0.28: anything that happens near you is yours too - spells (gravity push), kicks, shoves, other mods. This guard
-            // was undoing them, which is why vanilla effects 'did nothing'. It now only catches trips far away from the fight.
-            // 0.28.2: the guard is back (0.28 dropped it near you and NPCs fell over from everything). Two things still
-            // get through: your spells (gravity push etc. - you were holding the cast button) and real power shots.
-            if (Time.time - lastCastAt < 1.5f) return;
+            else
+            {
+                if (Time.time < s.lowDrop49) return;                                 // he lost the roll: let him lie a moment
+                if (s.downSince49 <= 0f) { s.downSince49 = Time.time; return; }
+                if (Time.time - s.downSince49 < 1.2f) return;                       // something else put him down: get him up
+            }
             if (Time.time - s.blockWindowStart > 3f) { s.blockWindowStart = Time.time; s.blockedFalls = 0; }
-            if (++s.blockedFalls > 80) return;                                        // something keeps knocking them over: let it
+            if (++s.blockedFalls > 120) return;
             Guard("antifall", () => rag.SetState(Ragdoll.State.Standing));
-            s.prevState = Ragdoll.State.Standing;
-            Log($"{c.name}: blocked a cheap knockdown (kept on their feet)");
+            s.prevState = Ragdoll.State.Standing; s.downSince49 = 0f;
+            Log($"{c.name}: kept on his feet");
         }
 
         // ---------------- fisticuffs tick ----------------

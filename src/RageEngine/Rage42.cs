@@ -117,7 +117,7 @@ namespace RageEngine
             float now = Time.time;
             var dt = hit.damageStruct.damageType;
             // a beating while unarmed (counts toward pulling a knife)
-            if (dt == DamageType.Blunt && severity >= 0.3f)
+            if (severity >= 0.08f)
             {
                 if (now - s.beatAt42 > 8f) s.beatHits42 = 0;
                 s.beatHits42++; s.beatAt42 = now;

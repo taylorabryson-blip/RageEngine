@@ -43,7 +43,7 @@ namespace RageEngine
 
         public static float knockdownForce = 5f;
 
-        [ModOptionCategory("Rage", 0), ModOptionOrder(4)]
+        [ModOptionCategory("NPCs", 2), ModOptionOrder(4)]
         [ModOption("NPC HP", "100 = a normal man. Every HP above 100 makes them tougher too: harder to knock over, shrug off pain, slower to go down. 0 = the game's own health.", defaultValueIndex = 6)]
         [ModOptionSlider, ModOptionFloatValues(0f, 5000f, 50f)]
         public static float npcHealth = 300f;

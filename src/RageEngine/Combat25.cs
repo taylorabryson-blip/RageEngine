@@ -22,7 +22,7 @@ namespace RageEngine
     {
         public static bool punchThrough = false;                                    // 0.42: removed (feedback)
         public static bool neckSnaps = true;
-        public static float punchThroughSpeed = 7f;
+        public static float punchThroughSpeed = 6f;
 
         // ------------------------------------------------------------------ hit source
         static bool PlayerSource(CollisionInstance hit, out RagdollPart ppart, out Item pitem, out float speed)
@@ -61,30 +61,8 @@ namespace RageEngine
             float hpLow = 1f - HpFrac(c);
             var chest = ChestPart(c);
 
-            // ---- punch-through
-            if (false && punchThrough && Has(t, RagdollPart.Type.Torso) && dt == DamageType.Blunt && ((fist && speed >= punchThroughSpeed) || (heavyBlunt && speed >= punchThroughSpeed * 0.8f)))
-            {
-                bool tough = s.hpK > 0.65f || s.bioNoQuit || s.bioStrength > 1.3f || Tank(s);
-                if (!tough)
-                {
-                    Vector3 front = hit.contactPoint;
-                    Vector3 back = (chest != null ? chest.transform.position : front) + dir * 0.13f;
-                    Stamp(c, front, 0.07f, "laceration_deep", 1f);
-                    Stamp(c, back, 0.09f, "laceration_deep", 1f);
-                    for (int i = 0; i < 6; i++) Guard("blood", () => RageEngineScript.Blood(part.transform));
-                    Guard("ground", () => GroundBlood(back + dir * 0.4f, "blood_ground_splat", 0.4f, c));
-                    Sfx.Play("NRE_Squelch", part.transform, 1f, 0.85f);
-                    Sfx.Play("NRE_RibCrack", part.transform, 1f);
-                    s.punchedThrough = true;
-                    Guard("kill", () => c.Kill());
-                    foreach (var rp in c.ragdoll.parts) if (rp != null && rp.physicBody != null) rp.physicBody.AddForce(dir * Mathf.Min(speed * 0.5f, 5f), ForceMode.VelocityChange);
-                    Log($"{WhoIs(s)}: PUNCHED THROUGH the chest ({(fist ? "fist" : pitem.data.id)} at {speed:0.0} m/s)");
-                    RageMoment("punch-through");
-                    return;
-                }
-                Log($"{WhoIs(s)}: takes a chest-caving blow ({speed:0.0} m/s) - too tough to go through");
-                severity *= 1.5f;
-            }
+            // ---- punch-through (0.49: JoJo-style - he hangs on your arm until you pull it out)
+            if (fist && Has(t, RagdollPart.Type.Torso) && dt == DamageType.Blunt && TryPunchThrough49(s, ppart, part, hit.contactPoint, dir, speed)) return;
 
             // ---- uppercut: a rising blow to the jaw
             bool rising = Vector3.Dot(dir, Vector3.up) > 0.45f;

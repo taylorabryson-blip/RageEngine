@@ -96,7 +96,7 @@ namespace RageEngine
                 StartClutch(s, stump, part.transform.position, holdWith, false, flee);
                 s.clutchUntil = Time.time + (flee ? 30f : ClutchTime(s));
             }
-            if (s.lostLeg) { AllowFall(s, 1.5f); Guard("fall", () => c.ragdoll.SetState(Ragdoll.State.Destabilized)); }
+            if (s.lostLeg) { AllowFallAlways(s, 1.5f); Guard("fall", () => c.ragdoll.SetState(Ragdoll.State.Destabilized)); }
             if (flee) Panic(s, 25f);
             Log($"{c.name} lost {t} -> {(flee ? "flees" : "fights on")}");
         }
@@ -146,7 +146,7 @@ namespace RageEngine
             Guard("wave.rejoin", () => RejoinWave42(s));                         // 0.42: no replacement spawned on top of him
             // 0.15: the body is wherever it fell - get up from there. Leaving it "standing" straight from a dead ragdoll is
             // what made revived NPCs float.
-            AllowFall(s, 3f);
+            AllowFallAlways(s, 3f);
             Guard("revive-getup", () => c.ragdoll.SetState(Ragdoll.State.Destabilized));
             s.balance = Mathf.Min(s.balance, 0.5f);
         }

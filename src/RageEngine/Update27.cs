@@ -95,7 +95,7 @@ namespace RageEngine
             var c = s.creature;
             if (s.knockedOut || c.isKilled) return;
             bool kk = knockoutKills; knockoutKills = false;
-            try { Knockout(s, dir, true); } finally { knockoutKills = kk; }
+            try { Knockout(s, dir, true, true); } finally { knockoutKills = kk; }
             if (!s.knockedOut) return;
             s.passedOut = true;
             s.koWakeAt = Time.time + Random.Range(15f, 30f); s.koDeathAt = 0f; s.finalKill = false;

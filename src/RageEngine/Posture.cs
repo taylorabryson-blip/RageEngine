@@ -42,7 +42,7 @@ namespace RageEngine
             var c = s.creature;
             var rag = c.ragdoll;
             if (rag == null) return;
-            if (s.spineBroken && !c.isKilled && rag.state == Ragdoll.State.Standing) { AllowFall(s, 1.5f); Guard("fall", () => rag.SetState(Ragdoll.State.Destabilized)); }
+            if (s.spineBroken && !c.isKilled && rag.state == Ragdoll.State.Standing) { AllowFallAlways(s, 1.5f); Guard("fall", () => rag.SetState(Ragdoll.State.Destabilized)); }
             UpdatePosture(s);
 
             float max = MaxBalance(s);
