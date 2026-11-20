@@ -1,5 +1,27 @@
 # Rage Engine changelog
 
+## 0.49
+**NPCs stay on their feet**
+- NPCs stand the whole fight. They only go down when they die or are very low on HP (under 20%).
+- The lower their HP, the less they tank hits. Some tough or strong-willed NPCs hang on even with their guts out.
+- Knockouts only happen at very low HP. Sleep serum, poison, choke-outs, pressure points, a lost leg or a broken spine still put them down.
+- Grabbing, telekinesis and throws still work as before.
+
+**New**
+- **Rip organs out by hand.** Cut him open, put your hand in the wound and grip. Chest gives the heart or a lung, belly gives the liver, stomach, spleen or guts, and the back gives the spine. Throw it or drop it.
+- **Punch through the chest.** A really fast punch goes clean through, leaving a hole front and back. He hangs on your arm grabbing at it. Pull your arm out and he drops.
+- **Heads turn to goo.** Keep beating a caved-in skull, or land a huge blow, and the head pops.
+- **More organs:** stomach, spleen, bladder and intestine. Organs now come out of the spot they actually sit in, and slide out instead of flying.
+- **Taunts:** cocky NPCs square up, beckon you in, spread their arms and taunt you.
+- **Fear and surrender voices:** begging, fleeing and surrendering NPCs use the surrender, beg, panic and fear lines from any voice pack they have.
+- **Other gore mods:** set Gore → "Gore & blood from: My other gore mod" and Rage Engine turns off its own blood and gore. Everything else keeps running.
+- NPCs actually pull knives now when they're unarmed and you're on them.
+
+**Fixes**
+- Syringes, serums, vials and oils are back in the item book (Potions tab; toxin daggers are in Daggers).
+- Rage Tower: smoother stairs between floors. NPCs stuck on another floor with no way to reach you get moved to your floor.
+- Settings are split into 4 tabs: Rage, Gore, NPCs, You.
+
 ## 0.48 — Polish
 - Healthy NPCs no longer drop from ordinary hit reactions; only hurt NPCs (low HP) can be knocked down by normal hits. Knockouts, chokes, takedowns and other "meant" falls still work.
 - Knocked-out / passed-out NPCs are no longer fought by the stand-up guard.
