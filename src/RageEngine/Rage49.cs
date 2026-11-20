@@ -62,15 +62,21 @@ namespace RageEngine
             switch (region)
             {
                 case 0: return side < 0.04f && up < 0.12f && Random.value < 0.7f ? "RE_Organ_Heart" : "RE_Organ_Lung";
-                case 2: return up > -0.05f ? "RE_Organ_Lung" : "RE_Organ_Kidney";
-                default: return side > 0.03f && up > -0.06f ? "RE_Organ_Liver" : Random.value < 0.6f ? "RE_Organ_Gut" : side < -0.03f ? "RE_Organ_Liver" : "RE_Organ_Kidney";
+                case 2: return up > -0.05f ? "RE_Organ_Lung" : side < -0.07f && up > -0.12f ? "RE_Organ_Spleen" : "RE_Organ_Kidney";
+                default:
+                    if (up < -0.2f && Mathf.Abs(side) < 0.07f) return "RE_Organ_Bladder";
+                    if (side > 0.03f && up > -0.08f) return "RE_Organ_Liver";
+                    if (side < -0.09f && up > -0.06f) return Random.value < 0.6f ? "RE_Organ_Spleen" : "RE_Organ_Stomach";
+                    if (side < -0.02f && up > -0.08f) return "RE_Organ_Stomach";
+                    return Random.value < 0.6f ? "RE_Organ_Intestine" : "RE_Organ_Gut";
             }
         }
 
         /// An organ that slides out of the wound (not flung across the room). Returns it.
         static GameObject Organ49(string name, Vector3 at, Vector3 outward, Creature c, float push)
         {
-            var mesh = BoneModels.Get(name); if (mesh == null) return null;
+            var mesh = BoneModels.Get(name) ?? BoneModels.Get(name == "RE_Organ_Stomach" || name == "RE_Organ_Intestine" ? "RE_Organ_Gut" : "RE_Organ_Kidney");
+            if (mesh == null) return null;
             while (goreModels.Count > 0 && (goreModels.Count >= PerfGorePieces || goreModels[0] == null)) { if (goreModels[0] != null) Object.Destroy(goreModels[0]); goreModels.RemoveAt(0); }
             var go = new GameObject("RageEngine_Organ");
             go.transform.position = at + outward * 0.02f;

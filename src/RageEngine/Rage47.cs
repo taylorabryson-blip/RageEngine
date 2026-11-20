@@ -117,7 +117,7 @@ namespace RageEngine
                 chestOpen47.TryGetValue(c, out float last);
                 if (Time.time - last < 6f) return;
                 chestOpen47[c] = Time.time;
-                string[] all = { "RE_Organ_Gut", "RE_Organ_Liver", "RE_Organ_Kidney", "RE_Organ_Lung", "RE_Organ_Heart" };
+                string[] all = { "RE_Organ_Gut", "RE_Organ_Liver", "RE_Organ_Kidney", "RE_Organ_Lung", "RE_Organ_Heart", "RE_Organ_Stomach", "RE_Organ_Spleen", "RE_Organ_Intestine", "RE_Organ_Bladder" };
                 int n = perfMode == "p" ? 2 : 3;
                 for (int i = 0; i < n; i++)
                 {
