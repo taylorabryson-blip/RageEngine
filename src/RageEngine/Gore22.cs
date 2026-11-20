@@ -341,8 +341,8 @@ namespace RageEngine
             s.finalKill = true; s.dying = false; s.noGasp = true;
             if (dir.sqrMagnitude < 0.01f) dir = Vector3.down;
             Vector3 hp = head.transform.position;
-            Sfx.PlayAt("NRE_HeadCrush", hp, 1f, 0.85f);
-            Sfx.PlayAt("NRE_Squelch", hp, 1f, 0.8f);
+            Sfx.Play("NRE_HeadCrush", head.transform, 1f, 0.85f);
+            Sfx.Play("NRE_Squelch", head.transform, 1f, 0.8f);
             Sfx.PlayAt("NRE_GoreTear", hp, 0.9f);
             Transform mesh = head.meshBone != null ? head.meshBone : head.bone != null ? head.bone.mesh : null;
             if (mesh != null)

@@ -13,7 +13,7 @@
  "tier": 2,
  "flags": "None",
  "levelRequired": 0,
- "category": "Rage",
+ "category": "Potions",
  "iconEffectId": null,
  "preferredItemCenter": "Mass",
  "drainImbueWhenIdle": true,
