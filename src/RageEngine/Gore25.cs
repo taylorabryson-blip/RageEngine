@@ -45,8 +45,9 @@ namespace RageEngine
                 {
                     int n = Random.Range(1, severity >= 1.3f ? 5 : 3) + (severity >= 1.8f ? 1 : 0);
                     s.teethLost += n;
-                    Sfx.PlayAt("NRE_Teeth", mouth, 0.7f);
+                    Sfx.PlayAt("NRE_Teeth", mouth, 1f);
                     Stamp(c, mouth, 0.03f, "blood_drip", 0.85f);
+                    { var mt = Mouth(c); var nn = n; Guard("teeth50", () => TeethFx50(s, mt != null ? mt : part.transform, nn)); }
                     Vector3 outv = (ce.forward + Vector3.up * 0.3f).normalized;
                     SpawnGoreModels(mouth, outv + (p - mouth).normalized * -0.3f, "RE_Tooth", n, ToothMat(), 1.1f, c);
                     Guard("spit", () => SpitBlood(s, 1));

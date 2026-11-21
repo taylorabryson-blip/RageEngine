@@ -158,7 +158,8 @@ namespace RageEngine
                     Vector3 mouth = ce.position - ce.up * 0.1f + ce.forward * 0.05f;
                     int n = Random.Range(2, 5); s.teethLost += n;
                     SpawnGoreModels(mouth, fwd + Vector3.up * 0.2f, "RE_Tooth", n, ToothMat(), 1f, c);
-                    Sfx.PlayAt("NRE_Teeth", mouth, 0.7f);
+                    Sfx.PlayAt("NRE_Teeth", mouth, 1f);
+                    { var mt = Mouth(c); var nn = n; Guard("teeth50", () => TeethFx50(s, mt != null ? mt : head.transform, nn)); }
                 }
                 for (int i = 0; i < 2; i++) Blood(head.transform);
                 var pt = point; Guard("ground", () => GroundBlood(pt, "blood_ground_splat", 0.3f, c));

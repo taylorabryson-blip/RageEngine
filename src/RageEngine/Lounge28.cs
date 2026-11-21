@@ -125,6 +125,7 @@ namespace RageEngine
             if (key.StartsWith("music/lounge")) lounge28.Add(c);
             else if (key.StartsWith("music/elevator")) elevatorClip28 = c;
             else if (key.StartsWith("ambience/")) ambClips28[key.Substring(9)] = c;
+            else if (key.StartsWith("music/wave_")) waveClips50.Add(c);
         }
 
         static void PollLoads28()

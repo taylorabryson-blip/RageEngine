@@ -15,7 +15,11 @@ namespace ThunderRoad
 
     public class ThunderBehaviour : MonoBehaviour { }
     public class OutOfBoundsFader : ThunderBehaviour { public Collider boundsCollider; public bool constrainPlayer; }
-    public abstract class ThunderEntity : ThunderBehaviour { }
+    public abstract class ThunderEntity : ThunderBehaviour { public List<IStatus> Statuses => null; public virtual void Clear(StatusData data) { } }
+    public interface IStatus { }
+    public class StatusData : CatalogData { }
+    public class Status : IStatus { public StatusData data; public ThunderEntity entity; public float startTime; public float expiry; }
+    public class Burning : Status { public bool isIgnited; public float Heat { get; set; } public float MaxHeat => 0f; public float CharAmount => 0f; public void FullyChar(Creature creature) { } }
     public class Interactable : ThunderBehaviour { public enum Action { UseStart = 0, UseStop = 1, AlternateUseStart = 2, AlternateUseStop = 3, Grab = 4, Ungrab = 5 } }
     public enum Category { Text = 0, Wave = 1, Creature = 2, CreatureTable = 3, LootTable = 4, Container = 5, Item = 6, Brain = 7, Effect = 8 }
     public abstract class ContentCustomData { }

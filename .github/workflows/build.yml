@@ -87,6 +87,18 @@ jobs:
             vcut /tmp/au/d1.mp3 0 1.5 $S/NRE_DoorCreak_1.wav
             echo "NRE_DoorCreak_1: \"Door Squeak, Normal, A.wav\" by InspectorJ (www.jshaw.co.uk) of Freesound.org https://freesound.org/s/342241/ - CC BY 4.0" >> /tmp/au/credits.txt
           else echo "MISSING sound: door creak" | tee -a build.log; fi
+          # 0.50: teeth knocked out - real crunch recording, three short cuts
+          if fs https://freesound.org/people/InspectorJ/sounds/333818/ /tmp/au/tooth.mp3; then
+            vcut /tmp/au/tooth.mp3 0.0 0.4 $S/NRE_ToothCrack_1.wav; vcut /tmp/au/tooth.mp3 0.9 0.4 $S/NRE_ToothCrack_2.wav; vcut /tmp/au/tooth.mp3 1.8 0.4 $S/NRE_ToothCrack_3.wav
+            echo "NRE_ToothCrack_1-3: \"Cracking/Crunching, A.wav\" by InspectorJ (www.jshaw.co.uk) of Freesound.org https://freesound.org/s/333818/ - CC BY 4.0" >> /tmp/au/credits.txt
+          else echo "MISSING sound: tooth crack" | tee -a build.log; fi
+          # 0.50: wave music - CC0 battle tracks from OpenGameArt
+          OG=https://opengameart.org/sites/default/files
+          wm() { if get "$OG/$1" /tmp/au/$2.src "$OG/$3"; then ffmpeg -nostdin -loglevel error -y -i /tmp/au/$2.src -ac 2 -ar 32000 -af loudnorm=I=-19:TP=-2 -c:a libvorbis -q:a 3 "$M/$2.ogg" && echo "$4 - CC0 (opengameart.org)" >> /tmp/au/credits.txt; else echo "MISSING music: $2" | tee -a build.log; fi; }
+          wm hard_battle_1_bpm170.ogg wave_1 hard_battle_1_bpm170.mp3 "Wave music 1: Hard Battle 1 by MintoDog https://opengameart.org/content/hard-battle-1"
+          wm heavy_battle_2_bpm185.ogg wave_2 heavy_battle_2_bpm185.mp3 "Wave music 2: Heavy Battle 2 by MintoDog https://opengameart.org/node/183145"
+          wm jrpg_battle_loop.mp3 wave_3 jrpg_battle_full.mp3 "Wave music 3: JRPG Epic Rock Battle Theme #1 by HydroGene https://opengameart.org/content/jrpg-epic-rock-battle-theme-1"
+          wm fight.ogg wave_4 fight.wav "Wave music 4: Fast fight / battle music by Ville Nousiainen (Xythe / mutkanto) https://opengameart.org/content/fast-fight-battle-music"
           ls -la $S | grep -i "vomit\|retch" | tee -a build.log
           { echo; echo "# Map music, ambience and vomiting sounds (downloaded at build time)"; sed 's/^/- /' /tmp/au/credits.txt; } >> dist/RageEngine/SOUND_CREDITS.md
           ls -la $M $A | tee -a build.log

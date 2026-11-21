@@ -113,6 +113,7 @@ namespace RageEngine
         sealed class Mood45 { public float k, r, ta, fi; public Color tint, fill; public Mood45(float k, float r, Color tint, float ta, Color fill, float fi) { this.k = k; this.r = r; this.tint = tint; this.ta = ta; this.fill = fill; this.fi = fi; } }
         static readonly Dictionary<string, Mood45> moods45 = new Dictionary<string, Mood45>
         {
+            { "RageYard",       new Mood45(1.40f, 1.25f, new Color(1f, 0.96f, 0.88f), 0.10f, new Color(0.85f, 0.9f, 1f), 0.55f) },   // floodlit yard at night
             { "RedRoomDiner",   new Mood45(1.30f, 1.20f, new Color(1f, 0.85f, 0.7f), 0.15f, new Color(1f, 0.85f, 0.7f), 0.70f) },   // warm diner, red neon
             { "BurgerJoint",    new Mood45(1.40f, 1.20f, new Color(0.95f, 1f, 1f), 0.20f, new Color(0.95f, 0.98f, 1f), 0.80f) },    // crisp fluorescent
             { "Skybar",         new Mood45(1.15f, 1.30f, new Color(1f, 0.75f, 0.45f), 0.30f, new Color(1f, 0.7f, 0.45f), 0.50f) },   // moody amber lounge

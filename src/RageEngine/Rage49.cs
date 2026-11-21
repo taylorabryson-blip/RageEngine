@@ -509,6 +509,7 @@ namespace RageEngine
             if (impales49.Count > 0) Guard("impale", TickImpale49);
             Guard("rip", TickRip49);
             if (pendingKill49.Count > 0) TickPendingKill49();
+            Guard("music50", TickWaveMusic50);
         }
     }
 }

@@ -28,6 +28,26 @@ namespace RageEngine
             return null;
         }
 
+        /// 0.50: how many of your hands are on his throat: grips on the neck or head, or a grip on his upper chest / jaw
+        /// with your hand right at his neck (the second hand often lands there when the first already holds the neck).
+        static int PlayerHandsOnThroat50(Creature c, RagdollHand first)
+        {
+            var hands = c.ragdoll != null ? c.ragdoll.handlers : null;
+            if (hands == null || first == null) return 1;
+            var neck = PartOf(c, RagdollPart.Type.Neck);
+            int n = 1;
+            for (int i = 0; i < hands.Count; i++)
+            {
+                var h = hands[i];
+                if (h == null || h == first || h.creature == null || !h.creature.isPlayer) continue;
+                var hr = h.grabbedHandle as HandleRagdoll;
+                if (hr == null || hr.ragdollPart == null || hr.ragdollPart.ragdoll != c.ragdoll) continue;
+                if (Has(hr.ragdollPart.type, RagdollPart.Type.Neck | RagdollPart.Type.Head)) { n = 2; break; }
+                if (neck != null && (h.transform.position - neck.transform.position).sqrMagnitude < 0.13f * 0.13f) { n = 2; break; }
+            }
+            return n;
+        }
+
         static void SetSclera(Creature c, Color col) => Guard("eyes", () => c.SetColor(col, Creature.ColorModifier.EyesSclera, true));
 
         void TickChoke(NpcState s, float dt)
@@ -59,7 +79,8 @@ namespace RageEngine
             }
 
             bool starting = s.chokeTime <= 0f;
-            s.chokeTime += dt;
+            int handsOn = PlayerHandsOnThroat50(c, hand);
+            s.chokeTime += dt * (handsOn >= 2 ? 1.8f : 1f);                                      // 0.50: two hands choke much faster
             float k = Mathf.Clamp01(s.chokeTime / chokeOutSeconds);
             s.balance = Mathf.Max(MinBalance, Mathf.Min(s.balance, 1f - 0.7f * k));
             s.pain = Mathf.Max(s.pain, k);
@@ -72,6 +93,7 @@ namespace RageEngine
                 float struggle = k < 0.55f ? 1f : Mathf.Lerp(1f, 0.1f, (k - 0.55f) / 0.45f);
                 float jitter = 0.55f + 0.45f * Mathf.PerlinNoise(Time.time * 7f, (c.GetHashCode() % 997) * 0.01f);
                 Haptics.Pulse(hand.side, chokeHaptics * struggle * jitter, 1);
+                if (handsOn >= 2) Haptics.Pulse(hand.side == Side.Left ? Side.Right : Side.Left, chokeHaptics * struggle * jitter, 1);
             }
 
             if (k > 0.35f && Time.time >= s.nextChokeFx)

@@ -15,7 +15,7 @@ namespace RageEngine
         static bool levelBuilt29, wavesHooked31;
         static readonly Dictionary<string, string> levelMaps31 = new Dictionary<string, string>
         {
-            { "RE_RageTower", "RageTower" }, { "RE_RedRoomDiner", "RedRoomDiner" }, { "RE_Skybar", "Skybar" },
+            { "RE_RageTower", "RageTower" }, { "RE_RedRoomDiner", "RedRoomDiner" }, { "RE_Skybar", "Skybar" }, { "RE_RageYard", "RageYard" },
         };
 
         static IEnumerable<string> LevelIds40()

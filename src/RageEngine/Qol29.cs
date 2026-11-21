@@ -20,7 +20,7 @@ namespace RageEngine
         [ModOptionSlider, ModOptionFloatValues(0.25f, 3f, 0.25f)]
         public static float stayOnFeet = 1f;
 
-        public static ModOptionString[] styleValues = { new ModOptionString("Default", null, "default"), new ModOptionString("Brute NPCs", null, "brute"), new ModOptionString("Lightweights", null, "light"), new ModOptionString("Custom", null, "custom") };
+        public static ModOptionString[] styleValues = { new ModOptionString("Default", null, "default"), new ModOptionString("Brute NPCs", null, "brute"), new ModOptionString("Lightweights", null, "light"), new ModOptionString("Realism", null, "realism"), new ModOptionString("Custom", null, "custom") };
         [ModOptionCategory("Rage", 0), ModOptionOrder(4)]
         [ModOption("Style", "Default: the mod as it's meant to play. Brute NPCs: big, tough men who barely go down. Lightweights: normal men who drop fast. Custom: your own NPC HP, Stay on feet and Your punch damage below.", valueSourceName = nameof(styleValues), defaultValueIndex = 0)]
         public static string style = "default";
@@ -105,6 +105,7 @@ namespace RageEngine
             {
                 case "brute": hp = 900f; stay = 2.5f; punch = 0.25f; break;
                 case "light": hp = 100f; stay = 0.5f; punch = 1f; break;
+                case "realism": hp = 130f; stay = 1f; punch = 0.8f; break;
                 default: hp = 300f; stay = 1f; punch = 0.5f; break;
             }
         }
@@ -137,10 +138,11 @@ namespace RageEngine
                     Guard("style.ui", () => { SetOptionUi44("NPC HP", presetHp29); SetOptionUi44("Stay on feet", presetStay29); SetOptionUi44("Your punch damage", presetPunch29); });
                 }
             }
+            if (changed && style == "realism") Guard("style.realism", Realism50);
             if (changed)
             {
                 Guard("style.npcs", () => instance?.Restyle44());
-                string nm = style == "brute" ? "Brute NPCs" : style == "light" ? "Lightweights" : style == "custom" ? "Custom" : "Default";
+                string nm = style == "realism" ? "Realism (everything on)" : style == "brute" ? "Brute NPCs" : style == "light" ? "Lightweights" : style == "custom" ? "Custom" : "Default";
                 Notify($"Style: {nm}\nNPC HP {npcHealth:0}  -  stay on feet x{stayOnFeet:0.##}  -  your punch damage {punchDamage:0.##}\nApplied to everyone already out there too.");
             }
             styleSeen29 = style;

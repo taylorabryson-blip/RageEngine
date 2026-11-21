@@ -457,6 +457,7 @@ namespace RageEngine
             Guard("loadout", () => Loadout47(s, now));
             Guard("smart", () => Smart47(s, now));
             Guard("tick49", () => Tick49(s, now));
+            Guard("tick50", () => Tick50(s, now));
             Guard("prof", () => ProfTick43(s));
             Guard("desp", () => Desperation43(s, now));
         }
@@ -633,6 +634,7 @@ namespace RageEngine
                            : s.despPose43 == 2 ? h + Vector3.up * 0.05f + right * sg * 0.1f + fwd * 0.12f
                            : s.despPose43 == 4 ? h - Vector3.up * (0.3f + 0.04f * beck) + right * sg * 0.2f + fwd * (0.3f + 0.16f * beck)
                            : s.despPose43 == 5 ? h - Vector3.up * 0.32f + right * sg * 0.55f + fwd * 0.12f
+                           : s.despPose43 == 6 ? h - Vector3.up * (0.3f + 0.12f * Mathf.Sin(now * 17f + sg)) + right * sg * (0.08f + 0.06f * Mathf.Sin(now * 13f)) + fwd * 0.2f
                            : h - Vector3.up * 0.15f + right * sg * 0.2f + fwd * 0.48f;
                 if (s.despPose43 < 4) a.position += Vector3.up * shake;
                 a.rotation = Quaternion.LookRotation(fwd, Vector3.up);
