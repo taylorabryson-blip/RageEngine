@@ -39,10 +39,11 @@ namespace RageEngine
         [ModOption("Brain damage & concussions", "Head hits add up: a damaged brain fights slower and dumber. One huge blow = a concussion (drunk, dazed).", defaultValueIndex = 1)]
         public static bool brain50 = true;
 
-        public static ModOptionFloat[] musicVols50 = { new ModOptionFloat("Off", 0f), new ModOptionFloat("Quiet", 0.25f), new ModOptionFloat("Normal", 0.45f), new ModOptionFloat("Loud", 0.7f) };
+        public static ModOptionString[] musicVols50 = { new ModOptionString("Off", null, "0"), new ModOptionString("Quiet", null, "0.25"), new ModOptionString("Normal", null, "0.45"), new ModOptionString("Loud", null, "0.7") };
         [ModOptionCategory("Rage", 0), ModOptionOrder(40)]
         [ModOption("Wave music", "Battle music while a Rage Engine wave is running.", valueSourceName = nameof(musicVols50), defaultValueIndex = 2)]
-        public static float waveMusic50 = 0.45f;
+        public static string waveMusicOpt50 = "0.45";
+        static float waveMusic50 => float.TryParse(waveMusicOpt50, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : 0.45f;
 
         // ================================================================== Realism style: everything on, real pain
         internal static bool RealismOn => style == "realism";
