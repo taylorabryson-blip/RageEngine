@@ -1,0 +1,55 @@
+{
+  "$type": "ThunderRoad.LevelData, ThunderRoad",
+  "id": "RE_Skybar",
+  "sensitiveContent": "None",
+  "sensitiveFilterBehaviour": "Discard",
+  "version": 3,
+  "name": "Rage Skybar",
+  "description": "A cocktail bar on top of a skyscraper: the bar, booths, a pool table, a piano, a lounge and a DJ corner, the terrace with heaters, the bathroom, the stairs to the rooftop with its helipad and loungers. Glass walls you can put people through - and a long drop. Rage Engine map.",
+  "descriptionLocalizationId": null,
+  "sceneAddress": "Bas.Level.Arena",
+  "showOnlyDevMode": false,
+  "showInLevelSelection": true,
+  "worldmapPrefabAddress": "Bas.Image.Map.Default",
+  "worldmapTextureAddress": "Bas.Worldmap.Eraden",
+  "worldmapLabel": null,
+  "worldMapTravelAudioContainerAddress": "Bas.AudioGroup.Dungeon.Start",
+  "mapLocationIndex": 6,
+  "showOnMap": true,
+  "hideOnAndroid": false,
+  "mapLocationIconAddress": "Bas.Icon.Location.Arena",
+  "mapLocationIconHoverAddress": "Bas.Icon.Location.Arena_Highlight",
+  "mapPreviewImageAddress": "Bas.Image.Preview.Arena",
+  "modes": [
+    {
+      "$type": "ThunderRoad.LevelData+Mode, ThunderRoad",
+      "name": "Sandbox",
+      "displayName": "Sandbox",
+      "description": "SandboxDescription",
+      "allowGameModes": [
+        "Sandbox"
+      ],
+      "mapOrder": 0,
+      "playerDeathAction": "AskReload",
+      "modules": [
+        {
+          "$type": "ThunderRoad.LevelModuleCleaner, ThunderRoad",
+          "cleanerRate": 5.0
+        },
+        {
+          "$type": "ThunderRoad.LevelModuleMusic, ThunderRoad",
+          "dynamicMusic": "MusicArena"
+        },
+        {
+          "$type": "LevelModuleResetSpawners, ThunderRoad"
+        }
+      ],
+      "availableOptions": []
+    }
+  ],
+  "modePickCountPerRank": 2,
+  "customCameras": [],
+  "throwableRefType": "Item",
+  "improvisedThrowableID": "",
+  "groupPath": null
+}

@@ -1,0 +1,6 @@
+/home/runner/work/RageEngine/RageEngine/out/RageEngine.deps.json
+/home/runner/work/RageEngine/RageEngine/out/RageEngine.dll
+/home/runner/work/RageEngine/RageEngine/build/obj/Release/netstandard2.1/RageEngine.csproj.AssemblyReference.cache
+/home/runner/work/RageEngine/RageEngine/build/obj/Release/netstandard2.1/RageEngine.GeneratedMSBuildEditorConfig.editorconfig
+/home/runner/work/RageEngine/RageEngine/build/obj/Release/netstandard2.1/RageEngine.csproj.CoreCompileInputs.cache
+/home/runner/work/RageEngine/RageEngine/build/obj/Release/netstandard2.1/RageEngine.dll

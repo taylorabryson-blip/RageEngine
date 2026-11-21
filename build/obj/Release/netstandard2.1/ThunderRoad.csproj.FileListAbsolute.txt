@@ -1,0 +1,9 @@
+/home/runner/work/RageEngine/RageEngine/out/ThunderRoad.deps.json
+/home/runner/work/RageEngine/RageEngine/out/ThunderRoad.dll
+/home/runner/work/RageEngine/RageEngine/out/ThunderRoad.pdb
+/home/runner/work/RageEngine/RageEngine/build/obj/Release/netstandard2.1/ThunderRoad.csproj.AssemblyReference.cache
+/home/runner/work/RageEngine/RageEngine/build/obj/Release/netstandard2.1/ThunderRoad.GeneratedMSBuildEditorConfig.editorconfig
+/home/runner/work/RageEngine/RageEngine/build/obj/Release/netstandard2.1/ThunderRoad.csproj.CoreCompileInputs.cache
+/home/runner/work/RageEngine/RageEngine/build/obj/Release/netstandard2.1/ThunderRoad.sourcelink.json
+/home/runner/work/RageEngine/RageEngine/build/obj/Release/netstandard2.1/ThunderRoad.dll
+/home/runner/work/RageEngine/RageEngine/build/obj/Release/netstandard2.1/ThunderRoad.pdb

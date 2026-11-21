@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "MLRkm1V35dM=",
+  "success": true,
+  "projectFilePath": "/home/runner/work/RageEngine/RageEngine/build/RageEngine.csproj",
+  "expectedPackageFiles": [
+    "/home/runner/.nuget/packages/unityengine.modules/2021.3.33/unityengine.modules.2021.3.33.nupkg.sha512"
+  ],
+  "logs": []
+}

@@ -1,0 +1,39 @@
+  Determining projects to restore...
+  Restored /home/runner/work/RageEngine/RageEngine/build/RageEngine.csproj (in 641 ms).
+  ThunderRoad -> /home/runner/work/RageEngine/RageEngine/out/ThunderRoad.dll
+  RageEngine -> /home/runner/work/RageEngine/RageEngine/out/RageEngine.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:08.69
+dist/RageEngine/Sounds/NRE_Vomit_1.wav 4.940998 [Parsed_volumedetect_0 @ 0x779370002000] mean_volume: -18.8 dB
+dist/RageEngine/Sounds/NRE_Retch_1.wav 2.184490 [Parsed_volumedetect_0 @ 0x7e1674002000] mean_volume: -21.6 dB
+dist/RageEngine/Sounds/NRE_VomitSplat_1.wav 14.654059 [Parsed_volumedetect_0 @ 0x788298002000] mean_volume: -23.6 dB
+dist/RageEngine/Sounds/NRE_Train_1.wav 13.466939 [Parsed_volumedetect_0 @ 0x7cfd8c002000] mean_volume: -29.2 dB
+dist/RageEngine/Sounds/NRE_DoorCreak_1.wav 1.586712 [Parsed_volumedetect_0 @ 0x70d994002000] mean_volume: -17.2 dB
+-rw-r--r--  1 runner runner  96216 Nov 21 13:55 NRE_Retch_1.wav
+-rw-r--r--  1 runner runner  70638 Nov 21 13:55 NRE_VomitSplat_1.wav
+-rw-r--r--  1 runner runner 112136 Nov 21 13:55 NRE_Vomit_1.wav
+dist/RageEngine/Ambience:
+total 360
+drwxr-xr-x  2 runner runner   4096 Nov 21 13:55 .
+drwxr-xr-x 11 runner runner   4096 Nov 21 13:54 ..
+-rw-r--r--  1 runner runner 358920 Nov 21 13:55 wind.ogg
+
+dist/RageEngine/Music:
+total 14092
+drwxr-xr-x  2 runner runner    4096 Nov 21 13:56 .
+drwxr-xr-x 11 runner runner    4096 Nov 21 13:54 ..
+-rw-r--r--  1 runner runner 1331166 Nov 21 13:55 elevator.ogg
+-rw-r--r--  1 runner runner 2017194 Nov 21 13:54 lounge_1.ogg
+-rw-r--r--  1 runner runner 1325392 Nov 21 13:54 lounge_2.ogg
+-rw-r--r--  1 runner runner 1795261 Nov 21 13:54 lounge_3.ogg
+-rw-r--r--  1 runner runner 2399757 Nov 21 13:54 lounge_4.ogg
+-rw-r--r--  1 runner runner 1461358 Nov 21 13:54 lounge_5.ogg
+-rw-r--r--  1 runner runner 1173586 Nov 21 13:55 wave_1.ogg
+-rw-r--r--  1 runner runner 1105718 Nov 21 13:56 wave_2.ogg
+-rw-r--r--  1 runner runner 1460503 Nov 21 13:56 wave_3.ogg
+-rw-r--r--  1 runner runner  338969 Nov 21 13:56 wave_4.ogg
+-rw-r--r-- 1 runner runner 40574733 Nov 21 13:56 RageEngine-0.50.zip
