@@ -1,5 +1,24 @@
 # Rage Engine changelog
 
+## 0.50
+**Spells and the elements**
+- **Lightning scars:** a real strike leaves the branching lightning scar where it went in, a track of them down the body, and a burn where it went out (a foot).
+- **Fire:** burning NPCs try to put themselves out by patting at the flames or dropping and rolling. Most manage it; slow, weak, drunk or badly hurt ones don't. Burns leave char marks, and bodies burned long enough collapse into a pile of ash.
+- **Gravity:** throw a man hard into a wall or the floor and the landing breaks bones where he hit and leaves blood on the surface. Hard enough and he bursts. Floating NPCs flail and scream.
+
+**Damage**
+- **Brain damage:** head hits add up. A damaged brain fights slower and dumber: pauses, forgets to attack, stumbles, looks confused.
+- **Concussions:** one huge head blow means a minute or two of dazed, drunk fighting.
+- **Throat punches:** the head snaps back, both hands go to the throat, he gags and can't fight for a few seconds.
+- **Teeth:** knocking teeth out now makes a real crack sound and more blood from the mouth.
+
+**New**
+- **Realism style:** every setting on, heavy injury effects, intense desperation, and every solid hit really hurts.
+- **Two-hand chokes:** both hands on the throat choke him out much faster, and you feel it in both hands.
+- **Rage Yard:** a new sandbox map. A walled lot with shipping containers to climb, a two-level scaffold, a glass alley to throw people through, cover, throwables and floodlights.
+- **Wave music:** battle music plays during Rage Engine waves. Change the volume in the Rage tab.
+- **Super soldier waves:** Super Soldier Duel, Squad and Army. Everyone spawns already injected with a super serum.
+
 ## 0.49
 **NPCs stay on their feet**
 - NPCs stand the whole fight. They only go down when they die or are very low on HP (under 20%).
