@@ -89,7 +89,8 @@ jobs:
           else echo "MISSING sound: door creak" | tee -a build.log; fi
           # 0.50: teeth knocked out - real crunch recording, three short cuts
           if fs https://freesound.org/people/InspectorJ/sounds/333818/ /tmp/au/tooth.mp3; then
-            vcut /tmp/au/tooth.mp3 0.0 0.4 $S/NRE_ToothCrack_1.wav; vcut /tmp/au/tooth.mp3 0.9 0.4 $S/NRE_ToothCrack_2.wav; vcut /tmp/au/tooth.mp3 1.8 0.4 $S/NRE_ToothCrack_3.wav
+            ffmpeg -nostdin -loglevel error -y -i /tmp/au/tooth.mp3 -ac 1 -ar 22050 -af "silenceremove=start_periods=1:start_threshold=-40dB:stop_periods=-1:stop_threshold=-40dB:stop_duration=0.15" /tmp/au/tooth.dense.wav
+            k=0; for st in 0.0 0.9 1.8; do k=$((k+1)); ffmpeg -nostdin -loglevel error -y -i /tmp/au/tooth.dense.wav -ss $st -t 0.4 -af "loudnorm=I=-16:TP=-1.5,afade=t=out:st=0.3:d=0.1" -ar 22050 -c:a pcm_s16le $S/NRE_ToothCrack_$k.wav || echo "tooth cut $k failed" | tee -a build.log; done
             echo "NRE_ToothCrack_1-3: \"Cracking/Crunching, A.wav\" by InspectorJ (www.jshaw.co.uk) of Freesound.org https://freesound.org/s/333818/ - CC BY 4.0" >> /tmp/au/credits.txt
           else echo "MISSING sound: tooth crack" | tee -a build.log; fi
           # 0.50: wave music - CC0 battle tracks from OpenGameArt
