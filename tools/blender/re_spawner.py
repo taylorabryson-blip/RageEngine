@@ -128,7 +128,8 @@ tip = cyl('tip', 0.26, 0.5, (W / 2 - 1.1, 0, H / 2 + 5.2), 20, 'Z', 0.1)
 # lanyard: a loop tube from the bottom-right corner
 bpy.ops.curve.primitive_bezier_circle_add(radius=1.0)
 cv = bpy.context.object; cv.data.bevel_depth = 0.14; cv.data.bevel_resolution = 3; cv.data.resolution_u = 16
-cv.scale = (1.4, 0.9, 2.2); cv.rotation_euler = (0, math.radians(25), 0); cv.location = (W / 2 - 0.4, 0, -H / 2 - 1.9)
+cv.scale = (1.1, 2.0, 1.0); cv.rotation_euler = (math.radians(90), math.radians(-12), 0); cv.location = (W / 2 - 0.75, 0, -H / 2 - 2.05)
+bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
 bpy.ops.object.convert(target='MESH'); lan = bpy.context.object
 eyelet = box('eyelet', (0.9, 1.0, 0.6), (W / 2 - 0.6, 0, -H / 2 - 0.25), 0.15, 2)
 dark = join('Dark', [spawn_key, plate, k_up, k_dn, knob, collar, ant, tip, lan, eyelet])
@@ -146,13 +147,13 @@ box_uv(arrows)
 
 # screen: a plane inside the recess, UV 0..1 -> LCD texture
 bm = bmesh.new(); bmesh.ops.create_grid(bm, x_segments=1, y_segments=1, size=0.5)
-for v in bm.verts: v.co = Vector((v.co.x * 2 * SCR_W * 0.97, FY - 0.08, v.co.y * 2 * SCR_H * 0.97 + SCR_Z))
+for v in bm.verts: v.co = Vector((v.co.x * SCR_W * 0.97, FY - 0.08, v.co.y * SCR_H * 0.97 + SCR_Z))
 for f in bm.faces: f.normal_flip()
 screen = obj_from_bm('Screen', bm)
 planar_uv(screen, 0, 2, (-SCR_W * 0.485, SCR_Z - SCR_H * 0.485, SCR_W * 0.485, SCR_Z + SCR_H * 0.485))
 # SPAWN label: plane on the key face, UV 0..1 -> label texture
 bm = bmesh.new(); bmesh.ops.create_grid(bm, x_segments=1, y_segments=1, size=0.5)
-for v in bm.verts: v.co = Vector((v.co.x * 2 * 3.2, FY - 0.47, v.co.y * 2 * 0.95 - 0.95))
+for v in bm.verts: v.co = Vector((v.co.x * 3.2, FY - 0.46, v.co.y * 0.95 - 0.95))
 for f in bm.faces: f.normal_flip()
 label = obj_from_bm('Label', bm)
 planar_uv(label, 0, 2, (-1.6, -1.425, 1.6, -0.475))
@@ -192,15 +193,15 @@ def place(rot, loc, scale):
     pass
 # three copies like a product sheet: front 3/4, angled top, side
 copies = []
-for (rx, ry, rz), loc, sc in (((math.radians(0), math.radians(8), math.radians(-18)), (-3.0, 0, 0.0), 1.0),
-                              ((math.radians(-55), math.radians(0), math.radians(25)), (8.5, 4, 4.5), 0.6),
-                              ((math.radians(0), math.radians(0), math.radians(-80)), (9.5, 4, -5.0), 0.6)):
+for (rx, ry, rz), loc, sc in (((math.radians(0), math.radians(6), math.radians(-16)), (-7.0, 0, -0.5), 1.0),
+                              ((math.radians(-50), math.radians(10), math.radians(30)), (8.0, 8, 5.0), 0.55),
+                              ((math.radians(0), math.radians(0), math.radians(-78)), (9.0, 8, -6.5), 0.55)):
     for o in grp:
         c = o.copy(); c.data = o.data; bpy.context.collection.objects.link(c)
         c.rotation_euler = (rx, ry, rz); c.location = loc; c.scale = (sc, sc, sc); copies.append(c)
 for o in grp: o.hide_render = True
-bpy.ops.object.camera_add(location=(3.5, -40, 1.5), rotation=(math.radians(90), 0, 0))
-cam = bpy.context.object; bpy.context.scene.camera = cam; cam.data.lens = 55
+bpy.ops.object.camera_add(location=(0.5, -52, 0.0), rotation=(math.radians(90), 0, 0))
+cam = bpy.context.object; bpy.context.scene.camera = cam; cam.data.lens = 50
 for loc, e in (((-14, -18, 16), 9000), ((18, -10, 4), 4000), ((0, 14, 10), 6000)):
     bpy.ops.object.light_add(type='AREA', location=loc); L = bpy.context.object; L.data.energy = e; L.data.size = 10
     L.rotation_euler = (Vector((0, 0, 0)) - Vector(loc)).to_track_quat('-Z', 'Y').to_euler()
