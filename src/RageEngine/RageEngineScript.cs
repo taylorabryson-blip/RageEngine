@@ -271,6 +271,7 @@ namespace RageEngine
             Guard("eyes2", LateUpdateLivingEyes);
             Guard("gore", LateUpdateCrushedHeads);
             Guard("frame49", Frame49);
+            Guard("bars52", LateUpdateBars52);
             if (eyeHides49.Count > 0) Guard("eyehide49", LateUpdateEyeHides49);
         }
 
