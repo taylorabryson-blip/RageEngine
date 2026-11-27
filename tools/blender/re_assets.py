@@ -122,39 +122,49 @@ cusps = [B((sx * 0.2, sy * 0.18, 0.5), 0.27) for sx in (-1, 1) for sy in (-1, 1)
 o = from_meta('RE_Tooth_4', cusps + [B((0, 0, 0.3), 0.48, (1.0, 0.9, 0.6))] + tube([(-0.2, 0, 0.1), (-0.3, 0, -0.85)], [0.22, 0.07]) + tube([(0.2, 0, 0.1), (0.32, 0, -0.85)], [0.22, 0.07]), 0.04)
 displace(o, 0.012, 4.0, 4); keep(finish(o, 900), 'RE_Tooth_4', M_TOOTH)
 
-# ---------------------------------------------------------------- skull fragments: curved shell patches with jagged edges
+# ---------------------------------------------------------------- skull fragments: a curved shell broken along clean fracture planes
 for i in range(1, 7):
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=48, ring_count=32, radius=1.0)
+    random.seed(100 + i)
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=96, ring_count=64, radius=1.0)
     sph = bpy.context.object; me = sph.data
-    random.seed(100 + i); center = Vector((random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(0.2, 1))).normalized()
-    off = Vector((random.random() * 30, random.random() * 30, random.random() * 30)); size = random.uniform(0.32, 0.5)
+    center = Vector((random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(0.3, 1))).normalized()
     bm = bmesh.new(); bm.from_mesh(me)
-    kill = [v for v in bm.verts if v.co.normalized().angle(center) > size * (1.0 + 0.45 * noise.noise(v.co * 4.0 + off))]
-    bmesh.ops.delete(bm, geom=kill, context='VERTS'); bm.to_mesh(me); bm.free()
-    keep_main(me)
-    sol = sph.modifiers.new('sol', 'SOLIDIFY'); sol.thickness = 0.07; sol.offset = -1
+    # keep a cap around 'center', then crack it with 4-6 random planes through the cap
+    t1 = center.orthogonal().normalized(); t2 = center.cross(t1)
+    k = random.randint(4, 6); size = random.uniform(0.3, 0.45)
+    for j in range(k):
+        a = j * 2 * math.pi / k + random.uniform(-0.35, 0.35)
+        d = (t1 * math.cos(a) + t2 * math.sin(a)).normalized()
+        n = (d + center * random.uniform(-0.25, 0.25)).normalized()
+        co = center * math.cos(size) + d * math.sin(size) * random.uniform(0.75, 1.15)
+        geom = bm.verts[:] + bm.edges[:] + bm.faces[:]
+        bmesh.ops.bisect_plane(bm, geom=geom, plane_co=co, plane_no=n, clear_outer=True)
+    bmesh.ops.bisect_plane(bm, geom=bm.verts[:] + bm.edges[:] + bm.faces[:], plane_co=center * 0.55, plane_no=-center, clear_outer=True)
+    bm.to_mesh(me); bm.free(); keep_main(me)
+    sol = sph.modifiers.new('sol', 'SOLIDIFY'); sol.thickness = 0.065; sol.offset = -1
     bpy.context.view_layer.update()
     me2 = bpy.data.meshes.new_from_object(sph.evaluated_get(bpy.context.evaluated_depsgraph_get()))
     bpy.data.objects.remove(sph, do_unlink=True)
     o = link(bpy.data.objects.new('RE_Skull_Frag_%d' % i, me2))
-    displace(o, 0.01, 6.0, 200 + i)
-    o.data.materials.append(M_BONE); finish(o, 900, 0.15); write_obj(o, 'RE_Skull_Frag_%d' % i, 0.09); made.append(o)
+    displace(o, 0.008, 7.0, 200 + i)
+    o.data.materials.append(M_BONE); finish(o, 900, 0.0); write_obj(o, 'RE_Skull_Frag_%d' % i, 0.09); made.append(o)
 
 # ---------------------------------------------------------------- brain chunks: folded gyri
 for i in range(1, 4):
     random.seed(300 + i)
     el = [B((random.uniform(-0.3, 0.3), random.uniform(-0.25, 0.25), random.uniform(-0.2, 0.2)), random.uniform(0.35, 0.5)) for _ in range(5)]
-    o = from_meta('RE_Brain_%d' % i, el, 0.03)
-    displace(o, 0.06, 5.5, 310 + i, ridged=True)
-    displace(o, 0.015, 12.0, 320 + i)
+    o = from_meta('RE_Brain_%d' % i, el, 0.018)
+    displace(o, 0.13, 7.5, 310 + i, ridged=True)
+    displace(o, 0.04, 15.0, 315 + i, ridged=True)
+    displace(o, 0.012, 22.0, 320 + i)
     o.data.materials.append(M_BRAIN); finish(o, 1600, 0.2); write_obj(o, 'RE_Brain_%d' % i, 0.06); made.append(o)
 
 # ---------------------------------------------------------------- vertebra: body, arch, spinous + transverse processes, facets
-o = from_meta('RE_Bone_Vertebra', [B((0, 0.25, 0), 0.38, (1.0, 0.85, 0.55))]
+o = from_meta('RE_Bone_Vertebra', tube([(0, 0.3, -0.2), (0, 0.3, 0.2)], [0.4, 0.4])
               + tube([(-0.25, -0.05, 0), (-0.18, -0.28, 0), (0, -0.36, 0), (0.18, -0.28, 0), (0.25, -0.05, 0)], [0.1, 0.1, 0.1, 0.1, 0.1])
               + tube([(0, -0.36, 0), (0, -0.75, -0.12)], [0.11, 0.07])
               + tube([(-0.22, -0.12, 0), (-0.62, -0.18, 0.04)], [0.1, 0.07]) + tube([(0.22, -0.12, 0), (0.62, -0.18, 0.04)], [0.1, 0.07])
-              + [B((-0.16, -0.22, 0.16), 0.08), B((0.16, -0.22, 0.16), 0.08), B((0, -0.08, 0), 0.16, None, True)], 0.03)
+              + [B((-0.16, -0.22, 0.16), 0.08), B((0.16, -0.22, 0.16), 0.08)], 0.03)
 displace(o, 0.012, 5.0, 400); keep(finish(o, 1100), 'RE_Bone_Vertebra', M_BONE, 0.06)
 
 # ---------------------------------------------------------------- jaw fragment: a broken half-mandible with sockets
@@ -208,7 +218,7 @@ for i, o in enumerate(made):
     bb = [o.matrix_world @ Vector(c) for c in o.bound_box]; ctr = sum(bb, Vector()) / 8
     o.location += Vector(((i % cols) * 1.8 - (cols - 1) * 0.9, 0, -(i // cols) * 1.8 + 1.6)) - ctr
 for o in made:
-    if o.name.startswith('RE_Spawner'): o.location = (6.6, 0, -2.6); o.scale = (0.5, 0.5, 0.5)
+    if o.name.startswith('RE_Spawner'): o.location = (4.6, 0, -2.75); o.scale = (0.22, 0.22, 0.22)
 bpy.ops.object.camera_add(location=(0.6, -14, -0.2), rotation=(math.radians(90), 0, 0))
 cam = bpy.context.object; bpy.context.scene.camera = cam; cam.data.lens = 42
 for loc, e in (((-6, -8, 6), 1400), ((7, -6, 2), 700), ((0, 6, 4), 900)):
