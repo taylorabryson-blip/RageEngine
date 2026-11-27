@@ -207,7 +207,7 @@ namespace RageEngine
             // ---- the knife
             // 0.49: was far too strict (almost never fired). Unarmed + you close + he's been hit once, or he's just been
             // standing there empty-handed in a fight for a few seconds -> the blade comes out.
-            if (pullKnife && s.hasKnife && !s.knifeOut && !s.knifePending && now >= s.nextKnife49 && !s.knockedOut && !s.ally && !s.surrendered
+            if (pullKnife && knives51 && s.hasKnife && !s.knifeOut && !s.knifePending && now >= s.nextKnife49 && !s.knockedOut && !s.ally && !s.surrendered
                 && c.ragdoll.state == Ragdoll.State.Standing && now - s.trackedAt > 3f && !HasRealWeapon42(s))
             {
                 if (s.unarmedSince <= 0f) s.unarmedSince = now;
@@ -277,6 +277,7 @@ namespace RageEngine
                 Sfx.Play("NRE_Swoosh", hand.transform, 0.6f, 1.3f);
                 Speak(s, "attackmelee");
                 Log($"{WhoIs(s)}: pulls a knife ({item.data?.id})");
+                KnifeLine51(s);
             }, hand.transform.position, hand.transform.rotation, null, false);
         }
 

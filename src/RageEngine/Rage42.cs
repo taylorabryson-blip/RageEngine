@@ -427,7 +427,7 @@ namespace RageEngine
             if (On("dazed")) try { TickDazed(s, tn); } catch (System.Exception e) { Fail42("dazed", e); }
             if (On("settle")) try { TickSettle(s, tn); } catch (System.Exception e) { Fail42("settle", e); }
             if (On("navigation")) try { TickNavigation(s, dt, tn); } catch (System.Exception e) { Fail42("navigation", e); }
-            if (On("choke")) try { TickChoke(s, dt); } catch (System.Exception e) { Fail42("choke", e); }
+            if (chokes51 && On("choke")) try { TickChoke(s, dt); } catch (System.Exception e) { Fail42("choke", e); }
             if (On("trauma")) try { TickTrauma(s, dt); } catch (System.Exception e) { Fail42("trauma", e); }
             if (On("dying")) try { TickDying(s); } catch (System.Exception e) { Fail42("dying", e); }
             if (On("bruises")) try { TickBruises(s); } catch (System.Exception e) { Fail42("bruises", e); }

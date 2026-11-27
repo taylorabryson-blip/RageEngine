@@ -90,7 +90,9 @@ namespace RageEngine
                     Log($"{WhoIs(s)}: CONCUSSED ({severity:0.0})");
                 }
             }
-            if (Has(t, RagdollPart.Type.Neck) && dt == DamageType.Blunt && severity >= 0.45f && now >= s.throatPunchAt50 + 4f && s.throatCutUntil <= 0f)
+            Guard("jaw51", () => Jaw51(s, part, hit, severity));
+            if (severity >= 0.6f && !Has(t, RagdollPart.Type.Head)) { s.wounds51++; s.lastWoundPart51 = part; }
+            if (throatPunch51 && Has(t, RagdollPart.Type.Neck) && dt == DamageType.Blunt && severity >= 0.45f && now >= s.throatPunchAt50 + 4f && s.throatCutUntil <= 0f)
                 ThroatPunch50(s, part, hit, severity);
         }
 
@@ -131,7 +133,7 @@ namespace RageEngine
         {
             var c = s.creature;
             Guard("fire50", () => Fire50(s, now));
-            Guard("fling50", () => Fling50(s, now));
+            if (slams51) Guard("fling50", () => Fling50(s, now));
             if (c.isKilled) return;
             // ---- lightning: the moment the game's electrocution starts
             if (s.shocked && !s.shockScarred50) { s.shockScarred50 = true; Guard("scar", () => LightningScar50(s)); }

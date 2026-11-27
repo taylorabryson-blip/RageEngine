@@ -10,7 +10,7 @@ namespace RageEngine
 {
     public sealed partial class RageEngineScript : ThunderScript
     {
-        public const string Version = "0.50";
+        public const string Version = "0.51";
         const int MaxTracked = 20;
         const float ScanInterval = 0.5f;
         const float TickInterval = 0.05f;
@@ -117,6 +117,8 @@ namespace RageEngine
             public float[] muscles = new float[2 * (int)Mu.Count]; public bool musclesDirty, gripBlockL, gripBlockR, eyesWereShut;
             public float holdFatigueL, holdFatigueR, agonyUntil, eyesShutUntil; public int blindEyes;
             public bool impaled49; public int stuckReach49;
+            public float jawDmg51, nextBump51, nextLife51, aimedFor51, nextAim51, brutalSeen51 = -100f, nextBody51, nextLick51, nextNod51, lookedAt51, morale51 = 1f; public int bumps51, wounds51; public RagdollPart lastWoundPart51; public HashSet<Creature> bodiesSeen51;   // 0.51
+            
             public float energyAt50, brain50, concussUntil50, throatPunchAt50 = -10f, shockEnd50, nextDumb50, fireAt50, burnTime50, nextChar50, fireOutAt50, flingPeak50, flingAt50, nextFloat50; public Vector3 energyPt50, flingDir50; public RagdollPart energyPart50; public int charMarks50; public bool shockScarred50, ash50, fireDecided50, fireWins50, fireRoll50;   // 0.50
              public float heldAt49 = -10f, nextReach49, nextTaunt49, nextFearVoice49, nextKnife49, forceFall47, mustFall49, downSince49, lowDrop49; public bool loadoutDone47; public float nextDodge47, nextPickup47, nextShare47;   // 0.47
             public bool will44, wearOn44, vomitHold44, gutsOut44; public float nextNeckGrab44; public float wear44, wearSpeed44 = 1f, nextWear44;   // 0.44
@@ -222,7 +224,7 @@ namespace RageEngine
                 if (!m.active || m.creature == null) continue;
                 if ((now < m.looseUntil || m.limpParts != 0 || m.musclesActive || m.pain > 0.05f || now < m.weakArmLUntil || now < m.weakArmRUntil || m.dying) && On("muscles"))
                     try { TickMuscles(m); } catch (Exception e) { Fail42("muscles", e); }
-                if (true) try { GuardKnockdown(m); } catch (Exception e) { Fail42("antifall", e); }
+                if (keepStanding51) try { GuardKnockdown(m); } catch (Exception e) { Fail42("antifall", e); }
                 if (On("handwatch")) try { HandWatchdog(m); } catch (Exception e) { Fail42("handwatch", e); }
                 if (now < m.followUntil && now >= m.heldUntil && On("follow")) try { FollowBody(m); } catch (Exception e) { Fail42("follow", e); }
                 if (fistFighting && m.punchPhase != 0 && !m.shocked && On("punch")) try { TickPunch(m); } catch (Exception e) { Fail42("punch", e); }
@@ -375,6 +377,7 @@ namespace RageEngine
             Guard("gouged", () => RestoreGouged(s));
             s.stealthKilled = s.punchedThrough = s.neckSnapped = s.paralysed = s.ally = s.castPrevL = s.castPrevR = s.neckGrabL = s.neckGrabR = s.spineShrugged = s.regenClean = s.crawlFlip = s.passedOut = s.knifeOut = s.knifePending = false; s.hasKnife = UnityEngine.Random.value < 0.65f; s.nextKnife49 = 0f; s.occiput = s.gutShots = s.nextVomit = s.vomitUntil = s.nextVomitSpurt = s.chokeBloodSince = s.nextChokeCough = s.convulseUntil = s.nextConvulse = s.hpOverride = 0f; s.hpT = 1f; s.eyeDmg[0] = s.eyeDmg[1] = 0f; s.headSaves = 0; s.saltsT = 0f; ClearKnots(s); s.ribsL = s.ribsR = s.bodyShots = s.faceStage = s.fingersOut = s.ribsOut = 0; s.faceDepth = s.nextShrugLog = s.groundSince = s.nextGroundAct = s.groundSwingUntil = s.faceDmg = s.nextFaceCave = 0f; s.comboPlan = s.comboLast = null; s.nextSpineShrug = 0f; s.neckGrabAt = s.neckSnapUsedAt = s.injectFlashUntil = s.nextRegenStep = s.regenGlowUntil = 0f; s.eyeTintKey = -1f; if (s.fxMark != null) UnityEngine.Object.Destroy(s.fxMark); s.fxMark = null; s.mouthT = s.nextIntegrityTrip = 0f; s.integrity = 100f; System.Array.Clear(s.blackEye, 0, s.blackEye.Length);
             s.energyAt50 = s.brain50 = s.concussUntil50 = s.shockEnd50 = s.nextDumb50 = s.fireAt50 = s.burnTime50 = s.nextChar50 = s.fireOutAt50 = s.flingPeak50 = s.flingAt50 = s.nextFloat50 = 0f; s.throatPunchAt50 = -10f; s.energyPart50 = null; s.charMarks50 = 0; s.shockScarred50 = s.ash50 = s.fireDecided50 = s.fireWins50 = s.fireRoll50 = false;
+            s.jawDmg51 = s.nextBump51 = s.nextLife51 = s.aimedFor51 = s.nextAim51 = s.nextBody51 = s.nextLick51 = s.nextNod51 = s.lookedAt51 = 0f; s.brutalSeen51 = Time.time; s.morale51 = 1f; s.bumps51 = s.wounds51 = 0; s.lastWoundPart51 = null; s.bodiesSeen51?.Clear();
             s.impaled49 = false; s.stuckReach49 = 0; s.heldAt49 = -10f; s.nextReach49 = 0f; s.nextTaunt49 = s.nextFearVoice49 = 0f; s.forceFall47 = 0f; s.mustFall49 = 0f; s.downSince49 = 0f; s.lowDrop49 = 0f; s.loadoutDone47 = false; s.nextDodge47 = s.nextPickup47 = s.nextShare47 = 0f;
             s.will44 = s.wearOn44 = s.vomitHold44 = s.gutsOut44 = false; s.nextNeckGrab44 = 0f; s.wear44 = 0f; s.wearSpeed44 = 1f; s.nextWear44 = 0f;
             s.hound43 = s.deepSleep43 = false; s.next43 = s.rage43 = s.burnout43 = s.rageMaxAt43 = s.magnetNext43 = s.despUntil43 = s.despNext43 = 0f; s.despPose43 = 0; s.magnetItem43 = null;
@@ -584,6 +587,7 @@ namespace RageEngine
 
         void OnCreatureKill(Creature victim, Player player, CollisionInstance hit, EventTime time)
         {
+            if (time == EventTime.OnEnd) Guard("death51", () => NoteDeath51(victim));
             if (!modEnabled || OrgansOnly || victim == null || victim.isPlayer) return;
             if (time == EventTime.OnEnd) Guard("death", () => HandleKill(victim, hit));
         }

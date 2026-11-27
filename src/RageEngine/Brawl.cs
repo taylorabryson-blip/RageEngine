@@ -346,6 +346,7 @@ namespace RageEngine
         static AnimationCurve rageCurve;
         internal static void RageMoment(string why)
         {
+            Brutal51(why);
             float now = Time.realtimeSinceStartup;
             if (now < nextRageMoment) return;
             nextRageMoment = now + 20f;

@@ -510,6 +510,7 @@ namespace RageEngine
             Guard("rip", TickRip49);
             if (pendingKill49.Count > 0) TickPendingKill49();
             Guard("music50", TickWaveMusic50);
+            Frame51();
         }
     }
 }
@@ -524,7 +525,7 @@ namespace RageEngine
         static readonly UnityEngine.AI.NavMeshPath path49 = new UnityEngine.AI.NavMeshPath();
         void MapReach49(NpcState s, float now)
         {
-            if (map26Root == null || map26Spawns.Count == 0 || now < s.nextReach49) return;
+            if (!mapRescue51 || map26Root == null || map26Spawns.Count == 0 || now < s.nextReach49) return;
             s.nextReach49 = now + 2f;
             var c = s.creature;
             if (c.isKilled || s.knockedOut || s.ally || s.impaled49 || c.ragdoll.state != Ragdoll.State.Standing) { s.stuckReach49 = 0; return; }
