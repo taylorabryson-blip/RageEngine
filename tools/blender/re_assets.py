@@ -73,6 +73,16 @@ def displace(o, amp, freq, seed, ridged=False):
         n = (1.0 - abs(noise.noise(p))) ** 2 - 0.45 if ridged else noise.fractal(p, 0.6, 2.0, 4)
         v.co += v.normal * n * amp
 
+def sulci(o, depth, freq, seed):
+    """grooves along the zero-lines of a smooth noise field: winding brain folds, not crumpled paper"""
+    random.seed(seed); off = Vector((random.random() * 40, random.random() * 40, random.random() * 40))
+    for v in o.data.vertices:
+        p = v.co * freq + off
+        w = Vector((noise.noise(p * 0.5 + Vector((7, 0, 0))), noise.noise(p * 0.5 + Vector((0, 7, 0))), noise.noise(p * 0.5 + Vector((0, 0, 7)))))
+        n = abs(noise.noise(p + w * 1.2))
+        g = max(0.0, 1.0 - n / 0.14); g = g * g * (3 - 2 * g)
+        v.co -= v.normal * depth * g
+
 def finish(o, tris=1200, smooth=0.3):
     me = o.data
     if len(me.polygons) > tris:
@@ -154,10 +164,9 @@ for i in range(1, 4):
     random.seed(300 + i)
     el = [B((random.uniform(-0.3, 0.3), random.uniform(-0.25, 0.25), random.uniform(-0.2, 0.2)), random.uniform(0.35, 0.5)) for _ in range(5)]
     o = from_meta('RE_Brain_%d' % i, el, 0.018)
-    displace(o, 0.13, 7.5, 310 + i, ridged=True)
-    displace(o, 0.04, 15.0, 315 + i, ridged=True)
-    displace(o, 0.012, 22.0, 320 + i)
-    o.data.materials.append(M_BRAIN); finish(o, 1600, 0.2); write_obj(o, 'RE_Brain_%d' % i, 0.06); made.append(o)
+    sulci(o, 0.075, 4.2, 310 + i)                 # deep grooves winding over the surface (gyri between them)
+    displace(o, 0.01, 18.0, 320 + i)
+    o.data.materials.append(M_BRAIN); finish(o, 3200, 0.35); write_obj(o, 'RE_Brain_%d' % i, 0.06); made.append(o)
 
 # ---------------------------------------------------------------- vertebra: body, arch, spinous + transverse processes, facets
 o = from_meta('RE_Bone_Vertebra', tube([(0, 0.3, -0.2), (0, 0.3, 0.2)], [0.4, 0.4])
@@ -198,13 +207,13 @@ for v in body.data.vertices:
         a = math.atan2(v.co.y, v.co.x); k = 1.0 + 0.04 * (1 if math.sin(a * 24) > 0 else -1)
         v.co.x *= k; v.co.y *= k
 body.data.materials.append(M_DEV); finish(body, 4000, 0); write_obj(body, 'RE_Spawner_Body', 0.025, False); made.append(body)
-cage = lathe('RE_Spawner_Cage', [(1.25, 4.1), (1.3, 4.3), (1.3, 5.6), (1.0, 5.9), (0.6, 6.05), (0.0, 6.1)], 32)
+cage = lathe('RE_Spawner_Cage', [(1.25, 4.1), (1.3, 4.3), (1.3, 5.6), (1.0, 5.9), (0.6, 6.05), (0.0, 6.1)], 48)
 for v in cage.data.vertices:                                 # slots in the cage: pinch every other sector inward
     if 4.3 < v.co.z < 5.6:
         a = math.atan2(v.co.y, v.co.x)
-        if math.sin(a * 6) > 0.3: v.co.x *= 0.82; v.co.y *= 0.82
+        if math.sin(a * 6) > 0.0: v.co.x *= 0.6; v.co.y *= 0.6
 cage.data.materials.append(M_DEVM); finish(cage, 3000, 0); write_obj(cage, 'RE_Spawner_Cage', 0.025, False); made.append(cage)
-core = from_meta('RE_Spawner_Core', [B((0, 0, 4.95), 0.95, (1, 1, 1.25))], 0.08)
+core = from_meta('RE_Spawner_Core', [B((0, 0, 4.95), 1.12, (1, 1, 1.2))], 0.08)
 core.data.materials.append(M_GLOW); finish(core, 600, 0.1); write_obj(core, 'RE_Spawner_Core', 0.025, False); made.append(core)
 
 # ---------------------------------------------------------------- preview render (Cycles CPU)
@@ -214,7 +223,9 @@ for i, o in enumerate(made):
     bb = [o.matrix_world @ Vector(c) for c in o.bound_box]; ctr = sum(bb, Vector()) / 8
     ext = max((max(v[j] for v in bb) - min(v[j] for v in bb)) for j in range(3))
     s = 1.3 / max(ext, 1e-4)
-    o.scale = (s, s, s); bpy.context.view_layer.update()
+    o.scale = (s, s, s)
+    if o.name == 'RE_Bone_Vertebra': o.rotation_euler = (math.radians(70), 0, 0)
+    bpy.context.view_layer.update()
     bb = [o.matrix_world @ Vector(c) for c in o.bound_box]; ctr = sum(bb, Vector()) / 8
     o.location += Vector(((i % cols) * 1.8 - (cols - 1) * 0.9, 0, -(i // cols) * 1.8 + 1.6)) - ctr
 for o in made:
