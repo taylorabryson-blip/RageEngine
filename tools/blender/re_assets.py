@@ -166,7 +166,7 @@ for i in range(1, 4):
     o = from_meta('RE_Brain_%d' % i, el, 0.018)
     sm0 = o.modifiers.new('pre', 'SMOOTH'); sm0.factor = 0.5; sm0.iterations = 3; finish(o, 10**9, 0.0)
     sulci(o, 0.07, 4.2, 310 + i)                  # deep grooves winding over the surface (gyri between them)
-    o.data.materials.append(M_BRAIN); finish(o, 7000, 0.5); write_obj(o, 'RE_Brain_%d' % i, 0.06); made.append(o)
+    o.data.materials.append(M_BRAIN); finish(o, 2600, 0.6); write_obj(o, 'RE_Brain_%d' % i, 0.06); made.append(o)
 
 # ---------------------------------------------------------------- vertebra: body, arch, spinous + transverse processes, facets
 o = from_meta('RE_Bone_Vertebra', tube([(0, 0.3, -0.2), (0, 0.3, 0.2)], [0.4, 0.4])
