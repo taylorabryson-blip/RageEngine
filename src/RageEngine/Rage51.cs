@@ -291,6 +291,7 @@ namespace RageEngine
                 if (it != null && it.data != null && it.data.id == "RE_NPCSpawner")
                 {
                     if (!dressed51.Contains(it)) Guard("spawner.dress", () => DressSpawner51(it));
+                    Guard("spawner.look", () => TickSpawnerLook51(it));
                     try { var ch = h.playerHand.controlHand; use = ch.usePressed; alt = ch.alternateUsePressed; } catch { }
                     if (alt && !altWas51[k])
                     {
@@ -302,39 +303,75 @@ namespace RageEngine
                 }
                 useWas51[k] = use; altWas51[k] = alt;
             }
-            if (Time.frameCount % 120 == 0) dressed51.RemoveWhere(x => x == null);
+            if (Time.frameCount % 120 == 0) { dressed51.RemoveWhere(x => x == null); var dead = new List<Item>(); foreach (var kv in spawnerParts51) if (kv.Key == null) dead.Add(kv.Key); foreach (var d in dead) spawnerParts51.Remove(d); }
         }
 
         static Material spawnerBody51, spawnerGlow51, spawnerMetal51;
+        static readonly Material[] lcdMats51 = new Material[4];
+        static readonly Dictionary<Item, (Transform model, Renderer screen)> spawnerParts51 = new Dictionary<Item, (Transform, Renderer)>();
+
+        static Material LcdMat51(int mode)
+        {
+            if (lcdMats51[mode] != null) return lcdMats51[mode];
+            var tx = GoreTex.MeshTex("Spawner/lcd_" + mode + ".png");
+            Material m;
+            var sh = Shader.Find("Universal Render Pipeline/Unlit");                                   // a backlit screen: unlit
+            if (tx != null && sh != null && sh.isSupported) { m = new Material(sh) { name = "RageEngine_LCD" }; m.SetTexture("_BaseMap", tx); m.mainTexture = tx; m.SetColor("_BaseColor", new Color(0.9f, 0.95f, 0.9f)); }
+            else m = tx != null ? Mats.MakeTextured(tx, null, Color.white, 0.6f, false) : Mats.Make(new Color(0.55f, 0.62f, 0.55f), 0.6f);
+            return lcdMats51[mode] = m;
+        }
+
+        /// 0.52: the NPC Spawner is a rugged handheld remote (Blender model, worn plastic, rubber keys, live LCD menu).
         static void DressSpawner51(Item it)
         {
             dressed51.Add(it);
-            if (spawnerBody51 == null) { spawnerBody51 = Mats.Make(new Color(0.12f, 0.12f, 0.13f), 0.6f); spawnerGlow51 = Mats.Make(new Color(1f, 0.25f, 0.08f), 0.9f); try { spawnerGlow51.EnableKeyword("_EMISSION"); spawnerGlow51.SetColor("_EmissionColor", new Color(2.5f, 0.6f, 0.15f)); } catch { } }
             foreach (var r in it.GetComponentsInChildren<MeshRenderer>(true)) r.enabled = false;
             var root = new GameObject("RageEngine_SpawnerModel").transform; root.SetParent(it.transform, false);
-            root.localRotation = Quaternion.identity; root.localPosition = new Vector3(0f, -0.03f, 0f);
-            bool modelled = false;
-            foreach (var (mesh, m) in new[] { ("RE_Spawner_Body", spawnerBody51), ("RE_Spawner_Cage", spawnerMetal51 ??= Mats.Make(new Color(0.42f, 0.42f, 0.45f), 0.8f)), ("RE_Spawner_Core", spawnerGlow51) })
+            root.localPosition = Vector3.zero; root.localRotation = Quaternion.identity;
+            Material Tex(string f, Color fb, float sm) { var t = GoreTex.MeshTex("Spawner/" + f); return t != null ? Mats.MakeTextured(t, null, Color.white, sm, false) : Mats.Make(fb, sm); }
+            Renderer screen = null;
+            var parts = new (string mesh, Material mat)[] {
+                ("RE_Spawner2_Body", Tex("spawner_body.png", new Color(0.18f, 0.17f, 0.18f), 0.45f)),
+                ("RE_Spawner2_Dark", Tex("spawner_dark.png", new Color(0.11f, 0.11f, 0.12f), 0.3f)),
+                ("RE_Spawner2_Arrows", Mats.Make(new Color(0.78f, 0.78f, 0.78f), 0.5f)),
+                ("RE_Spawner2_Label", Tex("spawn_label.png", new Color(0.12f, 0.12f, 0.13f), 0.4f)),
+                ("RE_Spawner2_Screen", LcdMat51(spawnMode51)) };
+            bool any = false;
+            foreach (var (mesh, m) in parts)
             {
                 var mm = BoneModels.Get(mesh); if (mm == null) continue;
                 var g = new GameObject(mesh); g.transform.SetParent(root, false);
                 g.AddComponent<MeshFilter>().sharedMesh = mm;
                 var r = g.AddComponent<MeshRenderer>(); r.sharedMaterial = m; r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                modelled = true;
+                if (mesh == "RE_Spawner2_Screen") screen = r;
+                any = true;
             }
-            if (!modelled)                                                                         // models missing: simple fallback
+            if (!any)
             {
-                GameObject Prim(PrimitiveType p, Vector3 pos, Vector3 scale, Material m)
-                {
-                    var g = GameObject.CreatePrimitive(p); Object.Destroy(g.GetComponent<Collider>());
-                    g.transform.SetParent(root, false); g.transform.localPosition = pos; g.transform.localScale = scale;
-                    g.GetComponent<Renderer>().sharedMaterial = m; return g;
-                }
-                Prim(PrimitiveType.Cylinder, new Vector3(0f, 0.07f, 0f), new Vector3(0.045f, 0.06f, 0.045f), spawnerBody51);
-                Prim(PrimitiveType.Sphere, new Vector3(0f, 0.145f, 0f), new Vector3(0.05f, 0.05f, 0.05f), spawnerGlow51);
+                var g = GameObject.CreatePrimitive(PrimitiveType.Cube); Object.Destroy(g.GetComponent<Collider>());
+                g.transform.SetParent(root, false); g.transform.localScale = new Vector3(0.062f, 0.126f, 0.027f);
+                g.GetComponent<Renderer>().sharedMaterial = Mats.Make(new Color(0.18f, 0.17f, 0.18f), 0.45f);
             }
-            var lg = new GameObject("Glow"); lg.transform.SetParent(root, false); lg.transform.localPosition = new Vector3(0f, 0.124f, 0f);
-            var L = lg.AddComponent<Light>(); L.type = LightType.Point; L.color = new Color(1f, 0.35f, 0.1f); L.range = 0.8f; L.intensity = 1.2f; L.shadows = LightShadows.None;
+            if (screen != null)
+            {
+                var lg = new GameObject("Backlight"); lg.transform.SetParent(screen.transform, false); lg.transform.localPosition = new Vector3(0f, 0.046f, -0.03f);
+                var L = lg.AddComponent<Light>(); L.type = LightType.Point; L.color = new Color(0.75f, 0.9f, 0.75f); L.range = 0.25f; L.intensity = 0.6f; L.shadows = LightShadows.None;
+            }
+            spawnerParts51[it] = (root, screen);
+        }
+
+        /// keeps the screen turned toward your face (yaw around the grip) and shows the current mode
+        static void TickSpawnerLook51(Item it)
+        {
+            if (!spawnerParts51.TryGetValue(it, out var p) || p.model == null) return;
+            if (p.screen != null && p.screen.sharedMaterial != LcdMat51(spawnMode51)) p.screen.sharedMaterial = LcdMat51(spawnMode51);
+            var head = Player.local != null && Player.local.head != null ? Player.local.head.transform : null;
+            if (head == null) return;
+            Vector3 up = it.transform.up;
+            Vector3 toFace = Vector3.ProjectOnPlane(head.position - it.transform.position, up);
+            if (toFace.sqrMagnitude < 1e-4f) return;
+            // the model's screen faces its local -Z (Blender -Y front): point -Z at your face
+            p.model.rotation = Quaternion.LookRotation(-toFace.normalized, up);
         }
 
         void Spawn51(Item it, RagdollHand h)

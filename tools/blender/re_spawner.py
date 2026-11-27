@@ -119,12 +119,12 @@ for v in knob.data.vertices:                                       # knurled kno
     a = math.atan2(v.co.y, v.co.x + W / 2 - 1.1)
     if abs(v.co.z - (H / 2 + 0.25)) < 0.3: pass
 collar = cyl('collar', 0.55, 0.6, (W / 2 - 1.1, 0, H / 2 + 0.2), 24, 'Z', 0.1)
-ant = cyl('ant', 0.32, 4.6, (W / 2 - 1.1, 0, H / 2 + 2.8), 20, 'Z')
+ant = cyl('ant', 0.45, 3.0, (W / 2 - 1.1, 0, H / 2 + 2.0), 20, 'Z')
 for v in ant.data.vertices:                                        # taper
-    t = (v.co.z - (H / 2 + 0.5)) / 4.6
-    s = 1.0 - 0.35 * max(0.0, min(1.0, t))
+    t = (v.co.z - (H / 2 + 0.5)) / 3.0
+    s = 1.0 - 0.3 * max(0.0, min(1.0, t))
     v.co.x = (v.co.x - (W / 2 - 1.1)) * s + (W / 2 - 1.1); v.co.y *= s
-tip = cyl('tip', 0.26, 0.5, (W / 2 - 1.1, 0, H / 2 + 5.2), 20, 'Z', 0.1)
+tip = cyl('tip', 0.36, 0.45, (W / 2 - 1.1, 0, H / 2 + 3.6), 20, 'Z', 0.12)
 # lanyard: a loop tube from the bottom-right corner
 bpy.ops.curve.primitive_bezier_circle_add(radius=1.0)
 cv = bpy.context.object; cv.data.bevel_depth = 0.14; cv.data.bevel_resolution = 3; cv.data.resolution_u = 16
