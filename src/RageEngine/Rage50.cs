@@ -23,20 +23,12 @@ namespace RageEngine
     public sealed partial class RageEngineScript
     {
         // ================================================================== settings
-        [ModOptionCategory("Gore", 1), ModOptionOrder(20)]
-        [ModOption("Lightning scars", "Lightning leaves the branching scar where it went in and a burn where it went out.", defaultValueIndex = 1)]
         public static bool lightningScars50 = true;
 
-        [ModOptionCategory("Gore", 1), ModOptionOrder(21)]
-        [ModOption("Burn to ash", "Bodies burned long enough collapse into a pile of ash.", defaultValueIndex = 1)]
         public static bool burnToAsh50 = true;
 
-        [ModOptionCategory("NPCs", 2), ModOptionOrder(30)]
-        [ModOption("Put out fires", "Burning NPCs try to put themselves out. Most manage it; slow, weak or badly hurt ones don't.", defaultValueIndex = 1)]
         public static bool putOutFire50 = true;
 
-        [ModOptionCategory("NPCs", 2), ModOptionOrder(31)]
-        [ModOption("Brain damage & concussions", "Head hits add up: a damaged brain fights slower and dumber. One huge blow = a concussion (drunk, dazed).", defaultValueIndex = 1)]
         public static bool brain50 = true;
 
         public static ModOptionString[] musicVols50 = { new ModOptionString("Off", null, "0"), new ModOptionString("Quiet", null, "0.25"), new ModOptionString("Normal", null, "0.45"), new ModOptionString("Loud", null, "0.7") };
@@ -69,7 +61,7 @@ namespace RageEngine
             var c = s.creature;
             if (c.isKilled || part == null) return;
             var t = part.type; var dt = hit.damageStruct.damageType; float now = Time.time;
-            if (dt == DamageType.Energy) { s.energyAt50 = now; s.energyPt50 = hit.contactPoint; s.energyPart50 = part; }
+            if (dt == DamageType.Energy) { s.energyAt50 = now; s.energyPt50 = hit.contactPoint; s.energyPart50 = part; s.energyBig50 = severity >= 0.5f; }
             if (RealismOn && severity >= 0.3f)                                                    // real pain: every solid hit really hurts
             {
                 s.pain = Mathf.Min(1f, s.pain + 0.12f * Mathf.Clamp(severity, 0.3f, 2.5f));
@@ -136,8 +128,10 @@ namespace RageEngine
             if (slams51) Guard("fling50", () => Fling50(s, now));
             if (c.isKilled) return;
             // ---- lightning: the moment the game's electrocution starts
-            if (s.shocked && !s.shockScarred50) { s.shockScarred50 = true; Guard("scar", () => LightningScar50(s)); }
-            if (!s.shocked && s.shockScarred50 && now - s.shockEnd50 > 3f) { s.shockEnd50 = now; s.shockScarred50 = false; }
+            bool zapped = s.shocked || StatusNamed53(c, "Electrocute") != null || now - s.energyAt50 < 0.3f && s.energyBig50;      // 0.53: status by name + big energy hits
+            if (zapped && !s.shockScarred50) { s.shockScarred50 = true; s.shockEnd50 = now; Guard("scar", () => LightningScar50(s)); }
+            if (zapped) s.shockEnd50 = now;
+            if (!zapped && s.shockScarred50 && now - s.shockEnd50 > 4f) s.shockScarred50 = false;
             // ---- brain damage / concussion: a dumber, slower fighter
             if (brain50 && (s.brain50 > 0.12f || now < s.concussUntil50))
             {
@@ -199,25 +193,24 @@ namespace RageEngine
         void Fire50(NpcState s, float now)
         {
             var c = s.creature;
-            Burning b = null;
-            try { b = BurningOf(c); } catch { }
-            bool lit = b != null && b.isIgnited;
+            object b = StatusNamed53(c, "Burning");                                   // 0.53: by type name - works on this game version
+            bool lit = b != null && Get53(b, "isIgnited", true);
             if (lit)
             {
                 if (s.fireAt50 <= 0f) s.fireAt50 = now;
                 s.burnTime50 += 0.1f;
-                if (!ExternalGore && now >= s.nextChar50 && s.charMarks50 < 14)
+                if (!ExternalGore && now >= s.nextChar50 && s.charMarks50 < 16)
                 {
-                    s.nextChar50 = now + Random.Range(0.8f, 1.6f);
+                    s.nextChar50 = now + Random.Range(0.6f, 1.3f);
                     var parts = c.ragdoll.parts; var rp = parts[Random.Range(0, parts.Count)];
-                    if (rp != null) { Stamp(c, rp.transform.position + Random.insideUnitSphere * 0.05f, Random.Range(0.08f, 0.14f), "char", 0.9f); s.charMarks50++; }
+                    if (rp != null) { Stamp(c, rp.transform.position + Random.insideUnitSphere * 0.05f, Random.Range(0.09f, 0.16f), "char", 0.95f); s.charMarks50++; }
                 }
             }
             if (c.isKilled)
             {
                 if (burnToAsh50 && !ExternalGore && !s.ash50)
                 {
-                    float charred = 0f; try { charred = b != null ? b.CharAmount : 0f; } catch { }
+                    float charred = Get53(b, "CharAmount", 0f);
                     if (charred >= 0.97f || s.burnTime50 >= 14f) { s.ash50 = true; Guard("ash", () => Ash50(c)); }
                 }
                 return;
@@ -228,31 +221,33 @@ namespace RageEngine
                 return;
             }
             if (!putOutFire50 || s.knockedOut || s.passedOut || s.impaled49) return;
-            if (!s.fireDecided50)
+            // every few seconds he gets another go at it: quick, strong, healthy men usually manage; the weak, drunk,
+            // blinded and badly hurt often don't - and the fire keeps sticking to them
+            if (!s.fireDecided50 || now >= s.fireOutAt50 + 0.5f && !s.fireWins50)
             {
                 s.fireDecided50 = true;
-                float chance = 0.55f + 0.3f * HpFrac(c) + (s.will44 ? 0.1f : 0f) + (Tank(s) ? 0.1f : 0f) - Mathf.Min(0.4f, s.drunk * 0.3f) - (s.blind42 ? 0.2f : 0f) - Mathf.Min(0.3f, s.brain50 * 0.4f);
-                s.fireWins50 = Random.value < Mathf.Clamp(chance, 0.15f, 0.92f);
-                s.fireOutAt50 = now + Random.Range(1.8f, 4f) / Mathf.Max(0.5f, HpFrac(c) + 0.3f);
-                s.fireRoll50 = s.fireWins50 && Random.value < 0.35f;
+                float chance = 0.5f + 0.3f * HpFrac(c) + (s.will44 ? 0.1f : 0f) + (Tank(s) ? 0.1f : 0f) - Mathf.Min(0.4f, s.drunk * 0.3f) - (s.blind42 ? 0.2f : 0f) - Mathf.Min(0.3f, s.brain50 * 0.4f);
+                s.fireWins50 = Random.value < Mathf.Clamp(chance, 0.15f, 0.9f);
+                s.fireOutAt50 = now + Random.Range(2f, 4f) / Mathf.Max(0.5f, HpFrac(c) + 0.3f);
+                s.fireRoll50 = s.fireWins50 && Random.value < 0.3f;
                 FearVoice49(s, true);
-                Log($"{WhoIs(s)}: ON FIRE - {(s.fireWins50 ? (s.fireRoll50 ? "drops and rolls" : "pats it out") : "can't put it out")}");
+                Log($"{WhoIs(s)}: ON FIRE - {(s.fireWins50 ? (s.fireRoll50 ? "drops and rolls" : "beats it out") : "can't get it out")}");
             }
-            SetMelee(s, false, now + 0.5f);
             if (s.fireRoll50)
             {
-                if (c.ragdoll.state == Ragdoll.State.Standing) { AllowFallAlways(s, 3f); Guard("drop", () => c.ragdoll.SetState(Ragdoll.State.Destabilized)); }
-                var ch = ChestPart(c); if (ch != null && ch.physicBody != null) ch.physicBody.angularVelocity += c.transform.forward * 6f * Time.deltaTime * 10f;
+                if (c.ragdoll.state == Ragdoll.State.Standing) { AllowFall(s, 3f); Guard("drop", () => c.ragdoll.SetState(Ragdoll.State.Destabilized)); }
+                var ch = ChestPart(c); if (ch != null && ch.physicBody != null) ch.physicBody.angularVelocity += c.transform.forward * 0.6f;
             }
             else if (c.ragdoll.state == Ragdoll.State.Standing)
             {
-                if (s.despUntil43 < now + 0.2f) Gesture43(s, 6, 0.8f);                          // patting at the flames
-                if (Random.value < 0.15f) ShoveBodyQuiet(s, Vector3.ProjectOnPlane(Random.onUnitSphere, Vector3.up).normalized, 0.5f);
+                if (s.despUntil43 < now + 0.2f) Gesture43(s, 6, 0.8f);                      // beating at the flames
+                if (Random.value < 0.35f) ShoveBodyQuiet(s, Vector3.ProjectOnPlane(Random.onUnitSphere, Vector3.up).normalized, 0.6f);   // moving, staggering about
+                if (Random.value < 0.1f) SetMelee(s, false, now + 0.6f);
             }
             if (now >= s.nextFearVoice49) FearVoice49(s);
             if (s.fireWins50 && now >= s.fireOutAt50)
             {
-                Guard("putout", () => { b.Heat = 0f; c.Clear(b.data); });
+                Guard("putout", () => ClearStatus53(c, b));
                 s.fireAt50 = 0f; s.fireDecided50 = false;
                 if (s.despPose43 == 6) s.despUntil43 = now;
                 Log($"{WhoIs(s)}: put the fire out");

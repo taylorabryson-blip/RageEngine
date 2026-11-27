@@ -480,10 +480,13 @@ namespace RageEngine
                     var ls = e.transform.lossyScale;
                     g.transform.localScale = new Vector3(0.035f / Mathf.Max(0.001f, ls.x), 0.035f / Mathf.Max(0.001f, ls.y), 0.035f / Mathf.Max(0.001f, ls.z));
                     g.transform.localScale *= 0.45f;
-                    g.GetComponent<MeshRenderer>().sharedMaterial = SolidGlow(eye);
+                    g.transform.localScale *= 1.4f;
+                    g.transform.position += (c.centerEyes != null ? c.centerEyes.forward : c.transform.forward) * 0.006f;
+                    g.GetComponent<MeshRenderer>().sharedMaterial = Application.platform == RuntimePlatform.Android ? Emissive53(eye) : SolidGlow(eye);   // 0.53: emissive shows on Quest
                     s.bioVisualObjs.Add(g);
                 }
             Guard("bio.aura", () => AddAura(s, aura));
+            Guard("bio.auralight", () => AuraLight53(s, aura, eye));                          // 0.53: a light aura (particles are off on Quest)
         }
 
         /// Separate method: if particles were ever unavailable, only the aura is lost.

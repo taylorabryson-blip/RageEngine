@@ -23,13 +23,9 @@ namespace RageEngine
         public static string barStyle52 = "classic";
 
         public static ModOptionString[] barColorValues = { new ModOptionString("By health", null, "hp"), new ModOptionString("Red", null, "red"), new ModOptionString("Orange", null, "orange"), new ModOptionString("Blue", null, "blue"), new ModOptionString("White", null, "white") };
-        [ModOptionCategory("Rage", 0), ModOptionOrder(62)]
-        [ModOption("Bar color", "By health fades green to red as they get hurt.", valueSourceName = nameof(barColorValues), defaultValueIndex = 0)]
         public static string barColor52 = "hp";
 
         public static ModOptionString[] barSizeValues = { new ModOptionString("Small", null, "0.7"), new ModOptionString("Normal", null, "1"), new ModOptionString("Large", null, "1.4") };
-        [ModOptionCategory("Rage", 0), ModOptionOrder(63)]
-        [ModOption("Bar size", "", valueSourceName = nameof(barSizeValues), defaultValueIndex = 1)]
         public static string barSize52 = "1";
 
         sealed class Bar52

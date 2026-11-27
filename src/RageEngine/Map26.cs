@@ -22,9 +22,9 @@ namespace RageEngine
         {
             if (broken || c == null) return;
             float v = c.relativeVelocity.magnitude;
-            if (v < 1.8f) return;
-            float m = c.rigidbody != null ? Mathf.Clamp(c.rigidbody.mass, 0.5f, 25f) : 2f;
-            hp -= v * m * 1.5f;
+            if (v < 3f) return;                                                    // 0.53: leaning or brushing past doesn't break it
+            float m = c.rigidbody != null ? Mathf.Clamp(c.rigidbody.mass, 0.5f, 12f) : 2f;
+            hp -= v * m * 0.55f;
             if (hp > 0f) { Sfx.PlayAt("NRE_MetalBang", transform.position, 0.25f); return; }
             Vector3 at = c.contactCount > 0 ? c.GetContact(0).point : transform.position;
             Break(at, -c.relativeVelocity);
@@ -33,32 +33,7 @@ namespace RageEngine
         {
             if (broken) return;
             broken = true;
-            RageEngineScript.Guard("glass", () =>
-            {
-                Sfx.PlayAt("NRE_GlassBreak", at, 1f);
-                Vector3 size = transform.localScale;                      // the pane is a unit cube scaled to its size
-                int a0 = size.x >= size.y && size.x >= size.z ? 0 : size.y >= size.z ? 1 : 2;          // the two long axes
-                int thin = size.x <= size.y && size.x <= size.z ? 0 : size.y <= size.z ? 1 : 2;
-                int a1 = 3 - a0 - thin;
-                int n0 = Mathf.Clamp(Mathf.RoundToInt(size[a0] / 0.5f), 2, 5), n1 = Mathf.Clamp(Mathf.RoundToInt(size[a1] / 0.5f), 2, 4);
-                for (int i = 0; i < n0; i++)
-                    for (int j = 0; j < n1; j++)
-                    {
-                        var sh = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                        sh.name = "RageEngine_Shard";
-                        Vector3 local = Vector3.zero; local[a0] = (i + 0.5f) / n0 - 0.5f; local[a1] = (j + 0.5f) / n1 - 0.5f;
-                        sh.transform.position = transform.TransformPoint(local);
-                        sh.transform.rotation = transform.rotation * Quaternion.Euler(Random.insideUnitSphere * 12f);
-                        Vector3 s = Vector3.one * 0.012f; s[a0] = size[a0] / n0 * Random.Range(0.55f, 0.95f); s[a1] = size[a1] / n1 * Random.Range(0.55f, 0.95f);
-                        sh.transform.localScale = s;
-                        if (mat != null) sh.GetComponent<MeshRenderer>().sharedMaterial = mat;
-                        var rb = sh.AddComponent<Rigidbody>(); rb.mass = 0.3f;
-                        Vector3 away = (sh.transform.position - at).normalized;
-                        rb.AddForce(vel.normalized * Random.Range(0.5f, 2.5f) + away * Random.Range(0.3f, 1.5f), ForceMode.VelocityChange);
-                        rb.AddTorque(Random.insideUnitSphere * 6f, ForceMode.VelocityChange);
-                        Destroy(sh, Random.Range(10f, 16f));
-                    }
-            });
+            RageEngineScript.Guard("glass", () => RageEngineScript.Shatter53(transform, at, vel, mat));
             Destroy(gameObject);
         }
     }

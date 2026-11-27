@@ -57,9 +57,9 @@ namespace RageEngine
     public sealed partial class RageEngineScript
     {
         // ------------------------------------------------------------------ settings
-        public static ModOptionString[] wearValues = { new ModOptionString("Off", null, "0"), new ModOptionString("Light", null, "1"), new ModOptionString("Medium", null, "2"), new ModOptionString("Heavy", null, "3") };
+        public static ModOptionString[] wearValues = { new ModOptionString("Off", null, "0"), new ModOptionString("Mild", null, "1"), new ModOptionString("Medium", null, "2"), new ModOptionString("Heavy", null, "3") };
         [ModOptionCategory("Gore", 1), ModOptionOrder(7)]
-        [ModOption("Injury effects", "How much getting hurt slows them down - movement, attacks and blocking get worse gradually as they lose HP, break bones and bleed.", valueSourceName = nameof(wearValues), defaultValueIndex = 2)]
+        [ModOption("Injury effects", "How much getting hurt slows them down - movement, attacks and blocking get worse gradually as they lose HP, break bones and bleed.", valueSourceName = nameof(wearValues), defaultValueIndex = 1)]
         public static string injuryEffects = "2";
         static float WearK => injuryEffects == "0" ? 0f : injuryEffects == "1" ? 0.5f : injuryEffects == "3" ? 1.6f : 1f;
         static readonly object WearHandler = new object(), VomitHold = new object();

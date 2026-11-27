@@ -28,68 +28,38 @@ namespace RageEngine
         // ---------------- knockdown guard ----------------
         /// Lets the next knockdown of this NPC through (it's one Rage Engine or the player meant).
         /// Rage Engine (or you) means him to go down: a knockout, a takedown, a choke-out, a sink, a cut hamstring...
-        internal static void AllowFall(NpcState s, float seconds) { if (s != null) { s.allowFallUntil = Mathf.Max(s.allowFallUntil, Time.time + seconds); s.forceFall47 = Mathf.Max(s.forceFall47, Time.time + seconds); } }
-        /// 0.47: a hit reaction that may take his legs - only if he's already hurt (a healthy man stays up).
-        internal static void AllowFallHurt(NpcState s, float seconds) { if (s != null) s.allowFallUntil = Mathf.Max(s.allowFallUntil, Time.time + seconds); }
-
-        /// Every frame: if the game drops a standing NPC on its own (an ordinary hit, a shove, a stagger that turned into
-        /// a fall), put them straight back on their feet - unless Rage Engine or the player meant it.
-        /// 0.49: below this much HP a man can be put down by hits. Above it he stays on his feet, full stop.
+        // 0.53: back to the 0.22-0.25 footing rule (the one that played best). Every kind of "meant" fall just opens the
+        // window; GuardKnockdown only ever blocks a cheap knockdown at the moment it happens.
+        internal static void AllowFall(NpcState s, float seconds) { if (s != null) s.allowFallUntil = Mathf.Max(s.allowFallUntil, Time.time + seconds); }
+        internal static void AllowFallHurt(NpcState s, float seconds) => AllowFall(s, seconds);
+        internal static void AllowFallAlways(NpcState s, float seconds) => AllowFall(s, seconds);
         internal const float DropLine49 = 0.2f;
-        /// 0.49: falls that must happen whatever his HP (sleep serum, poison, choked out, pressure points, lost leg, spine).
-        internal static void AllowFallAlways(NpcState s, float seconds) { if (s != null) { s.allowFallUntil = Mathf.Max(s.allowFallUntil, Time.time + seconds); s.mustFall49 = Mathf.Max(s.mustFall49, Time.time + seconds); } }
-        /// 0.49: may a hit knock him down right now? Only when he's very low; the lower he is the less he tanks it.
-        internal static bool CanDrop49(NpcState s)
-        {
-            var c = s.creature; if (c == null) return false;
-            if (c.isKilled || s.dying) return true;
-            float hp = HpFrac(c);
-            if (hp >= DropLine49) return false;
-            float resist = Mathf.Lerp(0f, 0.8f, hp / DropLine49) + (s.will44 ? 0.15f : 0f) + (Tank(s) ? 0.15f : 0f);
-            return Random.value > resist;
-        }
+        internal static bool CanDrop49(NpcState s) => true;
 
-        /// Every frame: NPCs stay on their feet. They only go down when they die, when they're very low on HP (and lose
-        /// the roll), or when something meant to put them down for sure (sleep serum, poison, choke-out, lost leg...).
+        /// The game drops a standing NPC on its own (an ordinary hit, a shove, a stagger that turned into a fall): put him
+        /// straight back up - unless Rage Engine or the player meant it. Only at the moment of the fall, never later, and
+        /// after 6 blocks in 3 s it lets the fall happen (so nothing ever fights the physics or hangs in the air).
         void GuardKnockdown(NpcState s)
         {
             var c = s.creature;
             var rag = c.ragdoll;
             if (rag == null) return;
             var st = rag.state;
+            if (st == s.prevState) return;
             var prev = s.prevState;
             s.prevState = st;
-            if (c.isKilled || s.dying || s.shockDeathAt > 0f || s.lostLeg || s.spineBroken
-                || s.knockedOut || s.passedOut || Time.time < s.mustFall49) { s.downSince49 = 0f; return; }
-            bool held = rag.handlers != null && rag.handlers.Count > 0;
-            try { held |= rag.isGrabbed || rag.isTkGrabbed; } catch { }
-            if (held) s.heldAt49 = Time.time;
-            if (held || Time.time - s.heldAt49 < 3f) { s.downSince49 = 0f; return; }       // you're holding / threw him (hands or telekinesis)
-            try { if (rag.isSliced) return; } catch { }                                       // missing limbs
-            if (Time.time - lastCastAt < 1.5f) return;                                           // your spells
-            bool down = st == Ragdoll.State.Destabilized || st == Ragdoll.State.Inert;
-            if (!down) { s.downSince49 = 0f; return; }
-            bool fresh = prev == Ragdoll.State.Standing;
-            if (fresh)
-            {
-                if (HpFrac(c) < DropLine49)
-                {
-                    bool hit = Time.time < s.allowFallUntil || Time.time - s.bigHitAt < 1.2f || Time.time - s.powerHitAt < 1f;
-                    if (hit && CanDrop49(s)) { s.lowDrop49 = Time.time + 6f; return; }
-                    if (hit) { Speak(s, "attackmelee"); Log($"{WhoIs(s)}: hangs on ({HpFrac(c) * 100f:0}% HP)"); }
-                }
-            }
-            else
-            {
-                if (Time.time < s.lowDrop49) return;                                 // he lost the roll: let him lie a moment
-                if (s.downSince49 <= 0f) { s.downSince49 = Time.time; return; }
-                if (Time.time - s.downSince49 < 1.2f) return;                       // something else put him down: get him up
-            }
+            if (!blockCheapKnockdowns || prev != Ragdoll.State.Standing || (st != Ragdoll.State.Destabilized && st != Ragdoll.State.Inert)) return;
+            if (c.isKilled || s.dying || Time.time < s.allowFallUntil || s.spineBroken || s.lostLeg || Has(s.brokenParts, LegParts)
+                || s.knockedOutUntil > 0f || s.knockedOut || s.passedOut || s.shockDeathAt > 0f) return;
+            if (rag.handlers != null && rag.handlers.Count > 0) return;            // you're holding them: grabs and throws are yours
+            bool tk = false; try { tk = rag.isGrabbed || rag.isTkGrabbed; } catch { }
+            if (tk) return;                                                       // telekinesis / gravity: yours too
+            if (Time.time - lastCastAt < 1.5f) return;                            // your spells
             if (Time.time - s.blockWindowStart > 3f) { s.blockWindowStart = Time.time; s.blockedFalls = 0; }
-            if (++s.blockedFalls > 120) return;
+            if (++s.blockedFalls > 6) return;                                     // something keeps knocking them over: let it
             Guard("antifall", () => rag.SetState(Ragdoll.State.Standing));
-            s.prevState = Ragdoll.State.Standing; s.downSince49 = 0f;
-            Log($"{c.name}: kept on his feet");
+            s.prevState = Ragdoll.State.Standing;
+            Log($"{c.name}: blocked a cheap knockdown (kept on their feet)");
         }
 
         // ---------------- fisticuffs tick ----------------
