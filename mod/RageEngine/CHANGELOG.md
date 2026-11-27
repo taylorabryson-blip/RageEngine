@@ -1,5 +1,17 @@
 # Rage Engine changelog
 
+## 0.53 - back to what worked
+- **NPC footing is back to how it played in 0.22.** Only cheap knockdowns get blocked, at the moment they happen. Real hits, grabs, throws, telekinesis and spells all go through. NPCs no longer get stuck standing in mid-air.
+- **Punch-through chest removed.**
+- **Settings cleaned up** to be close to the live version. The extra switches added in 0.50 and 0.51 are gone from the menu (those features just run). Injury effects are back to Off / Mild / Medium / Heavy, with Mild as the default.
+- **Organs fall out of the body again**, and a bit more often.
+- **Glass:**
+  - Shatters into jagged shards from where it was hit, plus a burst of small chips.
+  - Brushing or leaning on it no longer breaks it; it takes a real hit.
+- **Super soldiers:** glowing eyes that show up on Quest, plus a pulsing colored light aura.
+- **Fire:** burning NPCs keep moving and stagger around beating at the flames. They get another try every few seconds. Strong, healthy ones usually get it out; weak, drunk or badly hurt ones often don't. Char marks build up as they burn.
+- **Lightning scars:** now also triggered by the game's electrocution effect and by big lightning hits.
+
 ## 0.52
 - **Health bars** (Rage tab):
   - Show: Off / Only when hurt / Enemies / Everyone.
