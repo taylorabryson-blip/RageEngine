@@ -38,7 +38,15 @@ jobs:
           if ! command -v ffmpeg >/dev/null; then
             timeout 240 sudo apt-get install -y -qq ffmpeg > /dev/null 2>&1 || {
               echo "apt ffmpeg slow - static build"; curl -fsSL --max-time 180 -o /tmp/ff.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz &&
-              mkdir -p /tmp/ff && tar -xf /tmp/ff.tar.xz -C /tmp/ff --strip-components=1 && sudo cp /tmp/ff/ffmpeg /tmp/ff/ffprobe /usr/local/bin/; }
+              mkdir -p /tmp/ff && tar -xf /tmp/ff.tar.xz -C /tmp/ff --strip-components=1 && sudo cp /tmp/ff/ffmpeg /tmp/ff/ffprobe /usr/local/bin/; } || true
+          fi
+          if ! command -v ffmpeg >/dev/null; then
+            echo "ffmpeg fallback 2: BtbN build"
+            curl -fsSL --retry 3 --max-time 240 -o /tmp/ff2.tar.xz https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz &&
+              mkdir -p /tmp/ff2 && tar -xf /tmp/ff2.tar.xz -C /tmp/ff2 --strip-components=1 && sudo cp /tmp/ff2/bin/ffmpeg /tmp/ff2/bin/ffprobe /usr/local/bin/ || true
+          fi
+          if ! command -v ffmpeg >/dev/null; then
+            echo "ffmpeg fallback 3: apt retry"; sudo apt-get update -qq >/dev/null 2>&1; sudo apt-get install -y -qq ffmpeg >/dev/null 2>&1 || true
           fi
           ffmpeg -version | head -1
           M=dist/RageEngine/Music; A=dist/RageEngine/Ambience; mkdir -p $M $A /tmp/au
