@@ -305,23 +305,35 @@ namespace RageEngine
             if (Time.frameCount % 120 == 0) dressed51.RemoveWhere(x => x == null);
         }
 
-        static Material spawnerBody51, spawnerGlow51;
+        static Material spawnerBody51, spawnerGlow51, spawnerMetal51;
         static void DressSpawner51(Item it)
         {
             dressed51.Add(it);
             if (spawnerBody51 == null) { spawnerBody51 = Mats.Make(new Color(0.12f, 0.12f, 0.13f), 0.6f); spawnerGlow51 = Mats.Make(new Color(1f, 0.25f, 0.08f), 0.9f); try { spawnerGlow51.EnableKeyword("_EMISSION"); spawnerGlow51.SetColor("_EmissionColor", new Color(2.5f, 0.6f, 0.15f)); } catch { } }
             foreach (var r in it.GetComponentsInChildren<MeshRenderer>(true)) r.enabled = false;
             var root = new GameObject("RageEngine_SpawnerModel").transform; root.SetParent(it.transform, false);
-            GameObject Prim(PrimitiveType p, Vector3 pos, Vector3 scale, Material m)
+            root.localRotation = Quaternion.identity; root.localPosition = new Vector3(0f, -0.03f, 0f);
+            bool modelled = false;
+            foreach (var (mesh, m) in new[] { ("RE_Spawner_Body", spawnerBody51), ("RE_Spawner_Cage", spawnerMetal51 ??= Mats.Make(new Color(0.42f, 0.42f, 0.45f), 0.8f)), ("RE_Spawner_Core", spawnerGlow51) })
             {
-                var g = GameObject.CreatePrimitive(p); Object.Destroy(g.GetComponent<Collider>());
-                g.transform.SetParent(root, false); g.transform.localPosition = pos; g.transform.localScale = scale;
-                g.GetComponent<Renderer>().sharedMaterial = m; return g;
+                var mm = BoneModels.Get(mesh); if (mm == null) continue;
+                var g = new GameObject(mesh); g.transform.SetParent(root, false);
+                g.AddComponent<MeshFilter>().sharedMesh = mm;
+                var r = g.AddComponent<MeshRenderer>(); r.sharedMaterial = m; r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                modelled = true;
             }
-            Prim(PrimitiveType.Cylinder, new Vector3(0f, 0.04f, 0f), new Vector3(0.045f, 0.06f, 0.045f), spawnerBody51);
-            Prim(PrimitiveType.Sphere, new Vector3(0f, 0.115f, 0f), new Vector3(0.05f, 0.05f, 0.05f), spawnerGlow51);
-            Prim(PrimitiveType.Cylinder, new Vector3(0f, 0.095f, 0f), new Vector3(0.06f, 0.006f, 0.06f), spawnerBody51);
-            var lg = new GameObject("Glow"); lg.transform.SetParent(root, false); lg.transform.localPosition = new Vector3(0f, 0.12f, 0f);
+            if (!modelled)                                                                         // models missing: simple fallback
+            {
+                GameObject Prim(PrimitiveType p, Vector3 pos, Vector3 scale, Material m)
+                {
+                    var g = GameObject.CreatePrimitive(p); Object.Destroy(g.GetComponent<Collider>());
+                    g.transform.SetParent(root, false); g.transform.localPosition = pos; g.transform.localScale = scale;
+                    g.GetComponent<Renderer>().sharedMaterial = m; return g;
+                }
+                Prim(PrimitiveType.Cylinder, new Vector3(0f, 0.07f, 0f), new Vector3(0.045f, 0.06f, 0.045f), spawnerBody51);
+                Prim(PrimitiveType.Sphere, new Vector3(0f, 0.145f, 0f), new Vector3(0.05f, 0.05f, 0.05f), spawnerGlow51);
+            }
+            var lg = new GameObject("Glow"); lg.transform.SetParent(root, false); lg.transform.localPosition = new Vector3(0f, 0.124f, 0f);
             var L = lg.AddComponent<Light>(); L.type = LightType.Point; L.color = new Color(1f, 0.35f, 0.1f); L.range = 0.8f; L.intensity = 1.2f; L.shadows = LightShadows.None;
         }
 

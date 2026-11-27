@@ -1,5 +1,14 @@
 # Rage Engine changelog
 
+## 0.52
+- **Health bars** (Rage tab):
+  - Show: Off / Only when hurt / Enemies / Everyone.
+  - Styles: Classic (framed, with a damage chip), Slim, Segmented, Souls (wide, with a slow yellow damage trail).
+  - Colors: By health (green to red), Red, Orange, Blue, White.
+  - Sizes: Small / Normal / Large.
+  - Bars face you, stay readable at a distance and fade out when the NPC dies.
+- **New 3D models made in Blender:** real teeth (incisor, canine, premolar, two-rooted molar), skull fragments with clean fracture edges, brain chunks with folds, a full vertebra (body, arch and processes), a broken jaw piece, and a proper NPC Spawner (knurled grip, metal cage, glowing core).
+
 ## 0.51
 **New**
 - **NPC Spawner** (item book → Utilities): point it and pull the trigger to spawn an NPC where you point. The other button switches between Enemy, Unarmed brawler, Super soldier and Ally.
