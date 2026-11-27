@@ -1,0 +1,34 @@
+name: blender-assets
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['tools/blender/**', '.github/workflows/blender.yml']
+permissions:
+  contents: write
+jobs:
+  assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Blender
+        run: |
+          set -e
+          V=4.2.3
+          curl -fsSL --retry 3 -o /tmp/b.tar.xz https://download.blender.org/release/Blender4.2/blender-$V-linux-x64.tar.xz
+          mkdir -p /tmp/blender && tar -xf /tmp/b.tar.xz -C /tmp/blender --strip-components=1
+          sudo apt-get install -y -qq libxi6 libxxf86vm1 libxfixes3 libxrender1 libgl1 libxkbcommon0 libsm6 >/dev/null 2>&1 || true
+          /tmp/blender/blender --version | head -1
+      - name: Build assets
+        run: |
+          mkdir -p out
+          /tmp/blender/blender -b --factory-startup -P tools/blender/re_assets.py -- $PWD/out 2>&1 | tee out/blender.log | grep -E "wrote|DONE|Error|Traceback|line [0-9]+" || true
+          ls -la out
+      - name: Publish to branch blender-out
+        run: |
+          git config user.name "rage-ci"; git config user.email "rage-ci@users.noreply.github.com"
+          git checkout --orphan blender-out
+          git rm -rf --cached . >/dev/null
+          find . -mindepth 1 -maxdepth 1 ! -name out ! -name .git -exec rm -rf {} +
+          mv out/* . && rmdir out
+          git add -A && git commit -qm "assets $(date -u)" && git push -f origin blender-out
