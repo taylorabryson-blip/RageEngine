@@ -1,5 +1,26 @@
 # Rage Engine changelog
 
+## 0.51
+**New**
+- **NPC Spawner** (item book → Utilities): point it and pull the trigger to spawn an NPC where you point. The other button switches between Enemy, Unarmed brawler, Super soldier and Ally.
+- **NPC life (RDR2-style):**
+  - Bump into a calm NPC and he stumbles, turns and shoves you off. Keep doing it and he gets angry.
+  - Aim a weapon at a calm or beaten NPC and he puts his hands up and backs away. Cocky ones square up instead.
+  - NPCs who spot a fresh body stop and stare. A friend of the dead gets furious.
+  - Morale: watching you do something brutal, or watching others die, breaks the weak. They run or give up.
+  - In a lull, a hurt NPC looks down at his wound and holds it.
+  - Look a calm NPC in the eye up close and he looks back and nods.
+- **Hanging jaws:** damage to the jaw adds up. Enough breaks it; more tears it loose so it hangs open and swings.
+- **Knife lines:** NPCs say something when they pull a knife.
+
+**On/off switches**
+Most systems can now be turned off on their own:
+- Rage tab: Map rescue.
+- Gore tab: Hanging jaws.
+- NPCs tab: NPC life, Keep NPCs standing, Smart NPCs, Knife pulls.
+- You tab: Chokes, Throat punches, Gravity slams.
+These sit alongside the existing switches, so Rage Engine can run as a light quality-of-life add-on.
+
 ## 0.50
 **Spells and the elements**
 - **Lightning scars:** a real strike leaves the branching lightning scar where it went in, a track of them down the body, and a burn where it went out (a foot).
