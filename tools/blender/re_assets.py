@@ -164,13 +164,13 @@ for i in range(1, 4):
     random.seed(300 + i)
     el = [B((random.uniform(-0.3, 0.3), random.uniform(-0.25, 0.25), random.uniform(-0.2, 0.2)), random.uniform(0.35, 0.5)) for _ in range(5)]
     o = from_meta('RE_Brain_%d' % i, el, 0.018)
-    sulci(o, 0.075, 4.2, 310 + i)                 # deep grooves winding over the surface (gyri between them)
-    displace(o, 0.01, 18.0, 320 + i)
-    o.data.materials.append(M_BRAIN); finish(o, 3200, 0.35); write_obj(o, 'RE_Brain_%d' % i, 0.06); made.append(o)
+    sm0 = o.modifiers.new('pre', 'SMOOTH'); sm0.factor = 0.5; sm0.iterations = 3; finish(o, 10**9, 0.0)
+    sulci(o, 0.07, 4.2, 310 + i)                  # deep grooves winding over the surface (gyri between them)
+    o.data.materials.append(M_BRAIN); finish(o, 7000, 0.5); write_obj(o, 'RE_Brain_%d' % i, 0.06); made.append(o)
 
 # ---------------------------------------------------------------- vertebra: body, arch, spinous + transverse processes, facets
 o = from_meta('RE_Bone_Vertebra', tube([(0, 0.3, -0.2), (0, 0.3, 0.2)], [0.4, 0.4])
-              + tube([(-0.25, -0.05, 0), (-0.18, -0.28, 0), (0, -0.36, 0), (0.18, -0.28, 0), (0.25, -0.05, 0)], [0.1, 0.1, 0.1, 0.1, 0.1])
+              + tube([(-0.25, 0.2, 0), (-0.26, -0.1, 0), (-0.16, -0.3, 0), (0, -0.37, 0), (0.16, -0.3, 0), (0.26, -0.1, 0), (0.25, 0.2, 0)], [0.14, 0.13, 0.12, 0.12, 0.12, 0.13, 0.14])
               + tube([(0, -0.36, 0), (0, -0.75, -0.12)], [0.11, 0.07])
               + tube([(-0.22, -0.12, 0), (-0.62, -0.18, 0.04)], [0.1, 0.07]) + tube([(0.22, -0.12, 0), (0.62, -0.18, 0.04)], [0.1, 0.07])
               + [B((-0.16, -0.22, 0.16), 0.08), B((0.16, -0.22, 0.16), 0.08)], 0.03)
@@ -224,7 +224,7 @@ for i, o in enumerate(made):
     ext = max((max(v[j] for v in bb) - min(v[j] for v in bb)) for j in range(3))
     s = 1.3 / max(ext, 1e-4)
     o.scale = (s, s, s)
-    if o.name == 'RE_Bone_Vertebra': o.rotation_euler = (math.radians(70), 0, 0)
+    if o.name == 'RE_Bone_Vertebra': o.rotation_euler = (math.radians(-60), 0, 0)
     bpy.context.view_layer.update()
     bb = [o.matrix_world @ Vector(c) for c in o.bound_box]; ctr = sum(bb, Vector()) / 8
     o.location += Vector(((i % cols) * 1.8 - (cols - 1) * 0.9, 0, -(i // cols) * 1.8 + 1.6)) - ctr
