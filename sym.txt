@@ -1,0 +1,90 @@
+symbols: 
+/usr/bin/addr2line
+== tools/symbolize/t00_unity.txt
+-- 0x000000000036a864
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x00000000003678e4
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x00000000004d9098
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x000000000049d5d0
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x00000000004a1fac
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x000000000049aff0
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x000000000049d384
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x00000000003f11ec
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x0000000000403294
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x00000000001ba7b0
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x000000000057ab40
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x00000000005894d4
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x00000000005990c8
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x0000000000379aac
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x0000000000767a60
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x0000000000767314
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x000000000051fb90
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x000000000046edd8
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x000000000046ee18
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x000000000046f050
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x00000000006126b8
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x000000000062b204
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+== tools/symbolize/t01_unity.txt
+-- 0x000000000049d36c
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x00000000003f11c8
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x00000000001ba3fc
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x000000000057ab40
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x00000000005894d4
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x000000000058c458
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x00000000005d7b68
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x00000000003787e8
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x00000000004696b0
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x0000000000469700
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x0000000000469700
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x0000000000469e1c
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x0000000000487bdc
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x000000000047c290
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x000000000047b5f4
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x000000000047bf64
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x000000000046edd8
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x000000000046ee18
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x000000000046f050
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x00000000006126b8
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
+-- 0x000000000062b204
+/usr/bin/llvm-symbolizer-20: error: No such file or directory
