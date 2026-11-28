@@ -111,7 +111,8 @@ jobs:
           else echo "MISSING sound: hand bell" | tee -a build.log; fi
           if fs https://freesound.org/people/dvdfu/sounds/565799/ /tmp/au/coins.mp3; then
             ffmpeg -nostdin -loglevel error -y -i /tmp/au/coins.mp3 -ac 1 -ar 22050 -af "silenceremove=start_periods=1:start_threshold=-45dB:stop_periods=-1:stop_threshold=-45dB:stop_duration=0.2" /tmp/au/coins.dense.wav
-            cut54 /tmp/au/coins.dense.wav 0 1.6 $S/NRE_Coins_1.wav 0.25
+            cut54 /tmp/au/coins.dense.wav 0 1.6 /tmp/au/coins.cut.wav 0.25
+            ffmpeg -nostdin -loglevel error -y -i /tmp/au/coins.cut.wav -af "volume=8dB,alimiter=limit=0.9" -c:a pcm_s16le $S/NRE_Coins_1.wav && ffmpeg -nostdin -hide_banner -i $S/NRE_Coins_1.wav -af volumedetect -f null - 2>&1 | grep -o "mean_volume: [-0-9.]* dB" | sed 's|^|coins boosted |' | tee -a build.log
             echo "NRE_Coins_1: \"Coins\" by dvdfu of Freesound.org https://freesound.org/s/565799/ - CC0" >> /tmp/au/credits.txt
           else echo "MISSING sound: coins" | tee -a build.log; fi
           if fs https://freesound.org/people/dersuperanton/sounds/434473/ /tmp/au/rattle.mp3; then

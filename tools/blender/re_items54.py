@@ -245,10 +245,11 @@ for v in bm.verts:
     zz = z if z >= -0.2 else -0.2 + (z + 0.2) * 0.55                             # sits flat-ish
     if rho < 1e-5: v.co = Vector((0, 0, 3.0 if z > 0 else zz * 3.4)); continue  # top pole sinks in: a cinched mouth
     lump = 0.25 * math.sin(a * 3 + z * 4) * math.cos(z * 3.1) + 0.15 * math.sin(a * 5 - 1.3)
-    if z <= 0.45: R = (3.3 + lump) * rho
+    if z <= 0.45: R = (3.3 + lump) * rho * (1.0 + 0.04 * math.sin(a * 11) * max(0.0, z + 0.2))   # creases running up to the neck
     else:
         t = (z - 0.45) / 0.55; R0 = 3.3 * math.sqrt(1 - 0.45 ** 2)
-        R = R0 * (1 - t / 0.8) + 1.05 * (t / 0.8) if t < 0.8 else 1.05 + (t - 0.8) * 5.5 + 0.35 * math.sin(a * 7)
+        R = R0 * (1 - t / 0.8) + 1.05 * (t / 0.8) if t < 0.8 else 1.05 + (t - 0.8) * 3.2 + 0.16 * math.sin(a * 9)
+        R *= 1.0 + 0.07 * math.sin(a * 11) * min(1.0, t * 1.6)                     # the gathered leather folds into pleats
     v.co = Vector((math.cos(a) * R, math.sin(a) * R, zz * 3.4))
 sack = obj_from_bm('Sack', bm); box_uv(sack, 0.18)
 rope = join('Rope', [tube('tie', [(math.cos(2 * math.pi * k / 20) * 1.15, math.sin(2 * math.pi * k / 20) * 1.15, 2.95) for k in range(21)], 0.2, 8),
