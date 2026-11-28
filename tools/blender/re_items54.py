@@ -1,7 +1,7 @@
 # Rage Engine 0.54 items - blender -b -P re_items54.py -- <outdir> <texdir>
 # Medieval, one noisemaker per faction + the Seer's Mirror:
 #  Eraden hand bell (bronze bell, turned wooden handle, iron clapper that swings)
-#  Outlaw coin pouch (cinched leather purse, drawstring, gold coins spilling out)
+#  Outlaw coin pouch (cinched leather purse, tied shut with a drawstring; 0.55: no coins showing)
 #  Wildfolk bone rattle (painted hide drum on a bone handle, beads and teeth on cords)
 #  Eye resonance fork (bronze two-pronged ritual fork, eye boss with a glowing gem, wooden grip)
 #  Seer's Mirror (arched bronze hand mirror, dark glass that shows what Rage Engine knows about an NPC)
@@ -265,11 +265,12 @@ for (x, y, z), (rx, ry) in (((0.3, -0.3, 3.35), (25, 10)), ((-0.5, 0.4, 3.25), (
     coins.append(c)
 coinsO = join('Coins', coins)
 tris = 0
-for o, n in ((sack, 'RE_Pouch_Leather'), (rope, 'RE_Pouch_Rope'), (coinsO, 'RE_Pouch_Coins')): look(o, n != 'RE_Pouch_Coins'); tris += write_obj(o, n)
+for o, n in ((sack, 'RE_Pouch_Leather'), (rope, 'RE_Pouch_Rope')): look(o, True); tris += write_obj(o, n)
 print('POUCH tris', tris)
 sack.data.materials.append(matimg('leather', T('leather.png'), 0.7)); rope.data.materials.append(matimg('rope', T('rope.png'), 0.8))
 coinsO.data.materials.append(matimg('coin', T('coin.png'), 0.3, metal=1.0))
-render([sack, rope, coinsO], os.path.join(OUT, 'pouch_preview.png'), 44, STD)
+coinsO.hide_render = True
+render([sack, rope], os.path.join(OUT, 'pouch_preview.png'), 44, STD)
 print('POUCH DONE')
 
 # ============================================================================================ WILDFOLK BONE RATTLE (head up, bone handle down)

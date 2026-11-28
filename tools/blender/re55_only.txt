@@ -1,1 +1,1 @@
-tane,naginata,xbow,blowgun,balls,bolas,caltrops,crystal,conch,pipe
+weapons,valuables,rare,conch,pipe
