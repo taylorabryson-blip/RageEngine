@@ -85,7 +85,7 @@ namespace ThunderRoad
         public Level level;
         public virtual System.Collections.IEnumerator OnPlayerSpawnCoroutine() { yield break; }
     }
-    public class Breakable : ThunderBehaviour { }
+    public class Breakable : ThunderBehaviour { public Item LinkedItem => null; }
     public class ContentState { }
     public class ContainerContent { public string referenceID; }
     public class Container : MonoBehaviour { public List<ContainerContent> contents; public ItemContent AddItemContent(ItemData itemData, ContentState state = null, List<ContentCustomData> customDataList = null) => null; }
@@ -148,6 +148,16 @@ namespace ThunderRoad
         public static GameData gameData;
         public static T GetData<T>(string id, bool logWarning = true) where T : CatalogData => default;
         public static List<CatalogData> GetDataList(Category category) => null;
+        public static List<T> GetDataList<T>() where T : CatalogData => null;
+    }
+
+    public class LootTableBase : CatalogData { }
+    public class LootTable : LootTableBase
+    {
+        public class Drop { public enum Reference { Item = 0, Table = 1, Skill = 2, Bundle = 3 } public string referenceID; public Reference reference; public float probabilityWeight; }
+        public class DropLevel { public List<Drop> drops; public float probabilityTotalWeight; }
+        public List<DropLevel> levelledDrops;
+        public virtual void OnCatalogRefresh() { }
     }
 
     public abstract class ValueHandler<T>
@@ -371,6 +381,8 @@ namespace ThunderRoad
         public Holder holder; public bool isTelekinesisGrabbed;
         public bool isBrokenPiece;
         public bool isFlying;
+        public enum FlyDetection { Disabled = 0, CheckAngle = 1, Forced = 2 }
+        public void Throw(float throwMultiplier = 1f, FlyDetection flyDetection = FlyDetection.CheckAngle) { }
         public bool IsHanded() => false;
         public void Despawn() { }
         public bool FullyUnpenetrate() => false;

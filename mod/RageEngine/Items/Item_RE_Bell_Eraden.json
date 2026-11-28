@@ -5,7 +5,7 @@
   "sensitiveFilterBehaviour": "Discard",
   "version": 4,
   "displayName": "Eraden Hand Bell",
-  "description": "Rage Engine. An Eraden garrison's alarm bell. Pull the trigger to ring it; throw it and it rings where it lands. NPCs nearby come to check - Eraden soldiers know their own bell and come running. They still have to see you.",
+  "description": "Rage Engine. An Eraden garrison's alarm bell. Pull the trigger to ring it; throw it and it rings where it lands. NPCs nearby come to check. They still have to see you.",
   "author": "Rage Engine",
   "valueType": "Gold",
   "value": 60.0,

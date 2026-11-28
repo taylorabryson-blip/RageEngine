@@ -127,12 +127,11 @@ namespace RageEngine
             {
                 s.heardSeen54 = s.heardAt;
                 float dist = Vector3.Distance(c.transform.position, s.heardPos);
-                bool own = s.heardKind == Stim.Noise && s.heardTag54 > 0 && FactionTag54(c) == s.heardTag54;   // his own people's signal
+                bool own = false;                                                                  // 0.55: faction items are style only - nobody gets a special reaction
                 if (s.heardKind != Stim.NearMiss && dist > 2.5f && now - s.heardAt < 2f)
                 {
                     Investigate54(s, s.heardPos, Mathf.Clamp(dist * 0.3f, 0.7f, 5f) * (own ? 0.35f : 1f), now,
-                        own ? $"heard his own faction's signal ({Kinds54[s.heardTag54 - 1].name}) {dist:0}m away - running to it"
-                            : $"heard {(s.heardKind == Stim.Noise ? "a noise" : s.heardKind.ToString().ToLowerInvariant())} {dist:0}m away - going to check", ref walking);
+                        $"heard {(s.heardKind == Stim.Noise ? "a noise" : s.heardKind.ToString().ToLowerInvariant())} {dist:0}m away - going to check", ref walking);
                     if (s.pat54 == Check54) s.urgent54 = own;
                 }
             }

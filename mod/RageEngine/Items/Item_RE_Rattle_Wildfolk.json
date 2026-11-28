@@ -5,7 +5,7 @@
   "sensitiveFilterBehaviour": "Discard",
   "version": 4,
   "displayName": "Wildfolk Bone Rattle",
-  "description": "Rage Engine. Painted hide on a bone handle. Shake it (trigger) or throw it to draw NPCs over - the Wildfolk answer their own ritual rattle. They still have to see you.",
+  "description": "Rage Engine. Painted hide on a bone handle. Shake it (trigger) or throw it to draw NPCs over. They still have to see you.",
   "author": "Rage Engine",
   "valueType": "Gold",
   "value": 50.0,

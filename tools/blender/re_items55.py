@@ -161,8 +161,32 @@ if want('weapons'):
         bmesh.ops.transform(bm, matrix=Vector((0, 0, 1)).rotation_difference(d).to_matrix().to_4x4(), verts=bm.verts)
         bmesh.ops.translate(bm, vec=base, verts=bm.verts); thorns.append(obj_from_bm('thorn', bm))
     sock = lathe_y('socket', [(1.75, 25.5), (2.2, 26.0), (2.25, 37.5), (1.8, 38.2), (1.5, 38.2), (1.5, 25.5)], 16, 0, 0.2)
-    bit = wedge_z('bit', 1.6, 13.5, lambda t: 27.0 - 7.5 * t ** 1.6, lambda t: 37.2 + 4.0 * t ** 1.3, lambda t: 2.3 * (1 - t) ** 1.4 + 0.12, 14)
-    hook = sweep('hook', [(0, 33.5, -1.6), (0, 32.0, -5.0), (0, 29.2, -8.0), (0, 26.6, -9.4)], lambda t: [(math.cos(a) * 0.9 * (1 - t) + 0.02, math.sin(a) * 0.55 * (1 - t) + 0.02) for a in [2 * math.pi * k / 8 for k in range(8)]])
+    def cr(pts, u):
+        # smooth curve through evenly spaced control values (Catmull-Rom)
+        n = len(pts) - 1; f = min(max(u, 0.0), 1.0) * n; i = min(int(f), n - 1); t = f - i
+        p0, p1, p2, p3 = pts[max(i - 1, 0)], pts[i], pts[i + 1], pts[min(i + 2, n)]
+        return 0.5 * ((2 * p1) + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t + (-p0 + 3 * p1 - 3 * p2 + p3) * t ** 3)
+    TOP = [37.6, 36.5, 36.6, 37.9, 40.2]; BOT = [26.2, 27.4, 26.6, 23.6, 20.0]
+    def axe_pt(u, v, side):
+        y = cr(BOT, u) + (cr(TOP, u) - cr(BOT, u)) * v
+        z = 1.6 + (12.6 + 1.6 * math.sin(math.pi * v) ** 0.8 - 1.6) * u
+        h = 0.14 + 2.2 * (1 - u) ** 1.5
+        h *= 0.78 + 0.22 * math.sin(math.pi * v) ** 0.5
+        if u > 0.84: h = max(0.05, h * ((1 - u) / 0.16) ** 0.75)
+        return (side * h / 2, y, z)
+    NU, NV = 22, 12; bm = bmesh.new()
+    G = {sd: [[bm.verts.new(axe_pt(i / NU, j / NV, sd)) for j in range(NV + 1)] for i in range(NU + 1)] for sd in (-1, 1)}
+    for sd in (-1, 1):
+        g = G[sd]
+        for i in range(NU):
+            for j in range(NV): bm.faces.new((g[i][j], g[i + 1][j], g[i + 1][j + 1], g[i][j + 1]))
+    loop = [(i, 0) for i in range(NU + 1)] + [(NU, j) for j in range(1, NV + 1)] + [(i, NV) for i in range(NU - 1, -1, -1)] + [(0, j) for j in range(NV - 1, 0, -1)]
+    for k in range(len(loop)):
+        (i0, j0), (i1, j1) = loop[k], loop[(k + 1) % len(loop)]
+        bm.faces.new((G[-1][i0][j0], G[-1][i1][j1], G[1][i1][j1], G[1][i0][j0]))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bit = obj_from_bm('bit', bm)
+    hook = sweep('hook', [(0, 33.8, -1.9), (0, 32.6, -4.6), (0, 30.4, -7.4), (0, 27.4, -9.0), (0, 25.6, -9.2)], lambda t: [(math.cos(a) * (1.25 * (1 - t) + 0.05), math.sin(a) * (0.85 * (1 - t) + 0.05)) for a in [2 * math.pi * k / 10 for k in range(10)]])
     wood = join('Wood', [haft, knob] + thorns); box_uv(wood, 0.08)
     head = join('Head', [sock, bit, hook]); box_uv(head, 0.12)
     box_uv(wrap, 0.2)
@@ -387,14 +411,15 @@ if want('valuables'):
     def scallop(name, flip):
         bm = bmesh.new(); rows = []
         for i in range(13):
-            rho = 0.35 + 4.8 * i / 12; row = []
-            for j in range(25):
-                ph = math.radians(-62 + 124 * j / 24)
-                z = 1.6 * (1 - (rho / 5.2) ** 2) ** 0.5 * 0.9 + 0.18 * max(0, math.cos(ph * 9)) * (rho / 5.2)
+            row = []
+            for j in range(49):
+                ph = math.radians(-62 + 124 * j / 48); rib = abs(math.cos(ph * 7.5)) ** 0.7
+                rho = (0.35 + 4.8 * i / 12) * (1 + 0.045 * rib * (i / 12) ** 3)
+                z = 1.6 * (1 - (min(rho, 5.15) / 5.2) ** 2) ** 0.5 * 0.9 + 0.34 * rib * (rho / 5.2)
                 row.append(bm.verts.new((rho * math.sin(ph), rho * math.cos(ph) - 2.4, z * flip)))
             rows.append(row)
         for i in range(12):
-            for j in range(24): bm.faces.new((rows[i][j], rows[i][j + 1], rows[i + 1][j + 1], rows[i + 1][j]))
+            for j in range(48): bm.faces.new((rows[i][j], rows[i][j + 1], rows[i + 1][j + 1], rows[i + 1][j]))
         bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
         o = obj_from_bm(name, bm); sol = o.modifiers.new('s', 'SOLIDIFY'); sol.thickness = 0.22; apply_all(o); return o
     low = scallop('low', -1); up_ = scallop('up', 1)
@@ -405,7 +430,8 @@ if want('valuables'):
     hinge = cyl('hinge', 0.35, 1.6, (0, -2.1, 0.0), 12, 'X', 0.05)
     v5 = finish('RE_Pearl_', [(join('Shell', [low, up_]), 'Shell', True, mat('shell')), (pearl, 'Pearl', True, mat('pearl')), (join('Hinge', [hinge]), 'Hinge', True, mat('brass'))])
     # Celestial Sunstone: an amber crystal in a bronze sunburst, standing on a small foot
-    st = gem('stone', 1.6, 3.2, (0, 0, 0.6), 8, 'Z')
+    st = lathe('stone', [(0.0, -2.6), (0.9, -1.5), (1.75, -0.25), (1.75, 0.2), (1.25, 0.85), (0.0, 1.05)], 14); apply_all(st)
+    st.data.transform(Matrix.Translation((0, 0, 0.6)) @ Matrix.Rotation(math.radians(90), 4, 'X'))
     ring = torus('ring', 2.3, 0.26, (0, 0, 0.6), 40, 8, 'Y')
     rays = []
     for k in range(16):
@@ -448,7 +474,8 @@ if want('rare'):
         box_uv(nd)
     hub = cyl('hub', 0.22, 0.2, (0, 0, 0.27), 12, 'Z')
     cs = join('Brass', [case, lid, bow, knob, hub]); box_uv(cs, 0.2)
-    r2 = finish('RE_Compass_', [(cs, 'Brass', True, mat('brass')), (card, 'Card', False, mat('card')), (glass, 'Glass', True, mat('glass'))])
+    bpy.data.objects.remove(glass, do_unlink=True)
+    r2 = finish('RE_Compass_', [(cs, 'Brass', True, mat('brass')), (card, 'Card', False, mat('card'))])
     finish('RE_Compass_', [(nN, 'NeedleN', False, mat('red')), (nS, 'NeedleS', False, mat('gun'))])
     SCENE.append(('rare', [r1 + [core], r2 + [nN, nS]]))
 
@@ -510,21 +537,41 @@ if want('pipe'):
     SCENE.append(('pipe', np_))
 
 # ============================================================================================ preview sheets
-def sheet(path, items, extent, cam_rot=(90, 0, 0)):
-    """items: [(objects, (rx, ry, rz) degrees, (x, y, z) location, scale)] -> one Cycles render"""
+def _bbox(objs):
+    bpy.context.view_layer.update()
+    lo = Vector((1e9, 1e9, 1e9)); hi = Vector((-1e9, -1e9, -1e9))
+    for o in objs:
+        for c in o.bound_box:
+            w = o.matrix_world @ Vector(c)
+            lo = Vector((min(lo.x, w.x), min(lo.y, w.y), min(lo.z, w.z))); hi = Vector((max(hi.x, w.x), max(hi.y, w.y), max(hi.z, w.z)))
+    return lo, hi
+
+def sheet(path, items, extent=None, cols=0):
+    """items: [(objects, (rx, ry, rz) degrees, (x, y, z) location, scale)] -> one Cycles render, framed to fit.
+       cols > 0: ignore location/scale and lay the items out on a grid, each sized to its cell."""
     for o in bpy.context.scene.objects: o.hide_render = True
-    shown = []
-    for objs, rot, loc, sc in items:
+    shown = []; cell = 10.0
+    for n, (objs, rot, loc, sc) in enumerate(items):
+        group = []
         for o in objs:
             c = o.copy(); c.data = o.data; bpy.context.collection.objects.link(c)
-            c.rotation_euler = tuple(math.radians(a) for a in rot); c.location = loc; c.scale = (sc, sc, sc); c.hide_render = False; shown.append(c)
-    D = extent * 1.45
-    bpy.ops.object.camera_add(location=(0, -D, 0), rotation=(math.radians(90), 0, 0))
-    cam = bpy.context.object; bpy.context.scene.camera = cam; cam.data.lens = 50
-    k = extent / 40.0
-    for loc, e in (((-14 * k, -18 * k, 16 * k), 9000 * k * k), ((18 * k, -10 * k, 4 * k), 4000 * k * k), ((0, 14 * k, 10 * k), 6000 * k * k)):
+            c.rotation_euler = tuple(math.radians(a) for a in rot); c.location = loc if not cols else (0, 0, 0); c.scale = (sc, sc, sc) if not cols else (1, 1, 1); c.hide_render = False
+            group.append(c)
+        if cols:
+            lo, hi = _bbox(group); size = max(hi.x - lo.x, hi.z - lo.z, 0.01); k = cell * 0.8 / size; ctr = (lo + hi) / 2
+            r, q = divmod(n, cols)
+            for c in group: c.scale = (k, k, k); c.location = Vector((q * cell, 0, -r * cell)) - ctr * k
+        shown += group
+    lo, hi = _bbox(shown); ctr = (lo + hi) / 2; wx, wz = hi.x - lo.x, hi.z - lo.z
+    ext = max(wx, wz * 1.5)
+    bpy.ops.object.camera_add(location=(ctr.x, lo.y - ext * 2, ctr.z), rotation=(math.radians(90), 0, 0))
+    cam = bpy.context.object; bpy.context.scene.camera = cam
+    cam.data.type = 'ORTHO'; cam.data.ortho_scale = ext * 1.12; cam.data.clip_end = ext * 10
+    k = ext / 40.0
+    for off, e in (((-14 * k, -18 * k, 16 * k), 9000 * k * k), ((18 * k, -10 * k, 4 * k), 4000 * k * k), ((0, 14 * k, 10 * k), 6000 * k * k)):
+        loc = ctr + Vector(off)
         bpy.ops.object.light_add(type='AREA', location=loc); L = bpy.context.object; L.data.energy = e; L.data.size = 10 * k
-        L.rotation_euler = (Vector((0, 0, 0)) - Vector(loc)).to_track_quat('-Z', 'Y').to_euler()
+        L.rotation_euler = (ctr - loc).to_track_quat('-Z', 'Y').to_euler()
     w = bpy.data.worlds.new('w'); bpy.context.scene.world = w; w.use_nodes = True
     w.node_tree.nodes['Background'].inputs[0].default_value = (0.012, 0.012, 0.014, 1)
     sc = bpy.context.scene; sc.render.engine = 'CYCLES'; sc.cycles.device = 'CPU'; sc.cycles.samples = 64
@@ -545,14 +592,14 @@ if want('weapons'):
                                                       (S['axe'], (0, 0, -90), (-40, 0, -22), 1.0), (S['mace'], (0, 0, -90), (40, 0, -22), 1.0)], 190)
 if want('valuables'):
     v = S['valuables']
-    sheet(os.path.join(OUT, 'valuables_preview.png'), [(v[0], (70, 0, 10), (-14, 0, 5), 2.2), (v[1], (20, 0, 20), (-4.5, 0, 6), 2.6), (v[2], (0, 0, 20), (6, 0, 2), 0.9),
-                                                       (v[3], (85, 0, 0), (-13, 0, -7), 0.95), (v[4], (40, 0, 160), (-1, 0, -8), 1.1), (v[5], (90, 0, 0), (12, 0, -6), 1.0)], 30)
+    sheet(os.path.join(OUT, 'valuables_preview.png'), [(v[0], (70, 0, 10), 0, 1), (v[1], (20, 0, 20), 0, 1), (v[2], (0, 0, 20), 0, 1),
+                                                       (v[3], (85, 0, 0), 0, 1), (v[4], (40, 0, 160), 0, 1), (v[5], (90, 0, 0), 0, 1)], cols=3)
 if want('rare'):
     r = S['rare']
-    sheet(os.path.join(OUT, 'rare_preview.png'), [(r[0], (0, 0, 25), (-6, 0, 0), 1.4), (r[1], (60, 0, 15), (7, 0, 0), 1.6)], 24)
+    sheet(os.path.join(OUT, 'rare_preview.png'), [(r[0], (0, 0, 25), 0, 1), (r[1], (60, 0, 15), 0, 1)], cols=2)
 if want('conch') or want('pipe'):
     it = []
-    if 'conch' in S: it.append((S['conch'], (0, 0, -40), (-8, 0, 0), 0.9))
-    if 'pipe' in S: it.append((S['pipe'], (10, 0, 70), (12, 0, 2), 1.6))
-    sheet(os.path.join(OUT, 'noisemakers_preview.png'), it, 36)
+    if 'conch' in S: it.append((S['conch'], (0, 0, -40), 0, 1))
+    if 'pipe' in S: it.append((S['pipe'], (10, 0, 70), 0, 1))
+    sheet(os.path.join(OUT, 'noisemakers_preview.png'), it, cols=2)
 print('ITEMS55 DONE')

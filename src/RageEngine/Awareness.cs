@@ -58,7 +58,7 @@ namespace RageEngine
                 Vector3 ear = head != null ? head.transform.position : s.creature.transform.position;
                 float hearing = (s.personality != null ? s.personality.hearingMult : 1f) * (HasTag(s, Tag.Blind) ? 1.5f : 1f) * Hear54();   // 0.54: NPC hearing setting
                 float d = Vector3.Distance(ear, pos);
-                float r = radius * hearing * (tag > 0 && FactionTag54(s.creature) == tag ? 1.4f : 1f);   // 0.54: they know their own signal from farther
+                float r = radius * hearing;                                                    // 0.55: faction items are style only - every NPC hears them the same
                 if (d > r) continue;
                 float intensity = 1f - d / r;
                 s.heardPos = pos; s.heardAt = now; s.heardKind = kind; s.heardTag54 = tag;

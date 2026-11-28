@@ -123,6 +123,16 @@ jobs:
             cut54 /tmp/au/bowl.mp3 0 7.0 $S/NRE_Resonance_1.wav 2.5
             echo "NRE_Resonance_1: \"Nepalese Singing Bowl.wav\" by Benboncan of Freesound.org https://freesound.org/s/80578/ - CC BY 4.0" >> /tmp/au/credits.txt
           else echo "MISSING sound: singing bowl" | tee -a build.log; fi
+          # 0.55: Rakta conch horn, Sentari bosun's pipe
+          if fs https://freesound.org/people/Ohrwurm/sounds/64830/ /tmp/au/conch.mp3; then
+            ffmpeg -nostdin -loglevel error -y -i /tmp/au/conch.mp3 -ac 1 -ar 22050 -af "silenceremove=start_periods=1:start_threshold=-38dB" /tmp/au/conch.dense.wav
+            cut54 /tmp/au/conch.dense.wav 0 3.6 $S/NRE_Conch_1.wav 0.7
+            echo "NRE_Conch_1: conch shell horn by Ohrwurm of Freesound.org https://freesound.org/s/64830/ - CC0" >> /tmp/au/credits.txt
+          else echo "MISSING sound: conch" | tee -a build.log; fi
+          if fs https://freesound.org/people/designerschoice/sounds/811971/ /tmp/au/pipe.mp3; then
+            cut54 /tmp/au/pipe.mp3 0 3.2 $S/NRE_BosunPipe_1.wav 0.3
+            echo "NRE_BosunPipe_1: bosun's whistle by designerschoice of Freesound.org https://freesound.org/s/811971/ - CC BY 4.0" >> /tmp/au/credits.txt
+          else echo "MISSING sound: bosun pipe" | tee -a build.log; fi
           # 0.50: wave music - CC0 battle tracks from OpenGameArt
           OG=https://opengameart.org/sites/default/files
           wm() { if get "$OG/$1" /tmp/au/$2.src "$OG/$3"; then ffmpeg -nostdin -loglevel error -y -i /tmp/au/$2.src -ac 2 -ar 32000 -af loudnorm=I=-19:TP=-2 -c:a libvorbis -q:a 3 "$M/$2.ogg" && echo "$4 - CC0 (opengameart.org)" >> /tmp/au/credits.txt; else echo "MISSING music: $2" | tee -a build.log; fi; }

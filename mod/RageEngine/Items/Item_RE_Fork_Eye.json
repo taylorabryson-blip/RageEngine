@@ -5,7 +5,7 @@
   "sensitiveFilterBehaviour": "Discard",
   "version": 4,
   "displayName": "Eye Resonance Fork",
-  "description": "Rage Engine. A bronze ritual fork of the Eye. Strike it (trigger): it rings long and carries far. Cultists of the Eye come to it first. They still have to see you.",
+  "description": "Rage Engine. A bronze ritual fork of the Eye. Strike it (trigger): it rings long and carries far, and NPCs come to it. They still have to see you.",
   "author": "Rage Engine",
   "valueType": "Gold",
   "value": 90.0,

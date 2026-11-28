@@ -1,6 +1,6 @@
 // Rage Engine 0.54 - the mod's items in the Crystal Hunt shop (the shop at your home).
 // In Crystal Hunt there's no item book, so the serums, syringes, toxin oils and daggers, the NPC Spawner, the
-// faction noisemakers and the Seer's Mirror are put on the shop's shelves - every time you're home, anything of ours
+// faction noisemakers, the Seer's Mirror and (0.55) the ten faction weapons are put on the shop's shelves - every time you're home, anything of ours
 // that isn't already on display is added back.
 //   - Each item is registered in a shop category that sells the same kind of thing (potions with potions, weapons
 //     with weapons), so the game prices it from its own "value" and can buy it back from you.
@@ -20,7 +20,7 @@ namespace RageEngine
     {
         public static ModOptionString[] shopValues54 = { new ModOptionString("All", null, "all"), new ModOptionString("Some", null, "some"), new ModOptionString("Off", null, "off") };
         [ModOptionCategory("Rage", 0), ModOptionOrder(70)]
-        [ModOption("Mod items in the shop", "Crystal Hunt: Rage Engine's serums, toxins, the NPC Spawner, faction noisemakers and the Seer's Mirror on the home shop's shelves. Some = the tools plus a rotating handful.", valueSourceName = nameof(shopValues54), defaultValueIndex = 0)]
+        [ModOption("Mod items in the shop", "Crystal Hunt: Rage Engine's serums, toxins, faction weapons, the NPC Spawner, faction noisemakers and the Seer's Mirror on the home shop's shelves. Some = the tools and weapons plus a rotating handful.", valueSourceName = nameof(shopValues54), defaultValueIndex = 0)]
         public static string shop54 = "all";
 
         static float nextShop54;
@@ -62,7 +62,7 @@ namespace RageEngine
             if (shop54 == "some")
             {
                 var tools = new List<ItemData>(); var rest = new List<ItemData>();
-                foreach (var it in items) (it.category == "Utilities" ? tools : rest).Add(it);
+                foreach (var it in items) (it.category == "Utilities" || IsWeapon55(it.id) ? tools : rest).Add(it);      // 0.55: the weapons always
                 add.AddRange(tools);
                 for (int i = 0; i < 12 && rest.Count > 0; i++) { int k = Random.Range(0, rest.Count); add.Add(rest[k]); rest.RemoveAt(k); }
             }
@@ -79,7 +79,8 @@ namespace RageEngine
         }
 
         /// Things that are for sale: everything in our book categories (serums, syringes, oils, toxin daggers, tools).
-        static bool ForSale54(ItemData d) => d.category == "Potions" || d.category == "Daggers" || d.category == "Utilities";
+        /// 0.55: + the ten faction weapons. The two rare finds and the treasures are found, not bought.
+        static bool ForSale54(ItemData d) => !IsRare55(d.id) && (d.category == "Potions" || d.category == "Daggers" || d.category == "Utilities" || IsWeapon55(d.id));
 
         /// The shop category that already sells this type of item (else one that sells potions, else the first).
         static ShopData.ShopStockCategory Category54(ShopData data, ItemData it)

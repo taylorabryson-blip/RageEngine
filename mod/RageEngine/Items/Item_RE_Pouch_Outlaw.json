@@ -5,7 +5,7 @@
   "sensitiveFilterBehaviour": "Discard",
   "version": 4,
   "displayName": "Outlaw Coin Pouch",
-  "description": "Rage Engine. A purse of stolen coin. Shake it (trigger) or throw it: the rattle of coins draws NPCs over - no Outlaw ignores it. They still have to see you.",
+  "description": "Rage Engine. A purse of stolen coin, tied shut. Shake it (trigger) or throw it: the rattle of coins draws NPCs over. They still have to see you.",
   "author": "Rage Engine",
   "valueType": "Gold",
   "value": 45.0,

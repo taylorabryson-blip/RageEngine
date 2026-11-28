@@ -36,6 +36,12 @@ namespace RageEngine
             return t != null ? Mats.MakeTextured(t, null, Color.white, smooth, false) : Mats.Make(fallback, smooth);
         }
 
+        static Material Tex55(string file, Color fallback, float smooth)
+        {
+            var t = GoreTex.MeshTex("Items55/" + file);
+            return t != null ? Mats.MakeTextured(t, null, Color.white, smooth, false) : Mats.Make(fallback, smooth);
+        }
+
         static Transform Part54(Transform root, string mesh, Material mat)
         {
             var mm = BoneModels.Get(mesh); if (mm == null) return null;
@@ -54,7 +60,7 @@ namespace RageEngine
         }
 
         /// The ids of every item this file dresses.
-        internal static readonly string[] NoiseIds54 = { "RE_Bell_Eraden", "RE_Pouch_Outlaw", "RE_Rattle_Wildfolk", "RE_Fork_Eye" };
+        internal static readonly string[] NoiseIds54 = { "RE_Bell_Eraden", "RE_Pouch_Outlaw", "RE_Rattle_Wildfolk", "RE_Fork_Eye", "RE_Conch_Rakta", "RE_Pipe_Sentari" };   // 0.55: + Rakta, Sentari
         internal const string MirrorId54 = "RE_SeerMirror";
 
         void TickItems54()
@@ -112,7 +118,9 @@ namespace RageEngine
             new Kind54 { name = "Eraden hand bell", heard = "Heard a bell", sound = "NRE_HandBell", loop = true, useSeconds = 4f, landSeconds = 2.5f, radius = 20f, tag = 1, faction = new[] { "eraden", "kingdom", "knight" } },
             new Kind54 { name = "Outlaw coin pouch", heard = "Heard coins", sound = "NRE_Coins", loop = false, useSeconds = 1.6f, landSeconds = 1.6f, radius = 13f, tag = 2, faction = new[] { "outlaw", "bandit", "pirate" } },
             new Kind54 { name = "Wildfolk bone rattle", heard = "Heard a rattle", sound = "NRE_Rattle", loop = true, useSeconds = 3f, landSeconds = 1.5f, radius = 15f, tag = 3, faction = new[] { "wildfolk", "wild", "druid" } },
-            new Kind54 { name = "Eye resonance fork", heard = "Heard a ringing", sound = "NRE_Resonance", loop = false, useSeconds = 6f, landSeconds = 4f, radius = 24f, tag = 4, faction = new[] { "eye", "cult" } } };
+            new Kind54 { name = "Eye resonance fork", heard = "Heard a ringing", sound = "NRE_Resonance", loop = false, useSeconds = 6f, landSeconds = 4f, radius = 24f, tag = 4, faction = new[] { "eye", "cult" } },
+            new Kind54 { name = "Rakta conch horn", heard = "Heard a war horn", sound = "NRE_Conch", loop = false, useSeconds = 3.6f, landSeconds = 0f, radius = 30f, tag = 5, faction = new[] { "rakta", "raike" } },
+            new Kind54 { name = "Sentari bosun's pipe", heard = "Heard a whistle", sound = "NRE_BosunPipe", loop = false, useSeconds = 3.2f, landSeconds = 0f, radius = 22f, tag = 6, faction = new[] { "sentari", "sentara" } } };
 
         sealed class Noise54 { public Item it; public int kind; public Transform model, swing; public Light glow; public AudioSource src; public float startAt = -1f, until = -1f, nextEmit, speed, nextBuzz, nextDance; }
         static readonly Dictionary<Item, Noise54> makers54 = new Dictionary<Item, Noise54>();
@@ -150,14 +158,25 @@ namespace RageEngine
                 }
                 case 1:
                     any = Part54(root, "RE_Pouch_Leather", Tex54("leather.png", new Color(0.38f, 0.24f, 0.15f), 0.3f)) != null;
-                    Part54(root, "RE_Pouch_Rope", Tex54("rope.png", new Color(0.69f, 0.59f, 0.41f), 0.2f));
-                    Part54(root, "RE_Pouch_Coins", Tex54("coin.png", new Color(0.81f, 0.63f, 0.23f), 0.8f));
+                    Part54(root, "RE_Pouch_Rope", Tex54("rope.png", new Color(0.69f, 0.59f, 0.41f), 0.2f));   // 0.55: tied shut - no coins poking out
                     break;
                 case 2:
                     any = Part54(root, "RE_Rattle_Hide", Tex54("hide.png", new Color(0.77f, 0.67f, 0.5f), 0.25f)) != null;
                     Part54(root, "RE_Rattle_Bone", Tex54("bone.png", new Color(0.84f, 0.8f, 0.7f), 0.4f));
                     Part54(root, "RE_Rattle_Lace", Tex54("leather.png", new Color(0.38f, 0.24f, 0.15f), 0.3f));
                     Part54(root, "RE_Rattle_Beads", Mats.Make(new Color(0.62f, 0.12f, 0.08f), 0.65f));
+                    break;
+                case 4:                                                                       // 0.55: Rakta conch horn (horagai)
+                    any = Part54(root, "RE_Conch_Shell", Tex55("shell.png", new Color(0.9f, 0.84f, 0.73f), 0.6f)) != null;
+                    Part54(root, "RE_Conch_Mouth", Tex54("bronze.png", new Color(0.6f, 0.42f, 0.22f), 0.7f));
+                    Part54(root, "RE_Conch_Net", Tex54("rope.png", new Color(0.69f, 0.59f, 0.41f), 0.2f));
+                    Part54(root, "RE_Conch_Tassel", Mats.Make(new Color(0.42f, 0.12f, 0.5f), 0.3f));
+                    n.swing = root;
+                    break;
+                case 5:                                                                       // 0.55: Sentari bosun's pipe
+                    any = Part54(root, "RE_Pipe_Silver", Tex55("silver.png", new Color(0.78f, 0.8f, 0.82f), 0.85f)) != null;
+                    Part54(root, "RE_Pipe_Hole", Mats.Make(new Color(0.03f, 0.03f, 0.03f), 0.2f));
+                    n.swing = root;
                     break;
                 default:
                 {
@@ -212,7 +231,7 @@ namespace RageEngine
             bool held = it.IsHanded();
             // thrown: sounds when it lands
             float sp = pb != null ? pb.velocity.magnitude : 0f;
-            if (!held && n.speed > 3.5f && sp < n.speed * 0.45f) SoundNoise54(n, k.landSeconds);
+            if (!held && n.speed > 3.5f && sp < n.speed * 0.45f && k.landSeconds > 0f) SoundNoise54(n, k.landSeconds);
             n.speed = held ? 0f : sp;
             bool sounding = n.startAt >= 0f && now < n.until;
             if (!sounding) { if (n.startAt >= 0f) StopNoise54(n); return; }
@@ -224,6 +243,9 @@ namespace RageEngine
                 case 0: if (n.swing != null) n.swing.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(t * Mathf.PI * 2f * 4.5f) * 24f); break;   // the clapper
                 case 1: if (n.model != null) { float b = Mathf.Abs(Mathf.Sin(t * 18f)) * Mathf.Exp(-t * 1.5f); n.model.localScale = new Vector3(1f + 0.05f * b, 1f - 0.07f * b, 1f + 0.05f * b); } break;   // coins shifting in the purse
                 case 2: if (n.model != null) n.model.localRotation = Quaternion.Euler(Mathf.Sin(t * 31f) * 7f, 0f, Mathf.Sin(t * 23f) * 9f); break;   // the shake
+                case 4: case 5:
+                    if (n.model != null) n.model.localPosition = Random.insideUnitSphere * (n.kind == 4 ? 0.0009f : 0.0004f);                         // the breath through it
+                    break;
                 default:
                     if (n.model != null) n.model.localPosition = Random.insideUnitSphere * 0.0006f * Mathf.Exp(-t * 0.4f);                              // the fork hums
                     if (n.glow != null) n.glow.intensity = 0.4f + 1.6f * Mathf.Exp(-t * 0.5f) * (0.75f + 0.25f * Mathf.Sin(t * 20f));
@@ -410,7 +432,7 @@ namespace RageEngine
         void Vitals54(Creature c, NpcState s, float now, List<(string, Color32, float)> l)
         {
             L54(l, s != null ? WhoIs(s) : c.name, Pale54);
-            if (s != null && s.personality != null) L54(l, s.personality.type + ", " + ProfName(s.prof43), DimS54); else L54(l, "A stranger", DimS54);
+            if (s != null && s.personality != null) L54(l, s.personality.type + ", " + ProfName(s.prof43) + (VaryLabel55(s) != null ? ", " + VaryLabel55(s) : ""), DimS54); else L54(l, "A stranger", DimS54);
             float hp = c.isKilled ? 0f : HpFrac(c);
             l.Add(("Health", hp > 0.5f ? Pale54 : hp > 0.2f ? WarnS54 : BadS54, hp));
             if (s == null) return;

@@ -10,7 +10,7 @@ namespace RageEngine
 {
     public sealed partial class RageEngineScript : ThunderScript
     {
-        public const string Version = "0.54";
+        public const string Version = "0.55";
         const int MaxTracked = 20;
         const float ScanInterval = 0.5f;
         const float TickInterval = 0.05f;
@@ -151,6 +151,8 @@ namespace RageEngine
             // 0.13
             public float coreUntil, spawnTime = -1f, meleeOffUntil, healthCheckAt; public bool healthApplied, meleeOff;
             public Mesh baked; public float bakedAt = -10f;
+            // 0.55: random stats
+            public int vary55; public float varyHp55 = 1f, varySpeed55 = 1f, varyHeight55;
         }
 
         readonly NpcState[] pool = new NpcState[MaxTracked];
@@ -209,6 +211,7 @@ namespace RageEngine
             Guard("events.parry54", () => EventManager.onCreatureAttackParry += OnParry54);
             Guard("events.broken54", () => EventManager.OnItemBrokenStart += OnBroken54);
             Guard("audit54", StartupAudit54);
+            Guard("loot55", InjectLoot55);
             Debug.Log("[RageEngine] Rage Engine " + Version + " enabled (grounded=" + groundedReactions + ", deaths by other mod=" + DeathsHandledElsewhere + ")");
         }
 
@@ -268,6 +271,7 @@ namespace RageEngine
             Guard("combat54", TickCombat54);
             Guard("patrol54", TickPatrol54);
             Guard("items54", TickItems54);
+            Guard("arsenal55", TickArsenal55);
             Guard("shop54", TickShop54);
             if (now >= nextTick)
             {
@@ -353,6 +357,7 @@ namespace RageEngine
             Guard("pressure", () => ApplyPersistentZones(s, s.identity));
             Guard("defense", () => DefenseOnTrack(s));
             Guard("prof", () => ProfOnTrack(s));
+            Guard("vary55", () => Vary55(s));                                          // 0.55: Weak / Normal / Tough / Elite
             Guard("iris", () => s.irisOrig = c.GetColor(Creature.ColorModifier.EyesIris));
             Guard("enhanced", () => MaybeSpawnEnhanced(s));
             Guard("face", () => SkinPaint.FindFace(s));
@@ -512,6 +517,7 @@ namespace RageEngine
                 RestoreBody(s);
                 ToughenLimbs(s, false);
                 Guard("muscles", () => RestoreMuscles(s));
+                Guard("vary55", () => VaryRelease55(s));                               // 0.55: after the serum's own size reset
                 byCreature.Remove(c);
             }
             foreach (var go in s.boneMeshes) if (go != null) UnityEngine.Object.Destroy(go);
@@ -673,7 +679,7 @@ namespace RageEngine
 
         void OnLevelUnload(LevelData data, LevelData.Mode mode, EventTime time)
         {
-            if (time == EventTime.OnStart) { Guard("unload", ReleaseAll); Guard("roster", () => SaveRosterIfDirty(true)); test54 = null; Guard("unload54", Unload54); }
+            if (time == EventTime.OnStart) { Guard("unload", ReleaseAll); Guard("roster", () => SaveRosterIfDirty(true)); test54 = null; Guard("unload54", Unload54); Guard("unload55", Unload55); }
         }
 
         // ---------------- shared helpers ----------------
