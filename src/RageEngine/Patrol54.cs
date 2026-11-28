@@ -4,8 +4,8 @@
 //   metres to a spot the navmesh can reach, stop, look around or turn to a nearby friend and gesture like they're
 //   talking, go back, stand a while, repeat. Anything that puts the game's AI on alert (it sees you, gets hit, an ally
 //   calls it) ends the round on the spot: the game's own combat takes over.
-// NOISES (anywhere, idle NPCs only): fights, screams, deaths, things you throw hitting something, glass, gunshots and
-//   the Noisemaker reach NPCs within earshot. An idle NPC walks to ROUGHLY where it came from - the farther away, the
+// NOISES (anywhere, idle NPCs only): fights, screams, deaths, anything thrown / dropped / knocked over hitting something,
+//   anything that breaks (pots, barrels, glass), gunshots and the faction noisemakers reach NPCs within earshot. An idle NPC walks to ROUGHLY where it came from - the farther away, the
 //   rougher his guess - looks around for a few seconds and goes back. A noise never tells him where YOU are: he still
 //   has to see you (sight and hearing are separate).
 // LOSING YOU: if he was fighting or alerted and the game calms him back down, he goes to check the last place he saw
@@ -56,14 +56,15 @@ namespace RageEngine
         void TickPatrol54()
         {
             float now = Time.time;
-            TickThrown54(now);
+            TickLoose54(now);
             // walking NPCs get their move refreshed every frame (that's how the game's own AI drives it)
             for (int i = 0; i < MaxTracked; i++)
             {
                 var s = pool[i];
                 if (!s.active || !s.walking54 || s.move54 == null || s.creature == null) continue;
-                var m = s.move54; var to = s.patTo54; float sp = s.pat54 == Check54 ? 0.5f : 0.3f;
-                Guard("patrol.move", () => m.UpdateMoveCycle(to, 0.3f, 0.9f, sp, 0f, 360f, false, 1f, 2f));
+                var m = s.move54; var to = s.patTo54; bool hurry = s.urgent54 && s.pat54 == Check54;
+                float sp = s.pat54 == Check54 ? (hurry ? 0.9f : 0.5f) : 0.3f, run = hurry ? 0.6f : 0f;      // his own faction's signal: he runs
+                Guard("patrol.move", () => m.UpdateMoveCycle(to, 0.3f, 0.9f, sp, run, 360f, false, 1f, 2f));
             }
             if (now < nextPatrolTick54) return;
             nextPatrolTick54 = now + 0.25f;
@@ -119,15 +120,21 @@ namespace RageEngine
             if (s.alertWas54 && !alerted && calm && noises54 && s.seenAt > 0f && now - s.seenAt < 25f)
                 Investigate54(s, s.seenPos, 1.5f, now, "lost you - searching where you were", ref walking);
             s.alertWas54 = alerted;
-            if (!calm) { if (s.walking54 || s.pat54 != Post54) { StopWalk54(s); s.pat54 = Post54; s.patUntil54 = now + Random.Range(4f, 8f); } return; }
+            if (!calm) { if (s.walking54 || s.pat54 != Post54) { StopWalk54(s); s.pat54 = Post54; s.patUntil54 = now + Random.Range(4f, 8f); s.urgent54 = false; } return; }
             if (!s.homeSet54) { s.home54 = c.transform.position; s.homeSet54 = true; s.pat54 = Post54; s.patUntil54 = now + Random.Range(3f, 12f); }
             // a noise: go and check roughly where it came from (sight is separate - this never finds YOU)
             if (noises54 && s.heardAt > s.heardSeen54 + 0.01f)
             {
                 s.heardSeen54 = s.heardAt;
                 float dist = Vector3.Distance(c.transform.position, s.heardPos);
+                bool own = s.heardKind == Stim.Noise && s.heardTag54 > 0 && FactionTag54(c) == s.heardTag54;   // his own people's signal
                 if (s.heardKind != Stim.NearMiss && dist > 2.5f && now - s.heardAt < 2f)
-                    Investigate54(s, s.heardPos, Mathf.Clamp(dist * 0.3f, 0.7f, 5f), now, $"heard {(s.heardKind == Stim.Noise ? "a noise" : s.heardKind.ToString().ToLowerInvariant())} {dist:0}m away - going to check", ref walking);
+                {
+                    Investigate54(s, s.heardPos, Mathf.Clamp(dist * 0.3f, 0.7f, 5f) * (own ? 0.35f : 1f), now,
+                        own ? $"heard his own faction's signal ({Kinds54[s.heardTag54 - 1].name}) {dist:0}m away - running to it"
+                            : $"heard {(s.heardKind == Stim.Noise ? "a noise" : s.heardKind.ToString().ToLowerInvariant())} {dist:0}m away - going to check", ref walking);
+                    if (s.pat54 == Check54) s.urgent54 = own;
+                }
             }
             // walking: arrived? stuck? taking too long?
             if (s.walking54)
@@ -141,7 +148,7 @@ namespace RageEngine
                 switch (s.pat54)
                 {
                     case Walk54: s.pat54 = Stop54; s.patUntil54 = now + Random.Range(3f, 8f); Ambient54(s, now); break;
-                    case Check54: s.pat54 = Look54; s.patUntil54 = now + Random.Range(4f, 7f); s.nextLook54 = 0f; break;
+                    case Check54: s.pat54 = Look54; s.patUntil54 = now + (s.urgent54 ? Random.Range(8f, 12f) : Random.Range(4f, 7f)); s.nextLook54 = 0f; s.urgent54 = false; break;
                     default: s.pat54 = Post54; s.patUntil54 = now + Random.Range(8f, 20f); break;
                 }
                 return;
@@ -241,38 +248,50 @@ namespace RageEngine
             s.nextLook54 = now;
         }
 
-        // ================================================================== things you throw make noise
-        sealed class Thrown54 { public Item it; public float until, speed; public int bounces; }
-        static readonly List<Thrown54> thrown54 = new List<Thrown54>();
-        readonly Item[] heldWas54 = new Item[2];
+        // ================================================================== anything that flies and hits something makes noise
+        // Every loose item is looked at in small batches (60 a frame); only the few moving fast are followed closely.
+        // A fast item that suddenly slows down hit something: it makes a noise there, louder for heavier and faster ones.
+        // Thrown by you, by telekinesis, knocked off a shelf, a dropped weapon, an arrow into a wall - all of it.
+        static readonly Dictionary<Item, float> fast54 = new Dictionary<Item, float>();
+        static readonly List<Item> fastScratch54 = new List<Item>();
+        static int sweep54;
 
-        void TickThrown54(float now)
+        void TickLoose54(float now)
         {
-            if (!noises54) { thrown54.Clear(); return; }
-            var pc = Player.local != null ? Player.local.creature : null;
-            if (pc != null)
-                for (int k = 0; k < 2; k++)
+            if (!noises54) { fast54.Clear(); return; }
+            var all = Item.allActive;
+            if (all != null && all.Count > 0)
+                for (int n = 0; n < 60 && n < all.Count; n++)
                 {
-                    var h = k == 0 ? pc.handLeft : pc.handRight;
-                    var it = h != null && h.grabbedHandle != null ? h.grabbedHandle.item : null;
-                    var was = heldWas54[k];
-                    if (was != null && it != was && was.physicBody != null && thrown54.Count < 6)
-                        thrown54.Add(new Thrown54 { it = was, until = now + 4f, speed = 0f });      // let go of it: listen for where it lands
-                    heldWas54[k] = it;
+                    if (sweep54 >= all.Count) sweep54 = 0;
+                    var it = all[sweep54++];
+                    if (it == null || fast54.ContainsKey(it) || it.physicBody == null || it.IsHanded() || it.holder != null || it.isTelekinesisGrabbed) continue;
+                    float sp = it.physicBody.velocity.magnitude;
+                    if (sp > 3.5f && fast54.Count < 24) fast54[it] = sp;
                 }
-            for (int i = thrown54.Count - 1; i >= 0; i--)
+            if (fast54.Count == 0) return;
+            fastScratch54.Clear(); fastScratch54.AddRange(fast54.Keys);
+            foreach (var it in fastScratch54)
             {
-                var t = thrown54[i];
-                if (t.it == null || now > t.until || t.bounces >= 2 || t.it.physicBody == null || t.it.holder != null || t.it.IsHanded()) { thrown54.RemoveAt(i); continue; }
-                float sp = t.it.physicBody.velocity.magnitude;
-                if (t.speed > 3.5f && sp < t.speed * 0.45f)
+                if (it == null || it.physicBody == null || it.IsHanded() || it.holder != null || it.isTelekinesisGrabbed) { fast54.Remove(it); continue; }
+                float last = fast54[it], sp = it.physicBody.velocity.magnitude;
+                if (sp < last * 0.45f)
                 {   // it hit something
-                    t.bounces++;
-                    float mass = 1f; Guard("thrown.mass", () => mass = t.it.physicBody.mass);
-                    Emit(t.it.transform.position, Mathf.Clamp(3f + mass * 2f + t.speed * 0.6f, 3f, 16f), Stim.Impact);
+                    fast54.Remove(it);
+                    float mass = 1f; Guard("loose.mass", () => mass = it.physicBody.mass);
+                    Emit(it.transform.position, Mathf.Clamp(3f + mass * 2f + Mathf.Min(last, 12f) * 0.6f, 3f, 16f), Stim.Impact);
                 }
-                t.speed = sp;
+                else if (sp < 1f) fast54.Remove(it);
+                else fast54[it] = Mathf.Max(sp, last * 0.9f);
             }
+        }
+
+        /// Pots, barrels, crates, bottles - anything the game breaks - make a loud noise.
+        void OnBroken54(Breakable b)
+        {
+            if (!modEnabled || !noises54 || b == null) return;
+            Vector3 at = b.transform.position;
+            Emit(at, 18f, Stim.Impact);
         }
     }
 }

@@ -46,7 +46,7 @@ namespace RageEngine
 
         // ---------------- stimulus bus ----------------
         /// Something loud happened at pos. radius = how far it can be heard (metres).
-        internal static void Emit(Vector3 pos, float radius, Stim kind, Creature source = null)
+        internal static void Emit(Vector3 pos, float radius, Stim kind, Creature source = null, int tag = 0)   // 0.54: tag = which faction's noisemaker (0 none)
         {
             if (instance == null || !modEnabled) return;
             float now = Time.time;
@@ -58,10 +58,10 @@ namespace RageEngine
                 Vector3 ear = head != null ? head.transform.position : s.creature.transform.position;
                 float hearing = (s.personality != null ? s.personality.hearingMult : 1f) * (HasTag(s, Tag.Blind) ? 1.5f : 1f) * Hear54();   // 0.54: NPC hearing setting
                 float d = Vector3.Distance(ear, pos);
-                float r = radius * hearing;
+                float r = radius * hearing * (tag > 0 && FactionTag54(s.creature) == tag ? 1.4f : 1f);   // 0.54: they know their own signal from farther
                 if (d > r) continue;
                 float intensity = 1f - d / r;
-                s.heardPos = pos; s.heardAt = now; s.heardKind = kind;
+                s.heardPos = pos; s.heardAt = now; s.heardKind = kind; s.heardTag54 = tag;
                 s.lookAt = pos; s.lookUntil = now + 1.5f + intensity;
                 instance.Startle(s, pos, intensity, kind, source);
             }

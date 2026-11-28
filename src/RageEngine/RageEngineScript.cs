@@ -27,7 +27,7 @@ namespace RageEngine
             public BrainData brainInst54; public BrainModuleMelee melee54; public BrainModuleDefense def54; public BrainModuleHitReaction hit54; public BrainModuleDetection det54; public BrainModuleMove move54;
             public float[] defO54, meleeO54, detO54; public string percKey54;
             // 0.54 patrols / noises (Patrol54.cs)
-            public int pat54; public float patUntil54, movedAt54, nextLook54, heardSeen54; public Vector3 home54, patTo54, lastPos54; public bool homeSet54, walking54, alertWas54;
+            public int pat54, heardTag54; public float patUntil54, movedAt54, nextLook54, heardSeen54; public Vector3 home54, patTo54, lastPos54; public bool homeSet54, walking54, alertWas54, urgent54;
             public Personality personality;
             public bool active;
             // balance & muscles
@@ -207,6 +207,7 @@ namespace RageEngine
             Guard("events.spawn54", () => EventManager.onCreatureSpawn += OnSpawn54);
             Guard("events.despawn54", () => EventManager.onCreatureDespawn += OnDespawn54);
             Guard("events.parry54", () => EventManager.onCreatureAttackParry += OnParry54);
+            Guard("events.broken54", () => EventManager.OnItemBrokenStart += OnBroken54);
             Guard("audit54", StartupAudit54);
             Debug.Log("[RageEngine] Rage Engine " + Version + " enabled (grounded=" + groundedReactions + ", deaths by other mod=" + DeathsHandledElsewhere + ")");
         }
@@ -219,6 +220,7 @@ namespace RageEngine
             Guard("events.spawn54", () => EventManager.onCreatureSpawn -= OnSpawn54);
             Guard("events.despawn54", () => EventManager.onCreatureDespawn -= OnDespawn54);
             Guard("events.parry54", () => EventManager.onCreatureAttackParry -= OnParry54);
+            Guard("events.broken54", () => EventManager.OnItemBrokenStart -= OnBroken54);
             ReleaseAll();
             Guard("steal", RestoreStealFlags);
             Guard("slowmo", () => { if (TimeManager.slowMotionState != TimeManager.SlowMotionState.Disabled) TimeManager.StopSlowMotion(); });
@@ -266,6 +268,7 @@ namespace RageEngine
             Guard("combat54", TickCombat54);
             Guard("patrol54", TickPatrol54);
             Guard("items54", TickItems54);
+            Guard("shop54", TickShop54);
             if (now >= nextTick)
             {
                 float dt = TickInterval;

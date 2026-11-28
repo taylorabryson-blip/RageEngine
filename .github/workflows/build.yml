@@ -101,22 +101,27 @@ jobs:
             k=0; for st in 0.0 0.9 1.8; do k=$((k+1)); ffmpeg -nostdin -loglevel error -y -i /tmp/au/tooth.dense.wav -ss $st -t 0.4 -af "loudnorm=I=-16:TP=-1.5,afade=t=out:st=0.3:d=0.1" -ar 22050 -c:a pcm_s16le $S/NRE_ToothCrack_$k.wav || echo "tooth cut $k failed" | tee -a build.log; done
             echo "NRE_ToothCrack_1-3: \"Cracking/Crunching, A.wav\" by InspectorJ (www.jshaw.co.uk) of Freesound.org https://freesound.org/s/333818/ - CC BY 4.0" >> /tmp/au/credits.txt
           else echo "MISSING sound: tooth crack" | tee -a build.log; fi
-          # 0.54: the Noisemaker - a real wind-up alarm clock (ring loop + the ticking as it's wound), CC BY 4.0
-          if fs https://freesound.org/people/joedeshon/sounds/78562/ /tmp/au/clock.mp3; then
-            ffprobe -v error -show_entries format=duration:stream=channels -of default=nw=1 /tmp/au/clock.mp3 | tr '\n' ' ' | sed 's/^/clock source: /' | tee -a build.log; echo | tee -a build.log
-            for st in 1 3 6 10 14 18; do ffmpeg -nostdin -hide_banner -ss $st -t 1 -i /tmp/au/clock.mp3 -af "pan=mono|c0=c0,volumedetect" -f null - 2>&1 | grep -o "mean_volume: [-0-9.]* dB" | sed "s/^/clock L @${st}s /" | tee -a build.log; done
-            # left channel only (a stereo pair can cancel itself when folded to mono), from the loudest stretch of ringing
-            best=1; bv=-99; for st in 1 3 6 10 14 18; do v=$(ffmpeg -nostdin -hide_banner -ss $st -t 4 -i /tmp/au/clock.mp3 -af "pan=mono|c0=c0,volumedetect" -f null - 2>&1 | grep -o "mean_volume: [-0-9.]*" | grep -o "[-0-9.]*$"); [ -n "$v" ] && awk "BEGIN{exit !($v > $bv)}" && { bv=$v; best=$st; }; done; echo "clock ring cut from ${best}s (mean ${bv} dB)" | tee -a build.log
-            ffmpeg -nostdin -loglevel error -y -ss $best -t 4 -i /tmp/au/clock.mp3 -ar 22050 -af "pan=mono|c0=c0,loudnorm=I=-16:TP=-1.5,afade=t=in:d=0.03,afade=t=out:st=3.97:d=0.03" -c:a pcm_s16le $S/NRE_AlarmRing_1.wav || echo "clock ring cut failed" | tee -a build.log
-            ffmpeg -nostdin -hide_banner -i $S/NRE_AlarmRing_1.wav -af volumedetect -f null - 2>&1 | grep -o "mean_volume: [-0-9.]* dB" | sed 's/^/ring result /' | tee -a build.log
-            ffmpeg -nostdin -loglevel error -y -sseof -2.2 -i /tmp/au/clock.mp3 -t 1.4 -ar 22050 -af "pan=mono|c0=c0,loudnorm=I=-20:TP=-2,afade=t=out:st=1.25:d=0.15" -c:a pcm_s16le $S/NRE_ClockWind_1.wav || echo "clock tick cut failed" | tee -a build.log
-            echo "NRE_AlarmRing_1, NRE_ClockWind_1: \"alarm_clock_ringing_01.wav\" by joedeshon of Freesound.org https://freesound.org/s/78562/ - CC BY 4.0" >> /tmp/au/credits.txt
-          else echo "MISSING sound: alarm clock" | tee -a build.log; fi
-          # 0.54: the NPC Scanner beep - a real store scanner recording (edited), CC0
-          if fs https://freesound.org/people/zerolagtime/sounds/144418/ /tmp/au/beep.mp3; then
-            ffmpeg -nostdin -loglevel error -y -i /tmp/au/beep.mp3 -t 0.6 -ac 1 -ar 22050 -af "loudnorm=I=-18:TP=-2,afade=t=out:st=0.5:d=0.1" -c:a pcm_s16le $S/NRE_ScanBeep_1.wav || echo "beep cut failed" | tee -a build.log
-            echo "NRE_ScanBeep_1: \"Store Scanner Beep\" by zerolagtime of Freesound.org https://freesound.org/s/144418/ - CC0" >> /tmp/au/credits.txt
-          else echo "MISSING sound: scanner beep" | tee -a build.log; fi
+          # 0.54: faction noisemakers - real recordings (left channel only: a stereo pair can cancel itself folded to mono)
+          cut54() { # $1 src  $2 start  $3 len  $4 out  $5 fade-out length
+            ffmpeg -nostdin -loglevel error -y -ss $2 -t $3 -i "$1" -ar 22050 -af "pan=mono|c0=c0,loudnorm=I=-16:TP=-1.5,afade=t=in:d=0.02,afade=t=out:st=$(echo "$3 - $5" | bc):d=$5" -c:a pcm_s16le "$4" || echo "cut failed: $4" | tee -a build.log
+            ffmpeg -nostdin -hide_banner -i "$4" -af volumedetect -f null - 2>&1 | grep -o "mean_volume: [-0-9.]* dB" | sed "s|^|$(basename $4) |" | tee -a build.log; }
+          if fs https://freesound.org/people/Kyster/sounds/79540/ /tmp/au/bell.mp3; then
+            cut54 /tmp/au/bell.mp3 0.05 4.0 $S/NRE_HandBell_1.wav 0.05
+            echo "NRE_HandBell_1: \"Bell 02.wav\" by Kyster of Freesound.org https://freesound.org/s/79540/ - CC BY 4.0" >> /tmp/au/credits.txt
+          else echo "MISSING sound: hand bell" | tee -a build.log; fi
+          if fs https://freesound.org/people/dvdfu/sounds/565799/ /tmp/au/coins.mp3; then
+            ffmpeg -nostdin -loglevel error -y -i /tmp/au/coins.mp3 -ac 1 -ar 22050 -af "silenceremove=start_periods=1:start_threshold=-45dB:stop_periods=-1:stop_threshold=-45dB:stop_duration=0.2" /tmp/au/coins.dense.wav
+            cut54 /tmp/au/coins.dense.wav 0 1.6 $S/NRE_Coins_1.wav 0.25
+            echo "NRE_Coins_1: \"Coins\" by dvdfu of Freesound.org https://freesound.org/s/565799/ - CC0" >> /tmp/au/credits.txt
+          else echo "MISSING sound: coins" | tee -a build.log; fi
+          if fs https://freesound.org/people/dersuperanton/sounds/434473/ /tmp/au/rattle.mp3; then
+            cut54 /tmp/au/rattle.mp3 0.3 3.0 $S/NRE_Rattle_1.wav 0.05
+            echo "NRE_Rattle_1: \"Sand Rattle\" by dersuperanton freesound.org https://freesound.org/s/434473/ - CC BY 4.0" >> /tmp/au/credits.txt
+          else echo "MISSING sound: rattle" | tee -a build.log; fi
+          if fs https://freesound.org/people/Benboncan/sounds/80578/ /tmp/au/bowl.mp3; then
+            cut54 /tmp/au/bowl.mp3 0 7.0 $S/NRE_Resonance_1.wav 2.5
+            echo "NRE_Resonance_1: \"Nepalese Singing Bowl.wav\" by Benboncan of Freesound.org https://freesound.org/s/80578/ - CC BY 4.0" >> /tmp/au/credits.txt
+          else echo "MISSING sound: singing bowl" | tee -a build.log; fi
           # 0.50: wave music - CC0 battle tracks from OpenGameArt
           OG=https://opengameart.org/sites/default/files
           wm() { if get "$OG/$1" /tmp/au/$2.src "$OG/$3"; then ffmpeg -nostdin -loglevel error -y -i /tmp/au/$2.src -ac 2 -ar 32000 -af loudnorm=I=-19:TP=-2 -c:a libvorbis -q:a 3 "$M/$2.ogg" && echo "$4 - CC0 (opengameart.org)" >> /tmp/au/credits.txt; else echo "MISSING music: $2" | tee -a build.log; fi; }

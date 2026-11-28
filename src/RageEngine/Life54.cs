@@ -87,7 +87,7 @@ namespace RageEngine
         // ================================================================== game events (they only take notes)
         void OnDespawn54(Creature c, EventTime t)
         {
-            if (t != EventTime.OnStart || c == null) return;
+            if (c == null) return;                                                        // OnStart and OnEnd: whichever this game build sends
             bool player = false; try { player = c.isPlayer; } catch { }
             if (player) return;
             EndLife54(c);                    // the actual clean-up waits for Flush54: we may be inside one of our own loops right now

@@ -85,6 +85,23 @@ namespace ThunderRoad
         public Level level;
         public virtual System.Collections.IEnumerator OnPlayerSpawnCoroutine() { yield break; }
     }
+    public class Breakable : ThunderBehaviour { }
+    public class ContentState { }
+    public class ContainerContent { public string referenceID; }
+    public class Container : MonoBehaviour { public List<ContainerContent> contents; public ItemContent AddItemContent(ItemData itemData, ContentState state = null, List<ContentCustomData> customDataList = null) => null; }
+    public class ItemContent : ContainerContent { }
+    public class ShopData : CatalogData
+    {
+        public class ShopStockCategory { public string stockCategory; public List<string> allAcceptedIDs; }
+        public List<ShopStockCategory> shopStockCategories;
+    }
+    public class Shop : ThunderBehaviour
+    {
+        public static Shop local => null;
+        public ShopData data;
+        public Container shopContents;
+        public static void RefreshContent() { }
+    }
     public class Level : MonoBehaviour { public static Level current; public static Level master; public LevelData data; public static bool IsDungeon => false; }
     public static class LevelManager { public static string GetCurrentLevel() => null; }
     public class WaveSpawner : MonoBehaviour
@@ -331,6 +348,7 @@ namespace ThunderRoad
 
     public class Item : ThunderEntity
     {
+        public delegate void BreakStartDelegate(Breakable breakable);
         public enum Owner { None = 0, Player = 1, Shopkeeper = 2 }
         public delegate void HeldActionDelegate(RagdollHand ragdollHand, Handle handle, Interactable.Action action);
         public delegate void GrabDelegate(Handle handle, RagdollHand ragdollHand);
@@ -425,6 +443,7 @@ namespace ThunderRoad
         public static event CreatureSpawnedEvent onCreatureSpawn;
         public static event CreatureDespawnedEvent onCreatureDespawn;
         public static event CreatureParryEvent onCreatureAttackParry;
+        public static event Item.BreakStartDelegate OnItemBrokenStart;
         public static event RagdollSlicedEvent onRagdollSliced;
         public static event LevelLoadEvent onLevelUnload;
     }

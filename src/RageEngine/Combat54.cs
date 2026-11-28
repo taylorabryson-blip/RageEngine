@@ -368,7 +368,6 @@ namespace RageEngine
             float now = Time.time;
             if (now < nextCombatTick54) return;
             nextCombatTick54 = now + 0.1f;
-            if (!defense54 && !exhaustion54) return;
             var pc = Player.local != null ? Player.local.creature : null;
             for (int i = 0; i < MaxTracked; i++)
             {
@@ -380,7 +379,7 @@ namespace RageEngine
                 bool fighting = s.inCombat || (pc != null && (c.transform.position - pc.transform.position).sqrMagnitude < 4f * 4f && !s.ally);
                 TickExertion54(s, now, fighting);
                 if (s.guardBreakUntil54 > 0f && now >= s.guardBreakUntil54) { s.guardBreakUntil54 = 0f; s.nextDefense = 0f; }
-                if (!defense54) continue;
+                if (!defense54) { if (s.profile54 != 0) { s.profile54 = 0; s.repeat54 = 0; ApplyProfile54(s, 0, now); } s.counterAt54 = 0f; continue; }   // switched off: the game's own values back
                 TickRecovery54(s, now);
                 if (s.counterAt54 > 0f && now >= s.counterAt54) TryCounter54(s, now);
                 if (fighting && now >= s.nextBeat54 && now >= s.recoverUntil54 && c.ragdoll.state == Ragdoll.State.Standing && !s.surrendered)
