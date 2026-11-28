@@ -62,7 +62,7 @@ namespace RageEngine
             var chest = ChestPart(c);
 
             // ---- punch-through (0.49: JoJo-style - he hangs on your arm until you pull it out)
-            // 0.53: punch-through removed
+            if (fist && Has(t, RagdollPart.Type.Torso) && dt == DamageType.Blunt && TryPunchThrough49(s, ppart, part, hit.contactPoint, dir, speed)) return;
 
             // ---- uppercut: a rising blow to the jaw
             bool rising = Vector3.Dot(dir, Vector3.up) > 0.45f;

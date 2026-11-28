@@ -29,12 +29,20 @@ namespace RageEngine
         public static string goreSource = "rage";
         internal static bool ExternalGore => goreSource == "other";
 
+        [ModOptionCategory("You", 3), ModOptionOrder(10)]
+        [ModOption("Rip organs out by hand", "Cut him open, put your hand in the wound and grab: chest = heart or lung, belly = liver, stomach, guts, back = spine.", defaultValueIndex = 1)]
         public static bool ripOrgans49 = true;
 
-        public static bool punchThrough49 = false;   // 0.53: removed (looked bad)
+        [ModOptionCategory("You", 3), ModOptionOrder(11)]
+        [ModOption("Punch through chest", "A really fast punch to the chest goes through. He hangs on your arm until you pull it out.", defaultValueIndex = 1)]
+        public static bool punchThrough49 = true;
 
+        [ModOptionCategory("NPCs", 2), ModOptionOrder(20)]
+        [ModOption("Taunts", "Cocky NPCs square up, beckon you in and taunt (voice packs' taunt lines play too).", defaultValueIndex = 1)]
         public static bool taunts49 = true;
 
+        [ModOptionCategory("NPCs", 2), ModOptionOrder(21)]
+        [ModOption("Fear & surrender voices", "Begging, fleeing and surrendering NPCs use the surrender / beg / panic lines of whatever voice pack they have.", defaultValueIndex = 1)]
         public static bool fearVoices49 = true;
 
         // ================================================================== organs: where they sit

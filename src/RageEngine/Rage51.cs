@@ -26,22 +26,40 @@ namespace RageEngine
     public sealed partial class RageEngineScript
     {
         // ================================================================== switches (modular)
+        [ModOptionCategory("NPCs", 2), ModOptionOrder(40)]
+        [ModOption("NPC life (RDR2-style)", "Personal space, hands up when you aim at them, reacting to bodies, morale breaking, licking wounds, eye contact.", defaultValueIndex = 1)]
         public static bool npcLife51 = true;
 
+        [ModOptionCategory("NPCs", 2), ModOptionOrder(41)]
+        [ModOption("Keep NPCs standing", "Healthy NPCs stay on their feet (they only drop when dying or very low). Off = the game decides.", defaultValueIndex = 1)]
         public static bool keepStanding51 = true;
 
+        [ModOptionCategory("NPCs", 2), ModOptionOrder(42)]
+        [ModOption("Smart NPCs", "Dodging, picking weapons up off the floor, telling each other where you are.", defaultValueIndex = 1)]
         public static bool smart51 = true;
 
+        [ModOptionCategory("NPCs", 2), ModOptionOrder(43)]
+        [ModOption("Knife pulls", "Unarmed NPCs getting beaten pull a knife (and say something).", defaultValueIndex = 1)]
         public static bool knives51 = true;
 
+        [ModOptionCategory("You", 3), ModOptionOrder(20)]
+        [ModOption("Chokes", "Grab the throat to choke (two hands = faster).", defaultValueIndex = 1)]
         public static bool chokes51 = true;
 
+        [ModOptionCategory("You", 3), ModOptionOrder(21)]
+        [ModOption("Throat punches", "A solid hit to the throat makes him gag and clutch it.", defaultValueIndex = 1)]
         public static bool throatPunch51 = true;
 
+        [ModOptionCategory("You", 3), ModOptionOrder(22)]
+        [ModOption("Gravity slams", "Bodies thrown hard break bones and splatter on landing.", defaultValueIndex = 1)]
         public static bool slams51 = true;
 
+        [ModOptionCategory("Gore", 1), ModOptionOrder(30)]
+        [ModOption("Hanging jaws", "Enough damage to the jaw breaks it; more and it tears loose and hangs.", defaultValueIndex = 1)]
         public static bool hangJaws51 = true;
 
+        [ModOptionCategory("Rage", 0), ModOptionOrder(50)]
+        [ModOption("Map rescue", "On Rage maps, NPCs that can't reach you get moved to your floor.", defaultValueIndex = 1)]
         public static bool mapRescue51 = true;
 
         // ================================================================== voice lines by pattern (voice-pack aware)

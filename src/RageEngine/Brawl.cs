@@ -81,6 +81,7 @@ namespace RageEngine
             if (!knockouts && !force) return;                                             // 0.34: switch
             var c = s.creature;
             if (s.knockedOut || c.isKilled) return;
+            if (!force && !CanDrop49(s)) return;                                          // 0.49: healthy men don't get knocked out
             if (!force && TankShrug(s, "a knockout blow")) return;
             s.knockedOut = true;
             if (knockoutKills) { s.finalKill = true; s.dying = false; s.noGasp = true; }

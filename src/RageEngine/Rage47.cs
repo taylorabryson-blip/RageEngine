@@ -93,7 +93,7 @@ namespace RageEngine
             if (outDir.sqrMagnitude < 1e-4f) outDir = c.transform.forward; outDir.Normalize();
             if (cut && low && severity >= 0.9f && !(s != null ? s.gutsOut44 : gutted47.TryGetValue(c, out float gt) && Time.time - gt < 180f))
             {
-                if (Random.value > 0.5f + 0.25f * (severity - 0.9f)) return;
+                if (Random.value > 0.35f + 0.25f * (severity - 0.9f)) return;
                 gutted47[c] = Time.time;
                 if (s != null) s.gutsOut44 = true;
                 SpillGuts47(s, c, part, p, severity);
@@ -102,11 +102,11 @@ namespace RageEngine
             if (cut && !low && severity >= 1.1f)
             {
                 chestOpen47.TryGetValue(c, out float last);
-                if (Time.time - last < 6f || Random.value > 0.45f + 0.2f * (severity - 1.1f)) return;
+                if (Time.time - last < 6f || Random.value > 0.3f + 0.2f * (severity - 1.1f)) return;
                 chestOpen47[c] = Time.time;
                 Stamp(c, p, 0.07f, "rib_wound", 1f);
                 string o = OrganAt49(c, chest, p, Region49(c, chest, p));                              // 0.49: what's actually behind the cut
-                SpawnGoreModels(p + outDir * 0.05f, outDir + Vector3.down * 0.35f, o, 1, organMat44(o), 0.9f, c);   // 0.53: out of the body like 0.48
+                Organ49(o, p, outDir, c, 0.6f);
                 Sfx.Play("NRE_GoreTear", part.transform, 1f); Sfx.Play("NRE_Squelch", part.transform, 0.8f, 0.9f);
                 if (s != null) { s.bleedRate += 0.4f * bleedingRate; s.pain = 1f; Scream(s, true); }
                 Log($"{c.name}: chest cut open - {o.Substring(9).ToLower()} out");
@@ -123,7 +123,7 @@ namespace RageEngine
                 {
                     int rg = Region49(c, chest, p + Random.insideUnitSphere * 0.08f);
                     string o = i == 0 ? OrganAt49(c, chest, p, rg) : all[Random.Range(0, all.Length)];
-                    SpawnGoreModels(p + outDir * 0.05f, outDir + Random.insideUnitSphere * 0.5f, o, 1, organMat44(o), 1.1f, c);
+                    Organ49(o, p + Random.insideUnitSphere * 0.04f, (outDir + Random.insideUnitSphere * 0.35f).normalized, c, Random.Range(1.2f, 2.4f));
                 }
                 Stamp(c, p, 0.09f, "torn_flesh", 1f);
                 Sfx.Play("NRE_GoreTear", part.transform, 1f);
