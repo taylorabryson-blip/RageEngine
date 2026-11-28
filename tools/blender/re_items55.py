@@ -481,21 +481,27 @@ if want('rare'):
 
 # ============================================================================================ NOISEMAKERS: Rakta conch horn (rebuilt), Sentari bosun's pipe
 if want('conch'):
-    bm = bmesh.new(); NS, NT = 160, 24; g = 0.13; S = 4.6 * 2 * math.pi; grid = []
+    # a triton's trumpet: a tall conical spiral, overlapping whorls with knobbed shoulders, a long siphonal canal
+    # under the last whorl and a flared lip; blown from the cut spire tip
+    bm = bmesh.new(); NS, NT = 240, 28; g = 0.085; TURNS = 6.2; S = TURNS * 2 * math.pi; grid = []
     def C(s):
-        R = 0.22 * math.exp(g * s); return Vector((0.92 * R * math.cos(s), 0.92 * R * math.sin(s), -1.25 * R)), R
+        R = 0.3 * math.exp(g * s); return Vector((R * math.cos(s), R * math.sin(s), -2.3 * R)), R
     for i in range(NS + 1):
         s = S * i / NS; c, R = C(s); out = Vector((math.cos(s), math.sin(s), 0)); upv = Vector((0, 0, 1)); row = []
-        lip = 1.0 + 0.25 * max(0.0, (i / NS - 0.9) / 0.1)
+        w = max(0.0, (s - (S - 0.75 * 2 * math.pi)) / (0.75 * 2 * math.pi)) ** 1.2
+        lip = 1.0 + 0.28 * max(0.0, (i / NS - 0.93) / 0.07)
         for k in range(NT):
-            t = 2 * math.pi * k / NT; knob = 1.0 + 0.06 * max(0.0, math.cos(t * 1.0)) * (0.5 + 0.5 * math.cos(s * 4.5))
-            row.append(bm.verts.new(c + (out * math.cos(t) * 1.0 + upv * math.sin(t) * 1.35) * R * lip * knob))
+            t = 2 * math.pi * k / NT
+            knob = 1.0 + 0.13 * max(0.0, math.cos(t - 0.7)) ** 4 * max(0.0, math.cos(s * 2.2)) ** 6
+            cord = 1.0 + 0.022 * math.cos(t * 11)
+            down = 1.0 + (1.7 * w if math.sin(t) < 0 else 0.0) * abs(math.sin(t)) ** 1.5
+            row.append(bm.verts.new(c + (out * math.cos(t) * 0.93 + upv * math.sin(t) * 1.12 * down) * R * lip * knob * cord))
         grid.append(row)
     for i in range(NS):
         for k in range(NT):
             l = (k + 1) % NT; bm.faces.new((grid[i][k], grid[i][l], grid[i + 1][l], grid[i + 1][k]))
     a0 = bm.verts.new(C(0)[0] + Vector((0, 0, 0.3))); [bm.faces.new((grid[0][(k + 1) % NT], grid[0][k], a0)) for k in range(NT)]
-    cl, Rl = C(S); inner = bm.verts.new(cl - Vector((math.cos(S), math.sin(S), 0)) * 0.45 * Rl)
+    cl, Rl = C(S); inner = bm.verts.new(cl - Vector((math.cos(S), math.sin(S), 0)) * 0.5 * Rl)
     for k in range(NT): bm.faces.new((grid[-1][k], grid[-1][(k + 1) % NT], inner))
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     shell = obj_from_bm('Shell', bm)
@@ -593,7 +599,7 @@ if want('weapons'):
 if want('valuables'):
     v = S['valuables']
     sheet(os.path.join(OUT, 'valuables_preview.png'), [(v[0], (70, 0, 10), 0, 1), (v[1], (20, 0, 20), 0, 1), (v[2], (0, 0, 20), 0, 1),
-                                                       (v[3], (85, 0, 0), 0, 1), (v[4], (40, 0, 160), 0, 1), (v[5], (90, 0, 0), 0, 1)], cols=3)
+                                                       (v[3], (85, 0, 0), 0, 1), (v[4], (-30, 0, 180), 0, 1), (v[5], (0, 0, 15), 0, 1)], cols=3)
 if want('rare'):
     r = S['rare']
     sheet(os.path.join(OUT, 'rare_preview.png'), [(r[0], (0, 0, 25), 0, 1), (r[1], (60, 0, 15), 0, 1)], cols=2)

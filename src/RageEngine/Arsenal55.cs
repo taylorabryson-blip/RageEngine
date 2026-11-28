@@ -78,7 +78,7 @@ namespace RageEngine
                 new Part55("RE_Pearl_Hinge", "bronze.png", Brass55, 0.7f, true)),
             new Def55("RE_Sunstone_Celestial", "Khar-Tib", Fit55.Treasure, 4, new Part55("RE_Sunstone_Bronze", "bronze_kt.png", new Color(0.69f, 0.45f, 0.24f), 0.7f), new Part55("RE_Sunstone_Stone", null, new Color(1f, 0.55f, 0.1f), 0.9f, false, 2.2f)),
             // ---- rare finds (hand tools on the potion base, like the NPC Spawner)
-            new Def55(HollowEyeId55, "The Eye", Fit55.Grip, 4, new Part55("RE_HollowEye_Bronze", "gunmetal.png", Dark55, 0.7f), new Part55("RE_HollowEye_Shell", null, new Color(0.16f, 0.08f, 0.24f), 0.97f),
+            new Def55(HollowEyeId55, "The Eye", Fit55.Grip, 4, new Part55("RE_HollowEye_Bronze", "gunmetal.png", Dark55, 0.7f), new Part55("RE_HollowEye_Shell", null, Violet55, 0.95f, false, 1.2f),
                 new Part55("RE_HollowEye_Core", null, Violet55, 0.9f, false, 3f)),
             new Def55(CompassId55, "Sentari", Fit55.Grip, 4, new Part55("RE_Compass_Brass", "bronze.png", Brass55, 0.75f, true), new Part55("RE_Compass_Card", "compass_card.png", new Color(0.88f, 0.82f, 0.67f), 0.3f),
                 new Part55("RE_Compass_NeedleN", null, new Color(0.6f, 0.08f, 0.06f), 0.7f), new Part55("RE_Compass_NeedleS", "gunmetal.png", Dark55, 0.7f)),
@@ -97,7 +97,7 @@ namespace RageEngine
         {
             public Item item; public Def55 def; public Transform root, spin, needle, core; public float seed, s = 1f;
             public float needleAng, needleVel, nextTarget, nextTick, targetDist = -1f, targetAng; public Vector3 targetPos; public bool hasTarget;
-            public float heat, nextHit, nextNoise, nextBuzz; public bool overheated; public LineRenderer beam; public Light coreLight, hitLight; public AudioSource hum;
+            public float heat, nextHit, nextNoise, nextBuzz; public bool overheated; public Material glowMat; public LineRenderer beam; public Light coreLight, hitLight; public AudioSource hum;
         }
         static readonly Dictionary<Item, Arm55> arms55 = new Dictionary<Item, Arm55>();
         static readonly Dictionary<string, Material> mats55 = new Dictionary<string, Material>();
@@ -187,6 +187,7 @@ namespace RageEngine
                 any = true;
                 if (p.mesh == "RE_Observer_Crystal") { a.spin = t; t.localPosition = new Vector3(0f, 0f, 0.143f); }
                 else if (p.mesh == "RE_HollowEye_Core") a.core = t;
+                else if (p.mesh == "RE_HollowEye_Shell") { a.glowMat = new Material(Mat55(p)); t.GetComponent<MeshRenderer>().sharedMaterial = a.glowMat; }
                 else if (p.mesh == "RE_Compass_NeedleN") needleN = t;
                 else if (p.mesh == "RE_Compass_NeedleS") needleS = t;
             }
@@ -228,6 +229,7 @@ namespace RageEngine
             if (a.hum != null) UnityEngine.Object.Destroy(a.hum);
             if (a.spin != null && a.spin.parent != null && a.spin.parent != a.root) UnityEngine.Object.Destroy(a.spin.parent.gameObject);
             if (a.root != null) UnityEngine.Object.Destroy(a.root.gameObject);
+            if (a.glowMat != null) UnityEngine.Object.Destroy(a.glowMat);
             if (a.item != null) foreach (var r in a.item.GetComponentsInChildren<MeshRenderer>(true)) if (!r.name.StartsWith("RE_") && !r.name.StartsWith("RageEngine")) r.enabled = true;
         }
 
@@ -439,7 +441,8 @@ namespace RageEngine
             }
             float ready = a.overheated ? 0.15f : 1f - a.heat * 0.6f;
             if (a.coreLight != null) a.coreLight.intensity = (0.35f + 0.35f * Mathf.Sin(now * 2.2f + a.seed)) * ready + (held ? 1.2f : 0f);
-            if (a.core != null) a.core.localScale = Vector3.one * (0.92f + 0.08f * Mathf.Sin(now * 3.1f + a.seed) * ready);
+            if (a.glowMat != null)                                                                    // the crystal breathes; dim when spent, bright while it fires
+                try { a.glowMat.SetColor("_EmissionColor", Violet55 * ((0.7f + 0.5f * Mathf.Sin(now * 3.1f + a.seed)) * ready + (held && !a.overheated ? 2.2f : 0f))); } catch { }
         }
 
         // ================================================================== Captain's Compass
