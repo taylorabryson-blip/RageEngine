@@ -134,7 +134,7 @@ namespace RageEngine
         static void DressNoise54(Item it, int kind)
         {
             var n = new Noise54 { it = it, kind = kind };
-            noises54[it] = n;
+            makers54[it] = n;
             var root = NewRoot54(it, "RageEngine_" + NoiseIds54[kind]); n.model = root;
             bool any;
             switch (kind)
