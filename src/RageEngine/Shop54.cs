@@ -19,7 +19,7 @@ namespace RageEngine
     public sealed partial class RageEngineScript
     {
         public static ModOptionString[] shopValues54 = { new ModOptionString("All", null, "all"), new ModOptionString("Some", null, "some"), new ModOptionString("Off", null, "off") };
-        [ModOptionCategory("Rage", 0), ModOptionOrder(60)]
+        [ModOptionCategory("Rage", 0), ModOptionOrder(70)]
         [ModOption("Mod items in the shop", "Crystal Hunt: Rage Engine's serums, toxins, the NPC Spawner, faction noisemakers and the Seer's Mirror on the home shop's shelves. Some = the tools plus a rotating handful.", valueSourceName = nameof(shopValues54), defaultValueIndex = 0)]
         public static string shop54 = "all";
 

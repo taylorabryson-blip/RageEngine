@@ -29,7 +29,7 @@ namespace RageEngine
         public static bool patrols54 = true;
 
         [ModOptionCategory("NPCs", 2), ModOptionOrder(47)]
-        [ModOption("Noises draw NPCs", "Idle NPCs walk over to check fights, things you throw, breaking glass and the Noisemaker. They only get a rough idea where it came from and still have to see you.", defaultValueIndex = 1)]
+        [ModOption("Noises draw NPCs", "Idle NPCs walk over to check fights, things you throw, anything breaking and the faction noisemakers. They only get a rough idea where it came from and still have to see you.", defaultValueIndex = 1)]
         public static bool noises54 = true;
 
         public static ModOptionString[] fovValues54 = { new ModOptionString("Game default", null, "game"), new ModOptionString("Narrow", null, "narrow"), new ModOptionString("Wide", null, "wide") };
