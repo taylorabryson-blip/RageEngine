@@ -20,7 +20,7 @@ namespace ThunderRoad
     public class StatusData : CatalogData { }
     public class Status : IStatus { public StatusData data; public ThunderEntity entity; public float startTime; public float expiry; }
     public class Burning : Status { public bool isIgnited; public float Heat { get; set; } public float MaxHeat => 0f; public float CharAmount => 0f; public void FullyChar(Creature creature) { } }
-    public class Interactable : ThunderBehaviour { public enum Action { UseStart = 0, UseStop = 1, AlternateUseStart = 2, AlternateUseStop = 3, Grab = 4, Ungrab = 5 } }
+    public class Interactable : ThunderBehaviour { public float axisLength; public enum Action { UseStart = 0, UseStop = 1, AlternateUseStart = 2, AlternateUseStop = 3, Grab = 4, Ungrab = 5 } }
     public enum Category { Text = 0, Wave = 1, Creature = 2, CreatureTable = 3, LootTable = 4, Container = 5, Item = 6, Brain = 7, Effect = 8 }
     public abstract class ContentCustomData { }
     public class InteractableData : CatalogData { }
@@ -35,7 +35,9 @@ namespace ThunderRoad
         public static void StopSlowMotion() { }
     }
     public class HandleRagdoll : Handle { public RagdollPart ragdollPart; }
-    public class ColliderGroup : ThunderBehaviour { }
+    public class ColliderGroup : ThunderBehaviour { public List<Collider> colliders; public CollisionHandler collisionHandler; }
+    public class DamagerData : CatalogData { }
+    public class Damager : ThunderBehaviour { public enum Direction { All, Forward, ForwardAndBackward } public ColliderGroup colliderGroup; public Collider colliderOnly; public bool isColliderOnly; public Direction direction; public float penetrationDepth, penetrationLength; public CollisionHandler collisionHandler; public DamagerData data; }
     public class Holder : Interactable { }
     public class PlayerHead : MonoBehaviour { public Camera cam; }
     public class Player : ThunderBehaviour { public static bool fallDamage, invincibility; public static Player local; public PlayerHead head; public Creature creature; public Locomotion locomotion; public void Teleport(Vector3 position, Quaternion rotation, bool keepVelocity = false, bool useHeadPosition = true) { } }
@@ -276,7 +278,7 @@ namespace ThunderRoad
     public class Locomotion : ThunderBehaviour { public LayerMask groundMask; public CapsuleCollider capsuleCollider; public FloatHandler globalMoveSpeedMultiplier; public bool isGrounded; public bool allowMove; public PhysicBody physicBody; public Vector3 moveDirection; }
     public class CollisionHandler : ThunderBehaviour
     {
-        public List<CollisionHandler> penetratedObjects; public RagdollPart ragdollPart; public Item item;
+        public List<CollisionHandler> penetratedObjects; public RagdollPart ragdollPart; public Item item; public List<Damager> damagers;
         public delegate void CollisionEvent(CollisionInstance collisionInstance);
         public event CollisionEvent OnCollisionStartEvent;
     }
@@ -367,6 +369,7 @@ namespace ThunderRoad
         public RagdollHand mainHandler;
         public Transform flyDirRef;
         public List<CollisionHandler> collisionHandlers;
+        public List<ColliderGroup> colliderGroups; public Vector3 customCenterOfMass; public void ResetCenterOfMass() { }
         public CollisionHandler mainCollisionHandler;
         public bool isPenetrating;
         public PhysicBody physicBody;

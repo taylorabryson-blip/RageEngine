@@ -97,7 +97,7 @@ namespace RageEngine
         {
             public Item item; public Def55 def; public Transform root, spin, needle, core; public float seed, s = 1f;
             public float needleAng, needleVel, nextTarget, nextTick, targetDist = -1f, targetAng; public Vector3 targetPos; public bool hasTarget;
-            public float heat, nextHit, nextNoise, nextBuzz; public bool overheated; public Material glowMat; public LineRenderer beam; public Light coreLight, hitLight; public AudioSource hum;
+            public float heat, nextHit, nextNoise, nextBuzz; public bool overheated; public Material glowMat; public Swap56 swap; public LineRenderer beam; public Light coreLight, hitLight; public AudioSource hum;
         }
         static readonly Dictionary<Item, Arm55> arms55 = new Dictionary<Item, Arm55>();
         static readonly Dictionary<string, Material> mats55 = new Dictionary<string, Material>();
@@ -137,6 +137,7 @@ namespace RageEngine
                     if (kv.Key == null || kv.Value.root == null) { (gone ??= new List<Item>()).Add(kv.Key); continue; }
                     // items are pooled: if this one came back as something else, give it its own look back
                     if (kv.Key.data != null && kv.Key.data.id != kv.Value.def.id) { var a0 = kv.Value; Guard("arsenal.undress", () => Undress55(a0)); (gone ??= new List<Item>()).Add(kv.Key); }
+                    else if (kv.Value.swap != null) KeepOff56(kv.Value.swap);
                 }
                 if (gone != null) foreach (var g in gone) arms55.Remove(g);
             }
@@ -205,8 +206,16 @@ namespace RageEngine
                 if (needleN != null) needleN.SetParent(piv, false);
                 if (needleS != null) needleS.SetParent(piv, false);
             }
-            if (d.fit == Fit55.Blade) FitBlade55(it, a);
-            else if (d.fit == Fit55.Treasure) FitTreasure55(it, a);
+            // 0.56: our own hitboxes at real size; the 0.55 stretch-to-fit only if that fails
+            bool own = false;
+            if (d.fit == Fit55.Blade) Guard("hitbox56", () => own = RebuildBlade56(it, a));
+            else Guard("hitbox56", () => own = RebuildSmall56(it, a));
+            if (!own)
+            {
+                if (a.swap != null) { Restore56(a.swap); a.swap = null; }
+                if (d.fit == Fit55.Blade) FitBlade55(it, a);
+                else if (d.fit == Fit55.Treasure) FitTreasure55(it, a);
+            }
             if (a.spin != null)
             {
                 // the root is stretched along the blade; the crystal hangs from its own unstretched pivot so it turns true
@@ -225,6 +234,7 @@ namespace RageEngine
         static void Undress55(Arm55 a)
         {
             BeamOff55(a);
+            if (a.swap != null) { Restore56(a.swap); a.swap = null; }
             if (a.hitLight != null) UnityEngine.Object.Destroy(a.hitLight.gameObject);
             if (a.hum != null) UnityEngine.Object.Destroy(a.hum);
             if (a.spin != null && a.spin.parent != null && a.spin.parent != a.root) UnityEngine.Object.Destroy(a.spin.parent.gameObject);
