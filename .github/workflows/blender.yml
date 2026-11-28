@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['tools/blender/**', '.github/workflows/blender.yml', 'mod/RageEngine/Textures/Spawner/**', 'mod/RageEngine/Textures/Items54/**']
+    paths: ['tools/blender/**', '.github/workflows/blender.yml', 'mod/RageEngine/Textures/Spawner/**', 'mod/RageEngine/Textures/Items54/**', 'mod/RageEngine/Textures/Items55/**']
 permissions:
   contents: write
 jobs:
@@ -26,10 +26,14 @@ jobs:
           /tmp/blender/blender --version | head -1
       - name: Build assets
         run: |
+          export RE55_ONLY="$(cat tools/blender/re55_only.txt 2>/dev/null | tr -d ' \n')"; echo "RE55_ONLY=$RE55_ONLY"
           mkdir -p out
-          /tmp/blender/blender -b --factory-startup -P tools/blender/re_assets.py -- $PWD/out 2>&1 | tee out/blender.log | grep -E "wrote|DONE|Error|Traceback|line [0-9]+" || true
-          /tmp/blender/blender -b --factory-startup -P tools/blender/re_spawner.py -- $PWD/out $PWD/mod/RageEngine/Textures/Spawner 2>&1 | tee out/spawner.log | grep -E "wrote|DONE|Error|Traceback|line [0-9]+" || true
+          [ -n "$RE55_ONLY" ] || /tmp/blender/blender -b --factory-startup -P tools/blender/re_assets.py -- $PWD/out 2>&1 | tee out/blender.log | grep -E "wrote|DONE|Error|Traceback|line [0-9]+" || true
+          [ -n "$RE55_ONLY" ] || /tmp/blender/blender -b --factory-startup -P tools/blender/re_spawner.py -- $PWD/out $PWD/mod/RageEngine/Textures/Spawner 2>&1 | tee out/spawner.log | grep -E "wrote|DONE|Error|Traceback|line [0-9]+" || true
+          /tmp/blender/blender -b --factory-startup -P tools/blender/re_items55.py -- $PWD/out $PWD/mod/RageEngine/Textures/Items55 $PWD/mod/RageEngine/Textures/Items54 2>&1 | tee out/items55.log | grep -E "wrote|DONE|tris|Error|Traceback|line [0-9]+|unity m" || true
+          if [ -z "$RE55_ONLY" ]; then
           /tmp/blender/blender -b --factory-startup -P tools/blender/re_items54.py -- $PWD/out $PWD/mod/RageEngine/Textures/Items54 2>&1 | tee out/items54.log | grep -E "wrote|DONE|tris|Error|Traceback|line [0-9]+" || true
+          fi
           ls -la out
       - name: Publish to branch blender-out
         run: |
