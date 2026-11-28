@@ -147,6 +147,18 @@ def matcol(name, col, rough, metal=0.0, emit=0.0):
         b.inputs['Emission Strength'].default_value = emit
     return m
 
+def outline_face(name, pts, y, thick=0.0):
+    """a flat face from an outline in the XZ plane at depth y (front = -y); optional extrude to +y"""
+    bm = bmesh.new(); vs = [bm.verts.new((x, y, z)) for x, z in pts]
+    f = bm.faces.new(vs)
+    if f.normal.y > 0: f.normal_flip()
+    if thick > 0:
+        ext = bmesh.ops.extrude_face_region(bm, geom=[f]); bmesh.ops.translate(bm, vec=Vector((0, thick, 0)), verts=[v for v in ext['geom'] if isinstance(v, bmesh.types.BMVert)])
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bmesh.ops.triangulate(bm, faces=bm.faces)
+    return obj_from_bm(name, bm)
+
+
 # ------------------------------------------------------------------ 0.55 additions
 def lathe(name, prof, segs=32):
     """revolve a profile [(r, z), ...] around Z; r == 0 at an end closes it"""

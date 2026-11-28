@@ -157,10 +157,10 @@ if want('tane'):
         inlays.append(side_plate('scale', [(34, 0.2), (36, 1.0), (44, 1.0), (46, 0.2), (44, -0.6), (36, -0.6)], sx * 1.42, 0.12))
     # the match cord: coiled round the wrist, running up to the serpentine's jaw
     coil = []
-    for i in range(0, 9 * 20 + 1):
-        a = 2 * math.pi * i / 20; y = -27 + i * 0.075
-        coil.append((math.cos(a) * 1.62, y, -1.0 + math.sin(a) * 2.25))
-    cord = tube('coil', coil, 0.24, 6)
+    for i in range(0, 22 * 16 + 1):
+        a = 2 * math.pi * i / 16; y = -26 + i * 0.5 / 16
+        coil.append((math.cos(a) * 1.6, y, -1.0 + math.sin(a) * 2.2))
+    cord = tube('coil', coil, 0.25, 6)
     lead = tube('lead', [(1.7, -15.5, -1.0), (2.4, -8, 0.4), (2.6, -1, 2.0), (2.45, 1.2, 3.0), (2.3, 2.2, 3.0)], 0.2, 6)
     ember = sphere('ember', 0.42, (2.3, 2.45, 3.0), 12, 8)
     wood = join('Lacquer', [stock]); box_uv(wood, 0.06)
@@ -168,7 +168,7 @@ if want('tane'):
     brass = join('Brass', [plate, pan, panc, serp, pivot, trig, cap] + bands + inlays); box_uv(brass, 0.15)
     rope = join('Cord', [cord, lead]); box_uv(rope, 0.4)
     em = join('Ember', [ember]); box_uv(em)
-    mats([(wood, LAC()), (iron, GUN()), (brass, BRS()), (rope, matcol('cord', (0.30, 0.19, 0.10), 0.9)), (em, matcol('ember', (1.0, 0.35, 0.05), 0.5, 0, 12.0))])
+    mats([(wood, LAC()), (iron, GUN()), (brass, BRS()), (rope, matcol('cord', (0.16, 0.10, 0.055), 0.9)), (em, matcol('ember', (1.0, 0.35, 0.05), 0.5, 0, 12.0))])
     export([(wood, 'Lacquer', True), (iron, 'Iron', False), (brass, 'Brass', True), (rope, 'Cord', True), (em, 'Ember', True)], 'RE_Tane_')
     print('TANE ember (unity m)', 0.023, 0.030, 0.023)
     render_long([wood, iron, brass, rope, em], os.path.join(OUT, 'tanegashima_preview.png'), 165,
@@ -223,8 +223,8 @@ if want('naginata'):
     brass = join('Brass', [seme, habaki]); box_uv(brass, 0.2)
     mats([(pole_o, LAC()), (wrap_o, matimg('ito', T('ito.png'), 0.6)), (iron, IRN()), (brass, BRS()), (blade, STL())])
     export([(pole_o, 'Pole', True), (wrap_o, 'Wrap', True), (iron, 'Iron', True), (brass, 'Brass', True), (blade, 'Blade', False)], 'RE_Naginata_')
-    render_long([pole_o, wrap_o, iron, brass, blade], os.path.join(OUT, 'naginata_preview.png'), 220,
-                (((math.radians(6), 0, math.radians(90)), (0, 0, 22), 1.0), ((math.radians(-20), math.radians(-90), math.radians(70)), (38, 40, -40), 0.6)))
+    render_long([pole_o, wrap_o, iron, brass, blade], os.path.join(OUT, 'naginata_preview.png'), 260,
+                (((0, 0, math.radians(-90)), (-20, 0, 40), 1.0), ((0, math.radians(90), math.radians(-90)), (-160, 60, -40), 1.9)))
     print('NAGINATA DONE')
 
 # ============================================================================================ ERADEN CROSSBOW (prod across X at the front)
@@ -277,8 +277,8 @@ if want('xbow'):
     export([(crank, 'Crank', True)], 'RE_Xbow_', origin=CP)
     print('XBOW crank pivot (unity m)', CP.x * 0.01, CP.z * 0.01, CP.y * 0.01)
     srest.hide_render = True
-    render_long([oak, iron, brass, crank, sset, bshaft, bhead, bvane], os.path.join(OUT, 'crossbow_preview.png'), 95,
-                (((math.radians(80), 0, math.radians(90)), (0, 0, 10), 1.0), ((math.radians(-25), math.radians(20), math.radians(60)), (18, 30, -20), 0.7)))
+    render_long([oak, iron, brass, crank, sset, bshaft, bhead, bvane], os.path.join(OUT, 'crossbow_preview.png'), 100,
+                (((0, math.radians(-62), math.radians(-90)), (-4, 0, 4), 1.0),))
     print('XBOW DONE')
 
 # ============================================================================================ WILDFOLK BLOWGUN (+ dart)
