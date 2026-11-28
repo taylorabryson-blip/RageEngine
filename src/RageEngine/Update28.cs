@@ -21,10 +21,7 @@ namespace RageEngine
 {
     public sealed partial class RageEngineScript
     {
-        [ModOptionCategory("You", 3), ModOptionOrder(6)]
-        [ModOption("Your punch damage", "Extra damage from your fists and feet for really fast punches. 0 = the game's own damage only.", defaultValueIndex = 2)]
-        [ModOptionSlider, ModOptionFloatValues(0f, 3f, 0.25f)]
-        public static float punchDamage = 0.5f;
+        public static float punchDamage = 0f;                                                    // 0.56: removed - punches do the game's own damage
         public static bool pullKnife = true;
         public static bool occiputVital = true;
         [ModOptionCategory("Rage", 0), ModOptionOrder(1)]
@@ -139,7 +136,7 @@ namespace RageEngine
             s.gutShots = 1.5f; s.nextVomit = Time.time + 12f;
             s.vomitUntil = Time.time + 2.2f; s.nextVomitSpurt = 0f;
             s.daze = Mathf.Max(s.daze, 0.7f);
-            var m0 = Mouth(c); if (m0 != null) Sfx.PlayAt("NRE_Retch", m0.position, 1f);
+            var m0 = Mouth(c); if (m0 != null) Sfx.Play("NRE_Retch", m0, 1f, FemaleLift56(c));
             s.vomitUntil = Time.time + 2.8f; s.nextVomitSpurt = Time.time + 0.6f;               // 0.41: retch first, then it comes up
             VomitHoldOn44(s);                                                                   // 0.44: he stops and bends over
             Log($"{WhoIs(s)}: gut shots - he throws up");
@@ -162,7 +159,7 @@ namespace RageEngine
                     Vector3 fw = c.centerEyes != null ? c.centerEyes.forward : c.transform.forward;
                     Vector3 vdir = (Vector3.ProjectOnPlane(fw, Vector3.up).normalized * 0.6f + Vector3.down).normalized;     // down toward the floor
                     Guard("vomit", () => Spurt41(mouth.position, vdir, c, first));
-                    if (first) Sfx.PlayAt("NRE_Vomit", mouth.position, 1f);
+                    if (first) Sfx.Play("NRE_Vomit", mouth, 1f, FemaleLift56(c));
                 }
             }
             if (now >= s.vomitUntil && s.vomitHold44) VomitHoldOff44(s);
@@ -175,7 +172,7 @@ namespace RageEngine
                 {
                     s.nextChokeCough = now + Random.Range(1.6f, 2.8f);
                     SpitBlood(s, 1);
-                    var mouth = Mouth(c); if (mouth != null) Sfx.PlayAt("NRE_DeathGasp", mouth.position, 0.6f);
+                    var mouth = Mouth(c); if (mouth != null) Sfx.Play("NRE_DeathGasp", mouth, 0.6f, FemaleLift56(c));
                     var chest = ChestPart(c);
                     if (chest != null && chest.physicBody != null) chest.physicBody.AddForce(Vector3.up * 0.9f + Random.insideUnitSphere * 0.3f, ForceMode.VelocityChange);
                     if (!Tank(s)) Guard("choke.dmg", () => c.Damage(Mathf.Max(2f, c.maxHealth * 0.035f)));
@@ -225,6 +222,7 @@ namespace RageEngine
         /// A directed burst of coloured droplets (vomit).
         static void Spray28(Vector3 at, Vector3 dir, Color col, int count, float speed)
         {
+            if (Application.platform == RuntimePlatform.Android) return;                         // 0.56: no runtime particles on Quest (crash)
             var sh = SkinPaint.BlendShader; if (sh == null) return;
             int key = Mathf.RoundToInt(col.r * 15f) | Mathf.RoundToInt(col.g * 15f) << 4 | Mathf.RoundToInt(col.b * 15f) << 8;
             if (!sprayMats28.TryGetValue(key, out var m) || m == null)

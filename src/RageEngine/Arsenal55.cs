@@ -168,7 +168,7 @@ namespace RageEngine
             }
             Guard("rare55", () => TickRare55(now));
             // the loot tables: again every 20 s (a catalog refresh would drop them) and straight away when "NPC weapons" changes
-            if (now >= nextLoot55 || kitsOn55 != (npcWeapons != "0")) { nextLoot55 = now + 20f; InjectLoot55(); }
+            if (now >= nextLoot55) { nextLoot55 = now + 20f; InjectLoot55(); }
         }
 
         // ================================================================== dressing
@@ -458,9 +458,14 @@ namespace RageEngine
                 if (Item.allActive != null)
                     foreach (var it in Item.allActive)
                     {
-                        if (it == null || it == a.item || it.data == null || it.data.type != ItemData.Type.Valuable) continue;
+                        if (it == null || it == a.item || it.data == null) continue;
+                        // 0.56: treasure chests first (they count as much closer), then loose treasure
+                        string iid = it.data.id ?? "";
+                        bool chest = iid.IndexOf("chest", System.StringComparison.OrdinalIgnoreCase) >= 0 || it.name.IndexOf("chest", System.StringComparison.OrdinalIgnoreCase) >= 0
+                                     || iid.IndexOf("coffer", System.StringComparison.OrdinalIgnoreCase) >= 0;
+                        if (!chest && it.data.type != ItemData.Type.Valuable) continue;
                         if (it.holder != null || it.IsHanded() || it.isBrokenPiece) continue;
-                        float d2 = (it.transform.position - here).sqrMagnitude;
+                        float d2 = (it.transform.position - here).sqrMagnitude * (chest ? 0.25f : 1f);
                         if (d2 < best && d2 > 0.04f) { best = d2; a.targetPos = it.transform.position; a.hasTarget = true; }
                     }
                 a.targetDist = a.hasTarget ? Mathf.Sqrt(best) : -1f;
@@ -507,7 +512,7 @@ namespace RageEngine
             List<LootTable> tables = null;
             Guard("loot55.list", () => tables = Catalog.GetDataList<LootTable>());
             if (tables == null) return;
-            bool kits = npcWeapons != "0";                                                              // "Game default": no kit changes
+            bool kits = false;                                                                          // 0.56: no Rage Engine weapons in NPC kits (they come back when the weapons are rebuilt)
             int added = 0, removed = 0, kitTables = 0, rackTables = 0, treasureTables = 0;
             foreach (var lt in tables)
             {
@@ -519,7 +524,7 @@ namespace RageEngine
                 float total = 0f; foreach (var d in lvl.drops) if (d != null && !(d.referenceID ?? "").StartsWith("RE_")) total += d.probabilityWeight;
                 if (total <= 0f) total = 1f;
                 // treasure
-                if (Treasure55.TryGetValue(id, out var tre)) { foreach (var r in tre) changed |= AddDrop55(lvl, r, 0.35f, ref added); treasureTables++; }
+                if (Treasure55.TryGetValue(id, out var tre)) { foreach (var r in tre) changed |= RemoveDrop55(lvl, r, ref removed); treasureTables++; }   // 0.56: treasures only in their own faction dungeons (TickRare55)
                 // the Baron's weapon racks
                 if (low.StartsWith("shop_weaponrack_t") && low.Length > 17 && char.IsDigit(low[17]))
                 {
@@ -564,44 +569,57 @@ namespace RageEngine
         }
 
         // ================================================================== rare finds
-        static bool rareRolled55; static string rareWant55; static float rareFrom55, rareUntil55, nextRare55;
+        static bool rareRolled55; static readonly List<string> rareWant55 = new List<string>(); static float rareFrom55, rareUntil55, nextRare55;
+        /// 0.56: each faction's own treasure (tag from FactionOf56): 1 Eraden, 2 Outlaws, 3 Wildfolk, 4 The Eye, 5 Rakta, 6 Sentari, 7 Khar-Tib.
+        static readonly string[] FactionTreasure56 = { null, "RE_Signet_Royal", "RE_Coin_Contraband", "RE_Heartroot_Totem", null, "RE_Jade_Relic", "RE_Pearl_Captain", "RE_Sunstone_Celestial" };
+        static readonly string[] FactionName56 = { "unknown", "Eraden", "Outlaw", "Wildfolk", "Eye", "Rakta", "Sentari", "Khar-Tib" };
+        internal static int FactionOf56(Creature c)
+        {
+            int t = FactionTag54(c);
+            if (t != 0 || c == null) return t;
+            string n = (FactionName28(c.factionId) ?? "").ToLowerInvariant();
+            return n.Contains("khar") || n.Contains("tib") || n.Contains("desert") ? 7 : 0;
+        }
 
-        /// Once per dungeon: is this the run? If so, the next treasure that turns up in the level becomes the find.
+        /// Once per dungeon, after its people have spawned: which faction holds it, and what it hides. Its own faction's
+        /// treasure (only there - a Khar-Tib sunstone is only ever in a Khar-Tib dungeon), and rarely a rare find.
+        /// Each one takes the place of the next loose treasure lying in the level.
         void TickRare55(float now)
         {
             if (now < nextRare55) return;
             nextRare55 = now + 1f;
-            if (!InDungeon55()) { rareRolled55 = false; rareFrom55 = 0f; rareWant55 = null; return; }
+            if (!InDungeon55()) { rareRolled55 = false; rareFrom55 = 0f; rareWant55.Clear(); return; }
             if (!rareRolled55)
             {
                 if (rareFrom55 <= 0f) { rareFrom55 = now + 8f; return; }                                   // let the dungeon's people spawn first
                 if (now < rareFrom55) return;
-                rareRolled55 = true;
+                rareRolled55 = true; rareWant55.Clear();
                 var counts = new int[8];
-                if (Creature.allActive != null) foreach (var c in Creature.allActive) if (c != null && !c.isPlayer) { int t = FactionTag54(c); if (t > 0 && t < counts.Length) counts[t]++; }
+                if (Creature.allActive != null) foreach (var c in Creature.allActive) if (c != null && !c.isPlayer) { int t = FactionOf56(c); if (t > 0 && t < counts.Length) counts[t]++; }
                 int top = 0; for (int i = 1; i < counts.Length; i++) if (counts[i] > counts[top]) top = i;
-                bool eye = top == 4 && counts[4] > 0;
-                if (eye && Random.value < 0.125f) rareWant55 = HollowEyeId55;
-                else if (Random.value < 0.05f) rareWant55 = CompassId55;
-                rareUntil55 = now + 600f;
-                Log($"dungeon: {(eye ? "an Eye dungeon" : "not an Eye dungeon")} - rare find this run: {rareWant55 ?? "none"}");
+                if (counts[top] == 0) top = 0;
+                if (top == 4 && Random.value < 0.125f) rareWant55.Add(HollowEyeId55);
+                if (Random.value < 0.05f) rareWant55.Add(CompassId55);
+                var own = FactionTreasure56[top];
+                if (own != null) { if (Random.value < 0.45f) rareWant55.Add(own); if (Random.value < 0.15f) rareWant55.Add(own); }
+                rareUntil55 = now + 900f;
+                Log($"dungeon: {FactionName56[top]} - hidden this run: {(rareWant55.Count > 0 ? string.Join(", ", rareWant55) : "nothing special")}");
                 return;
             }
-            if (rareWant55 == null || now > rareUntil55 || Item.allActive == null) return;
-            var head = Player.local != null && Player.local.head != null ? Player.local.head.transform.position : Vector3.zero;
+            if (rareWant55.Count == 0 || now > rareUntil55 || Item.allActive == null) return;
             foreach (var it in Item.allActive)
             {
                 if (it == null || it.data == null || it.data.type != ItemData.Type.Valuable || it.data.id == null || it.data.id.StartsWith("RE_")) continue;
                 if (it.holder != null || it.IsHanded() || it.isBrokenPiece) continue;
-                var data = Catalog.GetData<ItemData>(rareWant55, false); if (data == null) { rareWant55 = null; return; }
-                Vector3 p = it.transform.position; Quaternion q = it.transform.rotation; string was = it.data.id, want = rareWant55;
-                rareWant55 = null;
-                Guard("rare55.spawn", () => data.SpawnAsync(n => { if (n != null) Log($"rare find: {want} placed where a {was} was"); }, p + Vector3.up * 0.03f, q));
+                string want = rareWant55[0]; rareWant55.RemoveAt(0);
+                var data = Catalog.GetData<ItemData>(want, false); if (data == null) { Log($"dungeon find: {want} isn't loaded - skipped"); return; }
+                Vector3 p = it.transform.position; Quaternion q = it.transform.rotation; string was = it.data.id;
+                Guard("rare55.spawn", () => data.SpawnAsync(n => { if (n != null) Log($"dungeon find: {want} placed where a {was} was"); }, p + Vector3.up * 0.03f, q));
                 Guard("rare55.despawn", () => it.Despawn());
                 return;
             }
         }
 
-        void Unload55() { rareRolled55 = false; rareWant55 = null; rareFrom55 = 0f; arms55.Clear(); }
+        void Unload55() { rareRolled55 = false; rareWant55.Clear(); rareFrom55 = 0f; arms55.Clear(); }
     }
 }

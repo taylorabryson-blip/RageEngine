@@ -38,7 +38,7 @@ namespace RageEngine
             s.trPatience = Mathf.Clamp01((p == PersonalityType.Calm ? 0.75f : p == PersonalityType.Aggressive ? 0.25f : 0.5f) + R(-0.2f, 0.2f));
             s.trRisk = Mathf.Clamp01((p == PersonalityType.Aggressive || p == PersonalityType.Unpredictable ? 0.7f : p == PersonalityType.Cautious || p == PersonalityType.Nervous ? 0.25f : 0.5f) + R(-0.2f, 0.2f));
             if (s.brave) { s.trConfidence = Mathf.Min(1f, s.trConfidence + 0.2f); s.trRisk = Mathf.Min(1f, s.trRisk + 0.15f); }
-            s.voicePitch = Random.Range(0.9f, 1.1f) * (s.creature.name.IndexOf("Female", System.StringComparison.OrdinalIgnoreCase) >= 0 ? 1.04f : 1f);
+            s.voicePitch = Random.Range(0.9f, 1.1f) * (IsFemale56(s.creature) ? 1.04f : 1f);
             s.guardStyle = Random.Range(0, 3);
             s.punchPrefJab = Random.Range(0.25f, 0.6f);
             s.idlePhase = Random.Range(0f, 10f);
@@ -57,9 +57,9 @@ namespace RageEngine
                 var head = s.creature.ragdoll != null ? s.creature.ragdoll.headPart : null;
                 Vector3 ear = head != null ? head.transform.position : s.creature.transform.position;
                 float hearing = (s.personality != null ? s.personality.hearingMult : 1f) * (HasTag(s, Tag.Blind) ? 1.5f : 1f) * Hear54();   // 0.54: NPC hearing setting
-                float d = Vector3.Distance(ear, pos);
                 float r = radius * hearing;                                                    // 0.55: faction items are style only - every NPC hears them the same
-                if (d > r) continue;
+                float d = HeardDistance56(pos, ear, s.creature.transform.position, r);         // 0.56: not through walls - only round through a door
+                if (d < 0f || d > r) continue;
                 float intensity = 1f - d / r;
                 s.heardPos = pos; s.heardAt = now; s.heardKind = kind; s.heardTag54 = tag;
                 s.lookAt = pos; s.lookUntil = now + 1.5f + intensity;

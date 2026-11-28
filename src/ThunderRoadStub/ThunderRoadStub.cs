@@ -46,6 +46,7 @@ namespace ThunderRoad
     public class CreatureData : EntityData
     {
         public string brainId; public int factionId;
+        public enum Gender { None, Male, Female } public Gender gender;
         public void SpawnAsync(Vector3 position, float rotationY, Transform parent = null, bool pooled = true, WayPoint[] waypoints = null, Action<Creature> callback = null) { }
     }
     public class WayPoint : MonoBehaviour { }
@@ -330,7 +331,7 @@ namespace ThunderRoad
     }
     public class BrainModuleDefense : BrainData.Module { public bool parryEnabled; public float aboutToBeHitTiming, parryDetectionRadius, positionSpeed, rotationSpeed, parryAdjustSpeed, armSpringMultiplier;
         public bool dodgeEnabled, sideDodgeEnabled; public Vector2 minMaxDodgeCooldown; public float defenseMaxDistance, heldDefenseMinRadius, heldDefenseMaxRadius, dynamicHeightOffset, parryHorizontalMaxAngle, shieldRiposteChance, riposteBlockRequirement, nextAllowedDodgeTime; }
-    public class BrainModuleDetection : BrainData.Module { public float sightDetectionHorizontalFov, sightDetectionVerticalFov, hearMaxDistance, hearRememberDuration, alertednessLossPerSec; public bool canHear; }
+    public class BrainModuleDetection : BrainData.Module { public float sightDetectionHorizontalFov, sightDetectionVerticalFov, hearMaxDistance, hearRememberDuration, alertednessLossPerSec; public bool canHear; public float crouchingMultiplier, enemyInFOVIncrease, acquireSharedTargetDelay, detectAlertednessThreshold, alertednessLevel, maxAlertednessValue; public AnimationCurve distanceMultCurve; }
     public class BrainModuleMove : BrainData.Module { public bool allowMove; public float navReachDistance;
         public ThunderRoad.AI.State UpdateMoveCycle(Vector3 targetPosition, float targetMinRadius, float targetMaxRadius, float moveSpeedRatio, float runSpeedRatio, float targetRadiusAngle, bool unobstructedPathFirst, float repathMinDelay, float repathMaxDelay) => default;
         public void StopMove() { } }
@@ -460,7 +461,7 @@ namespace ThunderRoad
         public static event LevelLoadEvent onLevelUnload;
     }
 
-    public class ModManager { public class ModData { public string fullPath; public string Name; public List<ModOption> modOptions; } public static bool gameModsLoaded; public static void RefreshModOptionsUI() { } }
+    public class ModManager { public class ModData { public string fullPath; public string Name; public string ModVersion; public string folderName; public List<string> assemblyPaths; public List<ModOption> modOptions; } public static HashSet<ModData> loadedMods; public static bool gameModsLoaded; public static void RefreshModOptionsUI() { } }
 
     public abstract class ThunderScript
     {

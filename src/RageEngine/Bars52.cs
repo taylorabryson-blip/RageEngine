@@ -32,9 +32,15 @@ namespace RageEngine
         [ModOption("Bar size", "", valueSourceName = nameof(barSizeValues), defaultValueIndex = 1)]
         public static string barSize52 = "1";
 
+        public static ModOptionString[] barNumValues56 = { new ModOptionString("Health", null, "hp"), new ModOptionString("Health / max", null, "max"), new ModOptionString("Off", null, "off") };
+        [ModOptionCategory("Rage", 0), ModOptionOrder(64)]
+        [ModOption("Bar number", "The NPC's health as a number inside his bar.", valueSourceName = nameof(barNumValues56), defaultValueIndex = 0)]
+        public static string barNum56 = "hp";
+
         sealed class Bar52
         {
-            public GameObject root; public Transform frame, bg, chip, fill; public readonly List<Transform> ticks = new List<Transform>();
+            public GameObject root; public Transform frame, bg, chip, fill, num; public readonly List<Transform> ticks = new List<Transform>();
+            public Mesh numMesh; public string numKey;
             public string style, size; public float chipHp = 1f, shownHp = 1f, deadAt = -1f, lastHp = 1f, hurtAt = -100f; public int life;   // 0.54: whose bar
             public MaterialPropertyBlock mpb = new MaterialPropertyBlock();
         }
@@ -68,7 +74,8 @@ namespace RageEngine
         static void Build52(Bar52 b)
         {
             if (b.root != null) Object.Destroy(b.root);
-            b.ticks.Clear();
+            if (b.numMesh != null) Object.Destroy(b.numMesh);
+            b.ticks.Clear(); b.num = null; b.numMesh = null; b.numKey = null;
             b.style = barStyle52; b.size = barSize52;
             b.root = new GameObject("RageEngine_HealthBar");
             var t = b.root.transform;
@@ -153,15 +160,67 @@ namespace RageEngine
                 Tint52(b.chip, b.mpb, souls ? new Color(0.95f, 0.75f, 0.15f, fade) : new Color(0.95f, 0.95f, 0.95f, 0.85f * fade));
                 Tint52(b.fill, b.mpb, FillColor52(b.shownHp) * new Color(1f, 1f, 1f, fade));
                 foreach (var tk in b.ticks) Tint52(tk, b.mpb, new Color(0.02f, 0.02f, 0.02f, fade));
+                Guard("bar.num", () => Number56(b, c, h, fade));
             }
             // clean up bars whose NPC is gone or no longer tracked
             if (Time.frameCount % 30 == 0)
             {
                 List<Creature> gone = null;
                 foreach (var kv in bars52)
-                    if (kv.Key == null || !byCreature.ContainsKey(kv.Key)) { if (kv.Value.root != null) Object.Destroy(kv.Value.root); (gone ??= new List<Creature>()).Add(kv.Key); }
+                    if (kv.Key == null || !byCreature.ContainsKey(kv.Key)) { if (kv.Value.root != null) Object.Destroy(kv.Value.root); if (kv.Value.numMesh != null) Object.Destroy(kv.Value.numMesh); (gone ??= new List<Creature>()).Add(kv.Key); }
                 if (gone != null) foreach (var g in gone) bars52.Remove(g);
             }
+        }
+            // ------------------------------------------------------------------ 0.56: the number inside the bar
+        // A 5x7 pixel font built as one small mesh per bar (rebuilt only when the number changes) - same unlit material as
+        // the bar, so nothing new has to render on the Quest.
+        static readonly string[] Font56 = {
+            "01110100011001110101110011000101110", "00100011000010000100001000010001110", "01110100010000100010001000100011111",
+            "11111000100010000010000011000101110", "00010001100101010010111110001000010", "11111100001111000001000011000101110",
+            "00110010001000011110100011000101110", "11111000010001000100010000100001000", "01110100011000101110100011000101110",
+            "01110100011000101111000010001001100", "00001000100010000100010001000100000" };   // 0-9, '/'
+
+        static void Number56(Bar52 b, Creature c, float h, float fade)
+        {
+            if (barNum56 == "off" || b.style == "slim") { if (b.num != null) b.num.gameObject.SetActive(false); return; }
+            int hp = c.isKilled ? 0 : Mathf.CeilToInt(Mathf.Max(0f, c.currentHealth)), mx = Mathf.CeilToInt(Mathf.Max(1f, c.maxHealth));
+            string txt = barNum56 == "max" ? hp + "/" + mx : hp.ToString();
+            if (b.num == null)
+            {
+                var go = new GameObject("num"); go.transform.SetParent(b.root.transform, false);
+                b.numMesh = new Mesh { name = "RageEngine_BarNumber" };
+                go.AddComponent<MeshFilter>().sharedMesh = b.numMesh;
+                var r = go.AddComponent<MeshRenderer>(); r.sharedMaterial = BarMat52(); r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; r.receiveShadows = false;
+                b.num = go.transform;
+            }
+            if (!b.num.gameObject.activeSelf) b.num.gameObject.SetActive(true);
+            if (txt != b.numKey)
+            {
+                b.numKey = txt;
+                var v = new List<Vector3>(); var t = new List<int>();
+                float cell = 1f, gap = 1f; float width = txt.Length * (5f * cell + gap) - gap;
+                float x0 = -width * 0.5f;
+                for (int k = 0; k < txt.Length; k++)
+                {
+                    int g = txt[k] == '/' ? 10 : txt[k] - '0'; if (g < 0 || g > 10) continue;
+                    string bits = Font56[g];
+                    for (int row = 0; row < 7; row++)
+                        for (int col = 0; col < 5; col++)
+                        {
+                            if (bits[row * 5 + col] != '1') continue;
+                            float px = x0 + k * (5f * cell + gap) + col * cell, py = 3.5f - row - 1f;
+                            int i0 = v.Count;
+                            v.Add(new Vector3(px, py, 0f)); v.Add(new Vector3(px, py + cell, 0f)); v.Add(new Vector3(px + cell, py + cell, 0f)); v.Add(new Vector3(px + cell, py, 0f));
+                            t.Add(i0); t.Add(i0 + 1); t.Add(i0 + 2); t.Add(i0); t.Add(i0 + 2); t.Add(i0 + 3);
+                        }
+                }
+                b.numMesh.Clear(); b.numMesh.SetVertices(v); b.numMesh.SetTriangles(t, 0); b.numMesh.RecalculateNormals(); b.numMesh.RecalculateBounds();
+            }
+            float px7 = h * 0.62f / 7f;                                                            // glyphs fill most of the bar's height
+            b.num.localPosition = new Vector3(0f, 0f, -0.0008f);                                   // in front of the fill
+            b.num.localRotation = Quaternion.identity;                                               // same facing as the bar's quads (wound clockwise toward you)
+            b.num.localScale = new Vector3(px7, px7, 1f);
+            Tint52(b.num, b.mpb, new Color(1f, 1f, 1f, fade));
         }
     }
 }

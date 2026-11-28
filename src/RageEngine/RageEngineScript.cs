@@ -10,7 +10,7 @@ namespace RageEngine
 {
     public sealed partial class RageEngineScript : ThunderScript
     {
-        public const string Version = "0.55";
+        public const string Version = "0.56";
         const int MaxTracked = 20;
         const float ScanInterval = 0.5f;
         const float TickInterval = 0.05f;
@@ -211,6 +211,7 @@ namespace RageEngine
             Guard("events.parry54", () => EventManager.onCreatureAttackParry += OnParry54);
             Guard("events.broken54", () => EventManager.OnItemBrokenStart += OnBroken54);
             Guard("audit54", StartupAudit54);
+            Guard("dupes56", CheckDuplicates56);
             Guard("loot55", InjectLoot55);
             Debug.Log("[RageEngine] Rage Engine " + Version + " enabled (grounded=" + groundedReactions + ", deaths by other mod=" + DeathsHandledElsewhere + ")");
         }
@@ -272,6 +273,7 @@ namespace RageEngine
             Guard("patrol54", TickPatrol54);
             Guard("items54", TickItems54);
             Guard("arsenal55", TickArsenal55);
+            Guard("senses56", TickSenses56);
             Guard("shop54", TickShop54);
             if (now >= nextTick)
             {

@@ -58,7 +58,7 @@ namespace RageEngine
         static Creature selfCreature;
         static float selfUntil, selfRegen, selfResist, selfSpeed = 1f, selfDot, selfLastHp, selfNextTick;
         internal static float selfPower = 1f;
-        static bool selfSpeedOn, selfRebirth; static int selfComp = -1; static Color selfColor;
+        static bool selfSpeedOn, selfRebirth; static int selfComp = -1; static Color selfColor; static string selfName56;
         static GameObject selfMarkL, selfMarkR;
 
         /// Every frame.
@@ -74,7 +74,7 @@ namespace RageEngine
             }
             if (selfInject) Guard("self.inject", () => SelfInjection(pc, now));
             if (selfUntil <= 0f) return;
-            if (now >= selfUntil) { EndSelf(pl); Log("your serum has worn off"); return; }
+            if (now >= selfUntil) { string nm = selfName56; EndSelf(pl); Log("your serum has worn off"); Notify($"{nm ?? "The serum"} has worn off"); Haptics.Pulse(Side.Left, 0.4f, 1); Haptics.Pulse(Side.Right, 0.4f, 1); return; }
             // shrug off part of any damage taken since the last frame
             float hp = pc.currentHealth;
             if (selfResist > 0f && hp < selfLastHp - 0.01f && hp > 0f) { float back = (selfLastHp - hp) * selfResist; Guard("self.resist", () => pc.Heal(back)); hp += back; }
@@ -208,6 +208,18 @@ namespace RageEngine
             Haptics.Pulse(Side.Left, 0.9f, 3); Haptics.Pulse(Side.Right, 0.9f, 3);
             var chest = ChestPart(pc);
             if (bioIndicators) Guard("self.puff", () => Puff(chest != null ? chest.transform.position + pc.transform.forward * 0.25f : pc.transform.position + Vector3.up * 1.2f, col, 20, 0.4f));
+            selfName56 = name;
+            {
+                // 0.56: say what it does, so you know it's working
+                var fx = new System.Collections.Generic.List<string>();
+                if (selfRegen > 0f) fx.Add($"healing {selfRegen:0.#} HP/s");
+                if (selfResist > 0f) fx.Add($"shrugging off {selfResist * 100f:0}% of damage");
+                if (selfSpeed > 1.01f) fx.Add($"{(selfSpeed - 1f) * 100f:0}% faster"); else if (selfSpeed < 0.99f) fx.Add($"{(1f - selfSpeed) * 100f:0}% slower");
+                if (selfPower > 1.01f) fx.Add($"hitting {(selfPower - 1f) * 100f:0}% harder"); else if (selfPower < 0.99f) fx.Add($"hitting {(1f - selfPower) * 100f:0}% weaker");
+                if (selfDot > 0f) fx.Add($"hurting you {selfDot:0.#} HP/s");
+                if (selfRebirth) fx.Add("one second wind when you're nearly dead");
+                Notify($"{name} is in you ({selfUntil - Time.time:0}s)\n{(fx.Count > 0 ? string.Join(", ", fx) : "no effect on you")}");
+            }
             Debug.Log($"[RageEngine] YOU are on {name}: regen {selfRegen:0.0}/s, shrug {selfResist * 100f:0}%, speed x{selfSpeed:0.00}, power x{selfPower:0.00}{(selfDot > 0f ? $", hurting {selfDot:0.0}/s" : "")}, {selfUntil - Time.time:0}s");
         }
 
@@ -215,7 +227,7 @@ namespace RageEngine
         {
             if (selfSpeedOn && pl != null && pl.locomotion != null) Guard("self.speed.off", () => pl.locomotion.globalMoveSpeedMultiplier.Remove(SelfHandler));
             selfSpeedOn = false;
-            selfUntil = 0f; selfRegen = selfResist = selfDot = 0f; selfSpeed = 1f; selfPower = 1f; selfComp = -1; selfRebirth = false;
+            selfUntil = 0f; selfName56 = null; selfRegen = selfResist = selfDot = 0f; selfSpeed = 1f; selfPower = 1f; selfComp = -1; selfRebirth = false;
             if (selfMarkL != null) Object.Destroy(selfMarkL);
             if (selfMarkR != null) Object.Destroy(selfMarkR);
             selfMarkL = selfMarkR = null;

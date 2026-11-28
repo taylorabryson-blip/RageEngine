@@ -32,20 +32,20 @@ namespace RageEngine
         [ModOption("Noises draw NPCs", "Idle NPCs walk over to check fights, things you throw, anything breaking and the faction noisemakers. They only get a rough idea where it came from and still have to see you.", defaultValueIndex = 1)]
         public static bool noises54 = true;
 
-        public static ModOptionString[] fovValues54 = { new ModOptionString("Game default", null, "game"), new ModOptionString("Narrow", null, "narrow"), new ModOptionString("Wide", null, "wide") };
+        public static ModOptionString[] fovValues54 = { new ModOptionString("Realistic", null, "real"), new ModOptionString("Game default", null, "game"), new ModOptionString("Narrow", null, "narrow"), new ModOptionString("Wide", null, "wide") };
         [ModOptionCategory("NPCs", 2), ModOptionOrder(48)]
-        [ModOption("NPC field of view", "How wide NPCs see. Narrow (about 100 degrees) is easier to sneak past, Wide (about 160) is harder.", valueSourceName = nameof(fovValues54), defaultValueIndex = 0)]
-        public static string fov54 = "game";
+        [ModOption("NPC field of view", "Realistic: the game's own detection made human - about 120 degrees, crouching hides you much better, they calm down faster and don't all know where you are at once. Narrow (about 100) / Wide (about 160) change only the width.", valueSourceName = nameof(fovValues54), defaultValueIndex = 0)]
+        public static string fov54 = "real";
 
-        public static ModOptionString[] hearValues54 = { new ModOptionString("Game default", null, "game"), new ModOptionString("Short", null, "short"), new ModOptionString("Long", null, "long") };
+        public static ModOptionString[] hearValues54 = { new ModOptionString("Realistic", null, "real"), new ModOptionString("Game default", null, "game"), new ModOptionString("Short", null, "short"), new ModOptionString("Long", null, "long") };
         [ModOptionCategory("NPCs", 2), ModOptionOrder(49)]
-        [ModOption("NPC hearing", "How far NPCs hear fights and noises.", valueSourceName = nameof(hearValues54), defaultValueIndex = 0)]
-        public static string hear54 = "game";
+        [ModOption("NPC hearing", "How far NPCs hear fights and noises. Realistic: a bit less than the game's own, and never through walls - only round through a door.", valueSourceName = nameof(hearValues54), defaultValueIndex = 0)]
+        public static string hear54 = "real";
 
         /// Half-angle of the mod's own sight check (0.19 used 75).
         internal static float SightHalf54() => fov54 == "narrow" ? 50f : fov54 == "wide" ? 80f : 75f;
         /// Multiplier on how far the mod's noises carry.
-        internal static float Hear54() => hear54 == "short" ? 0.6f : hear54 == "long" ? 1.5f : 1f;
+        internal static float Hear54() => hear54 == "short" ? 0.6f : hear54 == "long" ? 1.5f : hear54 == "real" ? 0.8f : 1f;
 
         const int Post54 = 0, Walk54 = 1, Stop54 = 2, Home54 = 3, Check54 = 4, Look54 = 5;
         static bool dungeon54;
@@ -93,9 +93,11 @@ namespace RageEngine
             Guard("senses54", () =>
             {
                 var d = s.det54; var o = s.detO54;
-                d.sightDetectionHorizontalFov = fov54 == "narrow" ? Mathf.Min(o[0], 100f) : fov54 == "wide" ? Mathf.Max(o[0], 160f) : o[0];
-                d.sightDetectionVerticalFov = o[1] * (fov54 == "narrow" ? 0.85f : fov54 == "wide" ? 1.15f : 1f);
-                d.hearMaxDistance = o[2] * (hear54 == "short" ? 0.6f : hear54 == "long" ? 1.6f : 1f);
+                if (fov54 == "real") RealSenses56(d, o);
+                else if (o.Length >= 8) { d.crouchingMultiplier = o[4]; d.enemyInFOVIncrease = o[5]; d.alertednessLossPerSec = o[6]; d.acquireSharedTargetDelay = o[7]; }
+                if (fov54 != "real") { d.sightDetectionHorizontalFov = fov54 == "narrow" ? Mathf.Min(o[0], 100f) : fov54 == "wide" ? Mathf.Max(o[0], 160f) : o[0];
+                    d.sightDetectionVerticalFov = o[1] * (fov54 == "narrow" ? 0.85f : fov54 == "wide" ? 1.15f : 1f); }
+                d.hearMaxDistance = o[2] * (hear54 == "short" ? 0.6f : hear54 == "long" ? 1.6f : hear54 == "real" ? 0.75f : 1f);
             });
         }
 
@@ -108,7 +110,7 @@ namespace RageEngine
             int st = -1; bool target = false;
             Guard("calm54", () => { st = (int)c.brain.state; target = c.brain.currentTarget != null; });
             alerted = st == (int)Brain.State.Combat || st == (int)Brain.State.Alert || target;
-            return st == (int)Brain.State.Idle && !target;
+            return (st == (int)Brain.State.Idle || st == (int)Brain.State.Patrol) && !target;                  // 0.56: the game's own patrollers hear things too
         }
         static float now54() => Time.time;
 
@@ -155,7 +157,7 @@ namespace RageEngine
             switch (s.pat54)
             {
                 case Post54:     // standing at his post (the 0.19 idle life does the weight shifts and look-arounds)
-                    if (now < s.patUntil54 || !patrols54 || !dungeon54) return;
+                    if (now < s.patUntil54 || !patrols54 || !dungeon54 || GamePatrol56(s)) return;   // 0.56: the game already walks its patrollers
                     if (walking >= 6) { s.patUntil54 = now + 2f; return; }
                     if (PickSpot54(s.home54, 3f, 8f, out var spot)) { Walk54To(s, spot, Walk54, now); walking++; }
                     else s.patUntil54 = now + Random.Range(6f, 12f);

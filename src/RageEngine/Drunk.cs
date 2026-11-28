@@ -80,7 +80,7 @@ namespace RageEngine
             if (now >= s.nextDrunkGroan)
             {
                 s.nextDrunkGroan = now + Random.Range(5f, 10f);
-                bool female = c.name.IndexOf("Female", System.StringComparison.OrdinalIgnoreCase) >= 0;
+                bool female = IsFemale56(c);                         // 0.56: the creature's own gender, not its name
                 string clip = "NRE_Pain" + (female ? "F" : "M");
                 if (Sfx.Has(clip)) Sfx.Play(clip, Mouth(c), 0.45f, s.voicePitch * 0.85f);
             }

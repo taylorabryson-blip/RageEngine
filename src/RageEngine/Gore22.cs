@@ -185,7 +185,7 @@ namespace RageEngine
         static GameObject GroundBlood(Vector3 from, string prefix, float size, Creature ignore)
         {
             if (ExternalGore) return null;
-            if (!groundBlood) return null;
+            if (!groundBlood || goreSource != "rageblood") return null;                             // 0.56: Rage Engine's own blood only if you ask for it
             var t = GoreTex.Pick(prefix);
             var mat = DecalMat(t);
             if (mat == null) return null;

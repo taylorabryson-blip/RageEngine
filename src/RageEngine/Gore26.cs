@@ -189,13 +189,14 @@ namespace RageEngine
         internal static void Blood(Transform at)
         {
             if (at == null || ExternalGore) return;
-            if (ownBlood) Guard("ownblood", () => BloodBurst(at.position, Vector3.up, 16));
+            if (ownBlood && Application.platform != RuntimePlatform.Android) Guard("ownblood", () => BloodBurst(at.position, Vector3.up, 16));
             else Effects.Blood(at);
         }
 
         static Texture2D bloodDot;
         internal static void BloodBurst(Vector3 at, Vector3 dir, int count)
         {
+            if (Application.platform == RuntimePlatform.Android) return;                         // 0.56: no runtime particles on Quest (crash)
             var sh = SkinPaint.BlendShader;
             if (sh == null) return;
             if (bloodMat26 == null)

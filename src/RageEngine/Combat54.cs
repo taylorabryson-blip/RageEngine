@@ -70,7 +70,8 @@ namespace RageEngine
             if (s.det54 != null) Guard("det54.save", () =>
             {
                 var d = s.det54;
-                s.detO54 = new[] { d.sightDetectionHorizontalFov, d.sightDetectionVerticalFov, d.hearMaxDistance, d.canHear ? 1f : 0f };
+                s.detO54 = new[] { d.sightDetectionHorizontalFov, d.sightDetectionVerticalFov, d.hearMaxDistance, d.canHear ? 1f : 0f,
+                                   d.crouchingMultiplier, d.enemyInFOVIncrease, d.alertednessLossPerSec, d.acquireSharedTargetDelay };   // 0.56: + the stealth values
             });
             s.profile54 = 0; s.percKey54 = null;
             return true;
@@ -94,6 +95,7 @@ namespace RageEngine
             {
                 var d = s.det54; var o = s.detO54;
                 d.sightDetectionHorizontalFov = o[0]; d.sightDetectionVerticalFov = o[1]; d.hearMaxDistance = o[2]; d.canHear = o[3] > 0.5f;
+                if (o.Length >= 8) { d.crouchingMultiplier = o[4]; d.enemyInFOVIncrease = o[5]; d.alertednessLossPerSec = o[6]; d.acquireSharedTargetDelay = o[7]; }
             });
             if (s.move54 != null && s.walking54) Guard("move54.stop", () => s.move54.StopMove());
             s.walking54 = false;
@@ -156,7 +158,7 @@ namespace RageEngine
             {
                 s.nextWinded54 = now + Random.Range(2.5f, 4.5f);
                 Loosen(s, RagdollPart.Type.Torso | RagdollPart.Type.Head | RagdollPart.Type.Neck, 0.15f + 0.2f * s.exert54, 1.2f);   // shoulders drop, head hangs
-                var mouth = Mouth(c); if (mouth != null) Sfx.Play(s.exert54 > 0.9f ? "NRE_BreathCritical" : "NRE_BreathHeavy", mouth, 0.55f, s.voicePitch);
+                var mouth = Mouth(c); if (mouth != null) Sfx.Play(s.exert54 > 0.9f ? "NRE_BreathCritical" : "NRE_BreathHeavy", mouth, 0.55f, s.voicePitch * FemaleLift56(c));
             }
             if (s.exert54 > 0.92f && now >= s.nextGassed54)
             {

@@ -29,7 +29,7 @@ namespace RageEngine
             if (!force && Time.time < s.nextScream) return;
             s.nextScream = Time.time + Random.Range(2.5f, 4.5f);
             // real recorded voices (male/female); the game's own dialog only if those didn't load
-            bool female = s.creature.name.IndexOf("Female", System.StringComparison.OrdinalIgnoreCase) >= 0;
+            bool female = IsFemale56(s.creature);                         // 0.56: the creature's own gender, not its name
             string clip = (force ? "NRE_Scream" : "NRE_Pain") + (female ? "F" : "M");
             // 0.19: every NPC has his own voice pitch; personality changes how loud
             var pt = s.personality != null ? s.personality.type : PersonalityType.Calm;

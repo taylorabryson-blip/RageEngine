@@ -85,8 +85,7 @@ namespace RageEngine
         {
             LoadRoster();
             var c = s.creature;
-            bool female = (c.data != null && c.data.id != null && c.data.id.IndexOf("Female", StringComparison.OrdinalIgnoreCase) >= 0)
-                          || c.name.IndexOf("Female", StringComparison.OrdinalIgnoreCase) >= 0;
+            bool female = RageEngineScript.IsFemale56(c);
             NpcRecord rec = null;
             if (UnityEngine.Random.value < 0.3f)
             {

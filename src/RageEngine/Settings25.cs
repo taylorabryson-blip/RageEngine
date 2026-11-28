@@ -56,7 +56,7 @@ namespace RageEngine
             string snap = Snapshot(opts);
             if (snap == settingsSnapshot) return;
             settingsSnapshot = snap;
-            try { var p = SettingsPath; if (p != null) File.WriteAllText(p, "# Rage Engine settings - written by the mod, safe to delete (resets everything to default)\n" + snap); }
+            try { var p = SettingsPath; if (p != null) File.WriteAllText(p, "# Rage Engine settings - written by the mod, safe to delete (resets everything to default)\n#v56\n" + snap); }
             catch (System.Exception e) { Debug.Log("[RageEngine] settings save failed: " + e.Message); }
         }
 
@@ -65,12 +65,15 @@ namespace RageEngine
             var p = SettingsPath;
             if (p == null || !File.Exists(p)) { Debug.Log("[RageEngine] no saved settings yet"); return; }
             var saved = new Dictionary<string, int>();
-            foreach (var line in File.ReadAllLines(p))
+            var lines56 = File.ReadAllLines(p);
+            bool v56 = false; foreach (var l in lines56) if (l.StartsWith("#v56")) { v56 = true; break; }
+            foreach (var line in lines56)
             {
                 if (line.StartsWith("#")) continue;
                 int eq = line.LastIndexOf('=');
                 if (eq > 0 && int.TryParse(line.Substring(eq + 1), out int idx)) saved[line.Substring(0, eq)] = idx;
             }
+            if (!v56) { saved.Remove("NPCs|NPC field of view"); saved.Remove("NPCs|NPC hearing"); }   // 0.56: senses start on the new Realistic default
             int n = 0;
             foreach (var o in MyOptions())
             {

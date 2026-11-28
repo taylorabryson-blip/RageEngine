@@ -21,9 +21,7 @@ namespace RageEngine
         public static float stayOnFeet = 1f;
 
         public static ModOptionString[] styleValues = { new ModOptionString("Default", null, "default"), new ModOptionString("Brute NPCs", null, "brute"), new ModOptionString("Lightweights", null, "light"), new ModOptionString("Realism", null, "realism"), new ModOptionString("Custom", null, "custom") };
-        [ModOptionCategory("Rage", 0), ModOptionOrder(4)]
-        [ModOption("Style", "Default: the mod as it's meant to play. Brute NPCs: big, tough men who barely go down. Lightweights: normal men who drop fast. Custom: your own NPC HP, Stay on feet and Your punch damage below.", valueSourceName = nameof(styleValues), defaultValueIndex = 0)]
-        public static string style = "default";
+        public static string style = "default";                                                  // 0.56: the Style preset is gone - your NPC HP and Stay on feet are left alone
 
         public static bool injuriesKill = true;
 
@@ -156,7 +154,6 @@ namespace RageEngine
             nextQol29 = now + 1f;
             shockDeaths = bleedOutKills = knockoutKills = toxinsKill = injuriesKill;
             bonesOut = bonesOutOpt; faceCave = faceCaveOpt;
-            ApplyStyle29();
             var pc = Player.local != null ? Player.local.creature : null;
             if (pc == null) return;
             if (loadedAt29 < 0f) loadedAt29 = now;

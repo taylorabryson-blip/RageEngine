@@ -23,9 +23,9 @@ namespace RageEngine
     public sealed partial class RageEngineScript
     {
         // ================================================================== settings
-        public static ModOptionString[] goreSrcValues = { new ModOptionString("Rage Engine", null, "rage"), new ModOptionString("My other gore / blood mod", null, "other") };
+        public static ModOptionString[] goreSrcValues = { new ModOptionString("Rage Engine gore, game's blood", null, "rage"), new ModOptionString("My other gore / blood mod", null, "other"), new ModOptionString("Rage Engine gore and blood", null, "rageblood") };
         [ModOptionCategory("Gore", 1), ModOptionOrder(0)]
-        [ModOption("Gore & blood from", "Rage Engine: all of Rage Engine's blood, wounds, chunks and organs. My other gore mod: Rage Engine turns its gore off so your blood/gore mod handles it - NPC behaviour, standing, AI, waves, maps and the rest still run.", valueSourceName = nameof(goreSrcValues), defaultValueIndex = 0)]
+        [ModOption("Gore & blood from", "Rage Engine gore, game's blood: Rage Engine's wounds, chunks and organs, with the game's own blood (or your blood mod's). My other gore / blood mod: Rage Engine's gore is off too. Rage Engine gore and blood: also Rage Engine's blood pools on the floor.", valueSourceName = nameof(goreSrcValues), defaultValueIndex = 0)]
         public static string goreSource = "rage";
         internal static bool ExternalGore => goreSource == "other";
 
@@ -338,6 +338,7 @@ namespace RageEngine
         static readonly List<GameObject> holes49 = new List<GameObject>();
         static void Hole49(Transform parent, Vector3 at, Vector3 outward)
         {
+            return;                                                                              // 0.56: no more red rings on the chest
             if (holeFlesh49 == null) { holeFlesh49 = Mats.Make(new Color(0.55f, 0.07f, 0.07f), 0.85f); holeDark49 = Mats.Make(new Color(0.12f, 0.01f, 0.01f), 0.6f); }
             while (holes49.Count >= 12) { if (holes49[0] != null) Object.Destroy(holes49[0]); holes49.RemoveAt(0); }
             var go = new GameObject("RageEngine_Hole");
