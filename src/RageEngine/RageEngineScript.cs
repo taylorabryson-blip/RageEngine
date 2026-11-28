@@ -152,6 +152,7 @@ namespace RageEngine
             public float coreUntil, spawnTime = -1f, meleeOffUntil, healthCheckAt; public bool healthApplied, meleeOff;
             public Mesh baked; public float bakedAt = -10f;
             // 0.55: random stats
+            public Material fxMarkMat56; public Color fxMarkCol56;
             public int vary55; public float varyHp55 = 1f, varySpeed55 = 1f, varyHeight55;
         }
 
@@ -275,6 +276,7 @@ namespace RageEngine
             Guard("arsenal55", TickArsenal55);
             Guard("senses56", TickSenses56);
             Guard("later56", TickLater56);
+            Guard("paint56", SkinPaint.Flush);
             Guard("shop54", TickShop54);
             if (now >= nextTick)
             {

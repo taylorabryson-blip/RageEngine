@@ -34,9 +34,11 @@ namespace RageEngine
                         if (ch == null || heatHooked.Contains(ch)) continue;
                         heatHooked.Add(ch);
                         var item = it;
-                        ch.OnCollisionStartEvent += hit => OnMetalHit(item, hit);
+                        ch.OnCollisionStartEvent += hit => QueueMetalHit56(item, hit);
                     }
             }
+            // 0.56: the hits recorded during physics are handled here, outside the physics step
+            if (metalQ56.Count > 0) { var q = new List<(Item, float, Vector3, bool)>(metalQ56); metalQ56.Clear(); foreach (var x in q) OnMetalHit56(x.Item1, x.Item2, x.Item3, x.Item4); }
             // cool down + glow (0.5 s cadence)
             heatScratch.Clear();
             foreach (var kv in heat) heatScratch.Add(kv.Key);
@@ -50,21 +52,27 @@ namespace RageEngine
             }
         }
 
-        static void OnMetalHit(Item item, CollisionInstance hit)
+        static readonly List<(Item, float, Vector3, bool)> metalQ56 = new List<(Item, float, Vector3, bool)>();
+        /// In the physics callback: only note it (0.56 - nothing that touches materials runs inside the physics step).
+        static void QueueMetalHit56(Item item, CollisionInstance hit)
         {
-            if (!modEnabled || item == null || hit == null) return;
+            if (!modEnabled || item == null || hit == null || metalQ56.Count > 32) return;
+            try { if (IsMetal(hit.sourceMaterial) && IsMetal(hit.targetMaterial)) metalQ56.Add((item, hit.impactVelocity.magnitude, hit.contactPoint, true)); } catch { }
+        }
+
+        static void OnMetalHit56(Item item, float speed, Vector3 point, bool metal)
+        {
+            if (!modEnabled || item == null) return;
             try
             {
-                if (!IsMetal(hit.sourceMaterial) || !IsMetal(hit.targetMaterial)) return;
-                float speed = hit.impactVelocity.magnitude;
                 if (speed < 2.5f) return;
                 if (!heat.TryGetValue(item, out var h)) { h = new HeatState { item = item }; heat[item] = h; }
                 float before = h.heat;
-                if (speed > 4f) Emit(hit.contactPoint, 12f, Stim.Clash);
+                if (speed > 4f) Emit(point, 12f, Stim.Clash);
                 h.heat = Mathf.Min(1.5f, h.heat + 0.035f * speed);
                 if (before < 0.4f && h.heat >= 0.4f) Log($"{item.data?.id} is warming up");
                 if (before < 1f && h.heat >= 1f) Log($"{item.data?.id} is HOT");
-                if (h.heat >= 1f && Time.time - h.lastHiss > 1.5f) { h.lastHiss = Time.time; Sfx.PlayAt("NRE_Swoosh", hit.contactPoint, 0.35f); }
+                if (h.heat >= 1f && Time.time - h.lastHiss > 1.5f) { h.lastHiss = Time.time; Sfx.PlayAt("NRE_Swoosh", point, 0.35f); }
                 Glow(h);
             }
             catch { }
@@ -74,6 +82,7 @@ namespace RageEngine
 
         static void Glow(HeatState h)
         {
+            if (Application.platform == RuntimePlatform.Android) return;                         // 0.56: no runtime material copies / keywords on the Quest (crash)
             if (h.heat < 0.15f) { Unglow(h); return; }
             if (h.mats == null)
             {

@@ -89,7 +89,7 @@ namespace RageEngine
             // ---- status marker
             bool flash = now < s.injectFlashUntil;
             bool want = bioIndicators && !c.isKilled && (has || flash) && c.ragdoll.headPart != null;
-            if (!want) { if (s.fxMark != null) { var m0 = s.fxMark.GetComponent<MeshRenderer>().sharedMaterial; if (m0 != null) Object.Destroy(m0); Object.Destroy(s.fxMark); s.fxMark = null; } }
+            if (!want) { if (s.fxMark != null) { Object.Destroy(s.fxMark); s.fxMark = null; } if (s.fxMarkMat56 != null) { Object.Destroy(s.fxMarkMat56); s.fxMarkMat56 = null; } }
             else
             {
                 Color mc = flash ? s.injectColor : col;
@@ -101,7 +101,12 @@ namespace RageEngine
                     s.fxMark = go;
                 }
                 var mr = s.fxMark.GetComponent<MeshRenderer>();
-                if (mr.sharedMaterial == null || mr.sharedMaterial.color != new Color(mc.r, mc.g, mc.b, mr.sharedMaterial.color.a)) { var old = mr.sharedMaterial; mr.sharedMaterial = GlowMat(mc); if (old != null) Object.Destroy(old); }
+                // 0.56: the marker owns ONE material and is recoloured in place. 0.55 destroyed and replaced the
+                // (shared, cached) material every frame on the Quest while it was still being drawn - the injection crash.
+                var want56 = new Color(mc.r, mc.g, mc.b, 1f);
+                if (s.fxMarkMat56 == null) { s.fxMarkMat56 = new Material(GlowMat(want56)) { name = "RageEngine_StatusMark" }; s.fxMarkCol56 = want56; }
+                else if (s.fxMarkCol56 != want56) { s.fxMarkCol56 = want56; var mm = s.fxMarkMat56; Guard("mark.col", () => BoneMesh.Recolour(mm, want56, 0.9f)); }
+                if (mr.sharedMaterial != s.fxMarkMat56) mr.sharedMaterial = s.fxMarkMat56;
                 float pulse = flash ? 1.6f + 1.2f * (s.injectFlashUntil - now) : 1f + 0.22f * Mathf.Sin(now * 7f);
                 if (now < s.regenGlowUntil) pulse *= 1.3f;
                 s.fxMark.transform.position = c.ragdoll.headPart.transform.position + Vector3.up * 0.32f;

@@ -39,7 +39,38 @@ namespace RageEngine
 
         /// Paints a soft blob into the skin texture under 'point'. radius in metres; col.a = strength.
         /// Returns false if it couldn't (caller falls back).
+        // 0.56: paint jobs asked for inside the physics step (hit callbacks) are done right after it, in the frame update -
+        // render textures and Blits never run inside the physics step on the Quest.
+        static readonly List<(Creature c, Vector3 p, float r, Color col, Texture2D b, bool cloth, float rot, Transform anchor, Vector3 local)> later = new List<(Creature, Vector3, float, Color, Texture2D, bool, float, Transform, Vector3)>();
+        public static void Flush()
+        {
+            if (later.Count == 0) return;
+            var jobs = later.ToArray(); later.Clear();
+            foreach (var j in jobs)
+            {
+                if (j.c == null) continue;
+                Vector3 at = j.anchor != null ? j.anchor.TransformPoint(j.local) : j.p;                  // the body moved since the hit
+                try { PaintNow(j.c, at, j.r, j.col, j.b, j.cloth, j.rot); } catch (System.Exception e) { RageEngineScript.Log("skin paint (later): " + e.Message); }
+            }
+        }
+
         public static bool Paint(Creature c, Vector3 point, float radius, Color col, Texture2D brush, bool cloth = false, float rot = 0f)
+        {
+            if (c == null || brush == null || Stamp() == null) return false;
+            if (Time.inFixedTimeStep)
+            {
+                if (later.Count >= 48) return false;
+                Transform anchor = null; Vector3 local = point; float best = float.MaxValue;
+                if (c.ragdoll != null && c.ragdoll.parts != null)
+                    foreach (var part in c.ragdoll.parts) { if (part == null) continue; float d = (part.transform.position - point).sqrMagnitude; if (d < best) { best = d; anchor = part.transform; } }
+                if (anchor != null) local = anchor.InverseTransformPoint(point);
+                later.Add((c, point, radius, col, brush, cloth, rot, anchor, local));
+                return true;
+            }
+            return PaintNow(c, point, radius, col, brush, cloth, rot);
+        }
+
+        static bool PaintNow(Creature c, Vector3 point, float radius, Color col, Texture2D brush, bool cloth, float rot)
         {
             if (c == null || brush == null || Stamp() == null) return false;
             if (!RageEngineScript.bruiseMarks && brush == TexGen.Bruise()) return false;          // 0.34: bruise circles off by default
