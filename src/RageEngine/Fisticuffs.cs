@@ -51,6 +51,14 @@ namespace RageEngine
 
         /// Every frame: NPCs stay on their feet. They only go down when they die, when they're very low on HP (and lose
         /// the roll), or when something meant to put them down for sure (sleep serum, poison, choke-out, lost leg...).
+        /// 0.52.1: is his body actually on the ground (not flying, falling or jumping)?
+        static bool Grounded521(Creature c)
+        {
+            var root = c.ragdoll.rootPart; if (root == null) return true;
+            try { if (root.physicBody != null && root.physicBody.velocity.magnitude > 3.5f) return false; } catch { }
+            return Physics.Raycast(root.transform.position, Vector3.down, 1.3f, ~0, QueryTriggerInteraction.Ignore);
+        }
+
         void GuardKnockdown(NpcState s)
         {
             var c = s.creature;
@@ -85,6 +93,7 @@ namespace RageEngine
                 if (s.downSince49 <= 0f) { s.downSince49 = Time.time; return; }
                 if (Time.time - s.downSince49 < 1.2f) return;                       // something else put him down: get him up
             }
+            if (!Grounded521(c)) { s.downSince49 = 0f; return; }                    // 0.52.1: never stand him up mid-air (that froze NPCs in the air)
             if (Time.time - s.blockWindowStart > 3f) { s.blockWindowStart = Time.time; s.blockedFalls = 0; }
             if (++s.blockedFalls > 120) return;
             Guard("antifall", () => rag.SetState(Ragdoll.State.Standing));

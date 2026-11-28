@@ -10,7 +10,7 @@ namespace RageEngine
 {
     public sealed partial class RageEngineScript : ThunderScript
     {
-        public const string Version = "0.52";
+        public const string Version = "0.52.1";
         const int MaxTracked = 20;
         const float ScanInterval = 0.5f;
         const float TickInterval = 0.05f;
@@ -119,7 +119,7 @@ namespace RageEngine
             public bool impaled49; public int stuckReach49;
             public float jawDmg51, nextBump51, nextLife51, aimedFor51, nextAim51, brutalSeen51 = -100f, nextBody51, nextLick51, nextNod51, lookedAt51, morale51 = 1f; public int bumps51, wounds51; public RagdollPart lastWoundPart51; public HashSet<Creature> bodiesSeen51;   // 0.51
             
-            public float energyAt50, brain50, concussUntil50, throatPunchAt50 = -10f, shockEnd50, nextDumb50, fireAt50, burnTime50, nextChar50, fireOutAt50, flingPeak50, flingAt50, nextFloat50; public Vector3 energyPt50, flingDir50; public RagdollPart energyPart50; public int charMarks50; public bool shockScarred50, ash50, fireDecided50, fireWins50, fireRoll50;   // 0.50
+            public float energyAt50, brain50, concussUntil50, throatPunchAt50 = -10f, shockEnd50, nextDumb50, fireAt50, burnTime50, nextChar50, fireOutAt50, flingPeak50, flingAt50, nextFloat50; public Vector3 energyPt50, flingDir50; public RagdollPart energyPart50; public int charMarks50; public bool energyBig50, shockScarred50, ash50, fireDecided50, fireWins50, fireRoll50;   // 0.50
              public float heldAt49 = -10f, nextReach49, nextTaunt49, nextFearVoice49, nextKnife49, forceFall47, mustFall49, downSince49, lowDrop49; public bool loadoutDone47; public float nextDodge47, nextPickup47, nextShare47;   // 0.47
             public bool will44, wearOn44, vomitHold44, gutsOut44; public float nextNeckGrab44; public float wear44, wearSpeed44 = 1f, nextWear44;   // 0.44
             public bool hound43, deepSleep43; public float next43, rage43, burnout43, rageMaxAt43, magnetNext43, prof43, profAnim43, profDelay43, profRec43, despUntil43, despNext43; public int despPose43; public Item magnetItem43; public BrainModuleMelee profMelee43; public BrainModuleHitReaction profHit43; public Transform despL43, despR43;   // 0.43

@@ -2,7 +2,7 @@
   "Name": "Rage Engine",
   "Description": "Rage Engine - realistic NPC physics, injuries, gore and AI for Blade & Sorcery: Nomad.\nNPCs: real hit physics, euphoria-style pain reactions, bone breaks, broken jaws, eyes that pop out and blind, teeth, bleeding, wounds, bruising, vomiting from gut shots, knockouts, dying moments, adrenaline, surrender and begging. Every NPC has a personality and a weapon proficiency (Novice to Master); escaped NPCs come back with their scars.\nSerums: 13 serums and 20 super serums with powers (Wraith, Lazarus, Juggernaut, Hivemind, Magnet, Vampire, Berserker King, Deep Sleep and more) plus toxin oils and a Serum Lab. All in the item book under Rage.\nMaps: Rage Tower, Skybar and Red Room Diner in the level list, with the game's own wave book. Breakable glass, loose props.\nWaves: 11 Rage waves in the wave book.\nSettings (Mod Options > Rage): style presets, NPC HP, stay on feet, max NPCs, desperation, performance mode for Quest 2, per-feature toggles.\nDynamic organs: deep cuts spill guts and organs (Mode setting: everything / no organs / organs only).\nNPC weapons: NPCs anywhere (waves, dungeons) can carry any melee weapon in the game, mods included.",
   "Author": "Rage Engine",
-  "ModVersion": "0.52",
+  "ModVersion": "0.52.1",
   "GameVersion": "1.0.0.0",
   "Thumbnail": "thumbnail.png"
 }
