@@ -207,7 +207,7 @@ namespace RageEngine
                 g.transform.SetParent(root, false); g.transform.localScale = new Vector3(0.074f, 0.155f, 0.03f);
                 g.GetComponent<Renderer>().sharedMaterial = Mats.Make(new Color(0.84f, 0.38f, 0.09f), 0.45f);
             }
-            DrawScan54(sc);
+            instance?.DrawScan54(sc);
         }
 
         void TickScanner54(Scan54 sc, float now)
