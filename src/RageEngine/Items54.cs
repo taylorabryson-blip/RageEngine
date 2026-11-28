@@ -68,13 +68,13 @@ namespace RageEngine
                 {
                     if (it == null || it.data == null || it.data.id == null || !it.data.id.StartsWith("RE_")) continue;
                     int kind = Array.IndexOf(NoiseIds54, it.data.id);
-                    if (kind >= 0 && !noises54.ContainsKey(it)) { var i2 = it; Guard("noise.dress", () => DressNoise54(i2, kind)); }
+                    if (kind >= 0 && !makers54.ContainsKey(it)) { var i2 = it; Guard("noise.dress", () => DressNoise54(i2, kind)); }
                     else if (it.data.id == MirrorId54 && !mirrors54.ContainsKey(it)) { var i2 = it; Guard("mirror.dress", () => DressMirror54(i2)); }
                 }
                 List<Item> gone = null;
-                foreach (var kv in noises54) if (kv.Key == null) (gone ??= new List<Item>()).Add(kv.Key);
+                foreach (var kv in makers54) if (kv.Key == null) (gone ??= new List<Item>()).Add(kv.Key);
                 foreach (var kv in mirrors54) if (kv.Key == null) (gone ??= new List<Item>()).Add(kv.Key);
-                if (gone != null) foreach (var g in gone) { noises54.Remove(g); mirrors54.Remove(g); }
+                if (gone != null) foreach (var g in gone) { makers54.Remove(g); mirrors54.Remove(g); }
             }
             // held: trigger / other button
             var pc = Player.local != null ? Player.local.creature : null;
@@ -84,11 +84,11 @@ namespace RageEngine
                     var h = k == 0 ? pc.handLeft : pc.handRight;
                     var it = h != null && h.grabbedHandle != null ? h.grabbedHandle.item : null;
                     bool use = false, alt = false;
-                    if (it != null && (noises54.ContainsKey(it) || mirrors54.ContainsKey(it)))
+                    if (it != null && (makers54.ContainsKey(it) || mirrors54.ContainsKey(it)))
                     {
                         try { var ch = h.playerHand.controlHand; use = ch.usePressed; alt = ch.alternateUsePressed; } catch { }
                         bool useDown = use && !itemUse54[k], altDown = alt && !itemAlt54[k];
-                        if (noises54.TryGetValue(it, out var n))
+                        if (makers54.TryGetValue(it, out var n))
                         {
                             if (useDown) { if (now < n.until && Kinds54[n.kind].loop) StopNoise54(n); else SoundNoise54(n, Kinds54[n.kind].useSeconds); }
                             else if (altDown) StopNoise54(n);
@@ -102,7 +102,7 @@ namespace RageEngine
                     }
                     itemUse54[k] = use; itemAlt54[k] = alt;
                 }
-            foreach (var kv in noises54) if (kv.Key != null) { var n = kv.Value; Guard("noise.tick", () => TickNoise54(n, now)); }
+            foreach (var kv in makers54) if (kv.Key != null) { var n = kv.Value; Guard("noise.tick", () => TickNoise54(n, now)); }
             foreach (var kv in mirrors54) if (kv.Key != null) { var m = kv.Value; Guard("mirror.tick", () => TickMirror54(m, now)); }
         }
 
@@ -115,7 +115,7 @@ namespace RageEngine
             new Kind54 { name = "Eye resonance fork", heard = "Heard a ringing", sound = "NRE_Resonance", loop = false, useSeconds = 6f, landSeconds = 4f, radius = 24f, tag = 4, faction = new[] { "eye", "cult" } } };
 
         sealed class Noise54 { public Item it; public int kind; public Transform model, swing; public Light glow; public AudioSource src; public float startAt = -1f, until = -1f, nextEmit, speed, nextBuzz, nextDance; }
-        static readonly Dictionary<Item, Noise54> noises54 = new Dictionary<Item, Noise54>();
+        static readonly Dictionary<Item, Noise54> makers54 = new Dictionary<Item, Noise54>();
         static readonly Dictionary<int, int> factionTag54 = new Dictionary<int, int>();
 
         /// Which noisemaker faction (1 Eraden, 2 Outlaws, 3 Wildfolk, 4 Eye, 0 none) an NPC belongs to, from the game's faction name.
