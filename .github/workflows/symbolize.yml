@@ -30,8 +30,10 @@ jobs:
               echo "trying $URL"; curl -sSL -A "Mozilla/5.0" -o a.exe "$URL" || true; ls -la a.exe
               if [ $(stat -c%s a.exe) -gt 1000000 ]; then break; fi
             done
-            sudo apt-get install -y -qq p7zip-full >/dev/null 2>&1 || true
-            7z x -y a.exe -o/tmp/u/x '*il2cpp*Release*Symbols*arm64-v8a*libunity*' -r >/dev/null || 7z x -y a.exe -o/tmp/u/x >/dev/null || true
+            which 7z || sudo apt-get install -y -qq p7zip-full
+            7z l a.exe | grep -i "libunity" | head -20
+            7z x -y a.exe -o/tmp/u/x '-ir!*arm64-v8a*libunity.sym.so' | tail -5 || true
+            7z x -y a.exe -o/tmp/u/x '-ir!libunity.sym.so' | tail -5 || true
           fi
           find /tmp/u -name 'libunity*sym*' -exec ls -la {} \;
       - name: symbolize
