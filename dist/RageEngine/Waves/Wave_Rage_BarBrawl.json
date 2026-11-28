@@ -1,0 +1,53 @@
+{
+  "$type": "ThunderRoad.WaveData, ThunderRoad",
+  "id": "Rage_BarBrawl",
+  "sensitiveContent": "None",
+  "sensitiveFilterBehaviour": "Discard",
+  "version": 2,
+  "category": "0Rage",
+  "localizationId": null,
+  "title": "1Bar Brawl",
+  "description": "Six outlaws, two at a time. Fists up.",
+  "loopBehavior": "NoLoop",
+  "totalMaxAlive": 2,
+  "alwaysAvailable": false,
+  "waveSelectors": [
+    "Arena",
+    "Ruins",
+    "Market",
+    "Canyon",
+    "Citadel"
+  ],
+  "factions": [
+    {
+      "$type": "ThunderRoad.WaveData+WaveFaction, ThunderRoad",
+      "factionID": 4,
+      "factionHealthMultiplier": 1.0,
+      "factionMaxAlive": 2
+    }
+  ],
+  "groups": [
+    {
+      "$type": "ThunderRoad.WaveData+Group, ThunderRoad",
+      "reference": "Table",
+      "referenceID": "ScavengerPatrolMelee",
+      "overrideFaction": false,
+      "factionID": 0,
+      "overrideContainer": false,
+      "overrideContainerID": "",
+      "overrideBrain": false,
+      "overrideBrainID": "",
+      "overrideMaxMelee": false,
+      "overrideMaxMeleeCount": 2,
+      "groupHealthMultiplier": 1.0,
+      "minMaxCount": {
+        "x": 6,
+        "y": 6
+      },
+      "spawnPointIndex": -1,
+      "prereqGroupIndex": -1,
+      "prereqMaxRemainingAlive": 0
+    }
+  ],
+  "groupPath": "Sandbox"
+}

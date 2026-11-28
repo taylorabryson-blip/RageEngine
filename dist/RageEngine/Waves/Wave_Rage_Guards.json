@@ -1,0 +1,53 @@
+{
+  "$type": "ThunderRoad.WaveData, ThunderRoad",
+  "id": "Rage_Guards",
+  "sensitiveContent": "None",
+  "sensitiveFilterBehaviour": "Discard",
+  "version": 2,
+  "category": "0Rage",
+  "localizationId": null,
+  "title": "4Kingdom Guards",
+  "description": "Eight armored soldiers, three at a time.",
+  "loopBehavior": "NoLoop",
+  "totalMaxAlive": 3,
+  "alwaysAvailable": false,
+  "waveSelectors": [
+    "Arena",
+    "Ruins",
+    "Market",
+    "Canyon",
+    "Citadel"
+  ],
+  "factions": [
+    {
+      "$type": "ThunderRoad.WaveData+WaveFaction, ThunderRoad",
+      "factionID": 8,
+      "factionHealthMultiplier": 1.0,
+      "factionMaxAlive": 3
+    }
+  ],
+  "groups": [
+    {
+      "$type": "ThunderRoad.WaveData+Group, ThunderRoad",
+      "reference": "Table",
+      "referenceID": "SoldierAlertMelee",
+      "overrideFaction": false,
+      "factionID": 0,
+      "overrideContainer": false,
+      "overrideContainerID": "",
+      "overrideBrain": false,
+      "overrideBrainID": "",
+      "overrideMaxMelee": false,
+      "overrideMaxMeleeCount": 2,
+      "groupHealthMultiplier": 1.0,
+      "minMaxCount": {
+        "x": 8,
+        "y": 8
+      },
+      "spawnPointIndex": -1,
+      "prereqGroupIndex": -1,
+      "prereqMaxRemainingAlive": 0
+    }
+  ],
+  "groupPath": "Sandbox"
+}

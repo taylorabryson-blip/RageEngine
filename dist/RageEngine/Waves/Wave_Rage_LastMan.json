@@ -1,0 +1,95 @@
+{
+  "$type": "ThunderRoad.WaveData, ThunderRoad",
+  "id": "Rage_LastMan",
+  "sensitiveContent": "None",
+  "sensitiveFilterBehaviour": "Discard",
+  "version": 2,
+  "category": "0Rage",
+  "localizationId": null,
+  "title": "0Last Man Standing",
+  "description": "Endless, one at a time, each one comes back tougher. How long can you last?",
+  "loopBehavior": "LoopSeamless",
+  "totalMaxAlive": 1,
+  "alwaysAvailable": false,
+  "waveSelectors": [
+    "Arena",
+    "Ruins",
+    "Market",
+    "Canyon",
+    "Citadel"
+  ],
+  "factions": [
+    {
+      "$type": "ThunderRoad.WaveData+WaveFaction, ThunderRoad",
+      "factionID": 4,
+      "factionHealthMultiplier": 1.0,
+      "factionMaxAlive": 1
+    }
+  ],
+  "groups": [
+    {
+      "$type": "ThunderRoad.WaveData+Group, ThunderRoad",
+      "reference": "Table",
+      "referenceID": "ScavengerAlertMelee",
+      "overrideFaction": false,
+      "factionID": 0,
+      "overrideContainer": false,
+      "overrideContainerID": "",
+      "overrideBrain": false,
+      "overrideBrainID": "",
+      "overrideMaxMelee": false,
+      "overrideMaxMeleeCount": 2,
+      "groupHealthMultiplier": 1.0,
+      "minMaxCount": {
+        "x": 1,
+        "y": 1
+      },
+      "spawnPointIndex": -1,
+      "prereqGroupIndex": -1,
+      "prereqMaxRemainingAlive": 0
+    },
+    {
+      "$type": "ThunderRoad.WaveData+Group, ThunderRoad",
+      "reference": "Table",
+      "referenceID": "SoldierAlertMelee",
+      "overrideFaction": false,
+      "factionID": 0,
+      "overrideContainer": false,
+      "overrideContainerID": "",
+      "overrideBrain": false,
+      "overrideBrainID": "",
+      "overrideMaxMelee": false,
+      "overrideMaxMeleeCount": 2,
+      "groupHealthMultiplier": 1.5,
+      "minMaxCount": {
+        "x": 1,
+        "y": 1
+      },
+      "spawnPointIndex": -1,
+      "prereqGroupIndex": 0,
+      "prereqMaxRemainingAlive": 0
+    },
+    {
+      "$type": "ThunderRoad.WaveData+Group, ThunderRoad",
+      "reference": "Table",
+      "referenceID": "SoldierRareMelee",
+      "overrideFaction": false,
+      "factionID": 0,
+      "overrideContainer": false,
+      "overrideContainerID": "",
+      "overrideBrain": false,
+      "overrideBrainID": "",
+      "overrideMaxMelee": false,
+      "overrideMaxMeleeCount": 2,
+      "groupHealthMultiplier": 2.5,
+      "minMaxCount": {
+        "x": 1,
+        "y": 1
+      },
+      "spawnPointIndex": -1,
+      "prereqGroupIndex": 1,
+      "prereqMaxRemainingAlive": 0
+    }
+  ],
+  "groupPath": "Sandbox"
+}

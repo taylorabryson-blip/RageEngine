@@ -1,0 +1,46 @@
+  Determining projects to restore...
+  Restored /home/runner/work/RageEngine/RageEngine/build/RageEngine.csproj (in 557 ms).
+  ThunderRoad -> /home/runner/work/RageEngine/RageEngine/out/ThunderRoad.dll
+  RageEngine -> /home/runner/work/RageEngine/RageEngine/out/RageEngine.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:07.44
+dist/RageEngine/Sounds/NRE_Vomit_1.wav 4.940998 [Parsed_volumedetect_0 @ 0x72cc2c001ac0] mean_volume: -18.8 dB
+dist/RageEngine/Sounds/NRE_Retch_1.wav 2.184490 [Parsed_volumedetect_0 @ 0x78d844001ac0] mean_volume: -21.6 dB
+dist/RageEngine/Sounds/NRE_VomitSplat_1.wav 14.654059 [Parsed_volumedetect_0 @ 0x74b7ec001ac0] mean_volume: -23.6 dB
+dist/RageEngine/Sounds/NRE_Train_1.wav 13.466939 [Parsed_volumedetect_0 @ 0x7fe230001ac0] mean_volume: -29.2 dB
+dist/RageEngine/Sounds/NRE_DoorCreak_1.wav 1.586712 [Parsed_volumedetect_0 @ 0x7ed168001ac0] mean_volume: -17.2 dB
+NRE_HandBell_1.wav mean_volume: -21.1 dB
+coins.cut.wav mean_volume: -31.4 dB
+coins boosted mean_volume: -24.3 dB
+NRE_Rattle_1.wav mean_volume: -22.5 dB
+NRE_Resonance_1.wav mean_volume: -17.9 dB
+NRE_Conch_1.wav mean_volume: -15.9 dB
+NRE_BosunPipe_1.wav mean_volume: -19.3 dB
+-rw-r--r--  1 runner runner  96216 Nov 28 18:39 NRE_Retch_1.wav
+-rw-r--r--  1 runner runner  70638 Nov 28 18:39 NRE_VomitSplat_1.wav
+-rw-r--r--  1 runner runner 112136 Nov 28 18:39 NRE_Vomit_1.wav
+dist/RageEngine/Ambience:
+total 360
+drwxr-xr-x  2 runner runner   4096 Nov 28 18:39 .
+drwxr-xr-x 11 runner runner   4096 Nov 28 18:38 ..
+-rw-r--r--  1 runner runner 358899 Nov 28 18:39 wind.ogg
+
+dist/RageEngine/Music:
+total 14088
+drwxr-xr-x  2 runner runner    4096 Nov 28 18:40 .
+drwxr-xr-x 11 runner runner    4096 Nov 28 18:38 ..
+-rw-r--r--  1 runner runner 1330322 Nov 28 18:39 elevator.ogg
+-rw-r--r--  1 runner runner 2015156 Nov 28 18:38 lounge_1.ogg
+-rw-r--r--  1 runner runner 1325784 Nov 28 18:38 lounge_2.ogg
+-rw-r--r--  1 runner runner 1796736 Nov 28 18:38 lounge_3.ogg
+-rw-r--r--  1 runner runner 2400232 Nov 28 18:38 lounge_4.ogg
+-rw-r--r--  1 runner runner 1459420 Nov 28 18:38 lounge_5.ogg
+-rw-r--r--  1 runner runner 1173630 Nov 28 18:40 wave_1.ogg
+-rw-r--r--  1 runner runner 1105815 Nov 28 18:40 wave_2.ogg
+-rw-r--r--  1 runner runner 1460457 Nov 28 18:40 wave_3.ogg
+-rw-r--r--  1 runner runner  338957 Nov 28 18:40 wave_4.ogg
+-rw-r--r-- 1 runner runner 49819941 Nov 28 18:40 RageEngine-0.56.zip
