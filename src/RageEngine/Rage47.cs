@@ -56,8 +56,8 @@ namespace RageEngine
 
         public static ModOptionString[] loadoutValues = { new ModOptionString("Game default", null, "0"), new ModOptionString("Mixed (some switch it up)", null, "1"), new ModOptionString("Anything in the game", null, "2") };
         [ModOptionCategory("NPCs", 2), ModOptionOrder(10)]
-        [ModOption("NPC weapons", "What NPCs carry - in waves, dungeons, anywhere. Mixed: about 4 in 10 swap their faction's weapon for any melee weapon in the game (mods included). Anything: every NPC does.", valueSourceName = nameof(loadoutValues), defaultValueIndex = 1)]
-        public static string npcWeapons = "1";
+        [ModOption("NPC weapons", "What NPCs carry - in waves, dungeons, anywhere. Game default: their faction's own weapons. Mixed: about 4 in 10 swap their faction's weapon for any melee weapon in the game (mods included). Anything: every NPC does.", valueSourceName = nameof(loadoutValues), defaultValueIndex = 0)]
+        public static string npcWeapons = "0";                                                   // 0.56: faction weapons by default
 
         // ================================================================== dynamic organs (also the whole of "organs only")
         static readonly Dictionary<Creature, float> gutted47 = new Dictionary<Creature, float>();   // creatures are pooled: forget after 3 min
@@ -107,6 +107,7 @@ namespace RageEngine
                 Stamp(c, p, 0.07f, "rib_wound", 1f);
                 string o = OrganAt49(c, chest, p, Region49(c, chest, p));                              // 0.49: what's actually behind the cut
                 SpawnGoreModels(p + outDir * 0.05f, outDir + Vector3.down * 0.35f, o, 1, organMat44(o), 0.9f, c);   // 0.53: out of the body like 0.48
+                if (s != null) Guard("vital56", () => VitalOut56(s, o));                                    // 0.56: losing a heart or lung kills
                 Sfx.Play("NRE_GoreTear", part.transform, 1f); Sfx.Play("NRE_Squelch", part.transform, 0.8f, 0.9f);
                 if (s != null) { s.bleedRate += 0.4f * bleedingRate; s.pain = 1f; Scream(s, true); }
                 Log($"{c.name}: chest cut open - {o.Substring(9).ToLower()} out");
@@ -124,6 +125,7 @@ namespace RageEngine
                     int rg = Region49(c, chest, p + Random.insideUnitSphere * 0.08f);
                     string o = i == 0 ? OrganAt49(c, chest, p, rg) : all[Random.Range(0, all.Length)];
                     SpawnGoreModels(p + outDir * 0.05f, outDir + Random.insideUnitSphere * 0.5f, o, 1, organMat44(o), 1.1f, c);
+                    if (s != null && i == 0) { var oo = o; Guard("vital56", () => VitalOut56(s, oo)); }
                 }
                 Stamp(c, p, 0.09f, "torn_flesh", 1f);
                 Sfx.Play("NRE_GoreTear", part.transform, 1f);
@@ -133,7 +135,7 @@ namespace RageEngine
 
         void SpillGuts47(NpcState s, Creature c, RagdollPart part, Vector3 p, float severity)
         {
-            int n = perfMode == "p" ? 6 : 10;
+            int n = perfMode == "p" ? 14 : 26;                                                  // 0.56: a real length of gut (about 2 m), not a short rope
             while (guts44.Count > 0 && (guts44.Count >= 3 || guts44[0] == null)) { if (guts44[0] != null) Object.Destroy(guts44[0]); guts44.RemoveAt(0); }
             var root = new GameObject("RageEngine_Guts");
             var mesh = BoneModels.Get("RE_Organ_Gut"); var mat = organMat44("RE_Organ_Gut");
@@ -157,7 +159,14 @@ namespace RageEngine
                 StartClutch(s, part, p, null, false, true); if (s.clutching) s.clutchUntil = Time.time + 5f;
                 Scream(s, true);
             }
-            if (severity >= 1.3f) { var ch2 = ChestPart(c) ?? part; Vector3 ov = Vector3.ProjectOnPlane(p - ch2.transform.position, c.transform.up); if (ov.sqrMagnitude < 1e-4f) ov = c.transform.forward; Organ49(OrganAt49(c, ch2, p, 1) == "RE_Organ_Gut" ? "RE_Organ_Liver" : OrganAt49(c, ch2, p, 1), p, ov.normalized, c, 0.5f); }
+            {
+                // 0.56: more of what's in a belly comes with it - stomach, liver, spleen, kidney, bladder by where the cut is
+                var ch2 = ChestPart(c) ?? part; Vector3 ov = Vector3.ProjectOnPlane(p - ch2.transform.position, c.transform.up); if (ov.sqrMagnitude < 1e-4f) ov = c.transform.forward; ov.Normalize();
+                int extra = severity >= 1.3f ? 2 : 1; if (perfMode == "p") extra = 1;
+                var belly = new[] { "RE_Organ_Stomach", "RE_Organ_Liver", "RE_Organ_Spleen", "RE_Organ_Kidney", "RE_Organ_Bladder", "RE_Organ_Intestine" };
+                string first = OrganAt49(c, ch2, p, 1); if (first == "RE_Organ_Gut") first = "RE_Organ_Intestine";
+                for (int k = 0; k < extra; k++) { string o = k == 0 ? first : belly[Random.Range(0, belly.Length)]; var oo = o; Guard("organ49", () => Organ49(oo, p + Random.insideUnitSphere * 0.03f, ov, c, 0.5f)); }
+            }
             Log($"{c.name}: GUTTED - his insides come out");
         }
 

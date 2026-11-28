@@ -274,6 +274,7 @@ namespace RageEngine
             Guard("items54", TickItems54);
             Guard("arsenal55", TickArsenal55);
             Guard("senses56", TickSenses56);
+            Guard("later56", TickLater56);
             Guard("shop54", TickShop54);
             if (now >= nextTick)
             {

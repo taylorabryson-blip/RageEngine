@@ -97,6 +97,39 @@ namespace RageEngine
         /// The game has him on its own patrol route (so our rounds leave him alone).
         static bool GamePatrol56(NpcState s) { int st = -1; Guard("patrol56", () => st = (int)s.creature.brain.state); return st == (int)Brain.State.Patrol; }
 
+        // ------------------------------------------------------------------ organs that matter
+        /// Most of what spills out is for the look - he can live through it. A heart out kills him in a second or two;
+        /// a lung out and he's drowning: hard breathing, then dead within half a minute.
+        void VitalOut56(NpcState s, string organ)
+        {
+            var c = s.creature; if (c == null || c.isKilled) return;
+            if (organ == "RE_Organ_Heart")
+            {
+                float wait = Random.Range(0.8f, 2f);
+                s.finalKill = true; s.cantStand = true;
+                Log($"{WhoIs(s)}: heart out - dead in {wait:0.0}s");
+                Guard("heart56", () => RageEngineScript.instance.StartCoroutine56(wait, () => { if (c != null && !c.isKilled) Guard("kill", () => c.Kill()); }));
+            }
+            else if (organ == "RE_Organ_Lung")
+            {
+                s.bleedRate += 1.2f * bleedingRate; s.bloodInAirway = true; s.fatigue = 1f;
+                float wait = Random.Range(12f, 28f);
+                Log($"{WhoIs(s)}: lung out - drowning, dead in about {wait:0}s");
+                Guard("lung56", () => RageEngineScript.instance.StartCoroutine56(wait, () => { if (c != null && !c.isKilled) { if (s.creature == c) s.finalKill = true; Guard("kill", () => c.Kill()); } }));
+            }
+        }
+
+        // a delayed call without a MonoBehaviour of our own (ThunderScript has none): checked from the frame
+        static readonly List<(float at, System.Action fn)> later56 = new List<(float, System.Action)>();
+        internal void StartCoroutine56(float delay, System.Action fn) => later56.Add((Time.time + delay, fn));
+        static void TickLater56()
+        {
+            if (later56.Count == 0) return;
+            float now = Time.time;
+            for (int i = later56.Count - 1; i >= 0; i--)
+                if (now >= later56[i].at) { var fn = later56[i].fn; later56.RemoveAt(i); Guard("later56", () => fn()); }
+        }
+
         // ------------------------------------------------------------------ the game's detection, made human
         /// Called from Senses54 for "Realistic". o = saved originals (Combat54).
         static void RealSenses56(BrainModuleDetection d, float[] o)

@@ -73,7 +73,7 @@ namespace RageEngine
                 int eq = line.LastIndexOf('=');
                 if (eq > 0 && int.TryParse(line.Substring(eq + 1), out int idx)) saved[line.Substring(0, eq)] = idx;
             }
-            if (!v56) { saved.Remove("NPCs|NPC field of view"); saved.Remove("NPCs|NPC hearing"); }   // 0.56: senses start on the new Realistic default
+            if (!v56) { saved.Remove("NPCs|NPC field of view"); saved.Remove("NPCs|NPC hearing"); saved.Remove("NPCs|NPC weapons"); }   // 0.56: senses start on the new Realistic default
             int n = 0;
             foreach (var o in MyOptions())
             {
