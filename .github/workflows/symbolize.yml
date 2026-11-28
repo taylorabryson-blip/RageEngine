@@ -12,17 +12,31 @@ jobs:
       - uses: actions/checkout@v4
       - name: Unity 2021.3.38f1 Android symbols
         run: |
-          set -x
           mkdir -p /tmp/u && cd /tmp/u
-          URL=https://download.unity3d.com/download_unity/7a2fa5d8d101/LinuxEditorTargetInstaller/UnitySetup-Android-Support-for-Editor-2021.3.38f1.tar.xz
-          curl -sSL -o a.tar.xz "$URL" || true
-          ls -la
-          tar -tJf a.tar.xz | grep -i "il2cpp/Release/Symbols/arm64-v8a" | head || true
-          tar -xJf a.tar.xz --wildcards '*il2cpp/Release/Symbols/arm64-v8a/libunity.sym.so' || true
-          find . -name 'libunity.sym.so' -exec ls -la {} \;
+          H=7a2fa5d8d101; V=2021.3.38f1
+          for URL in \
+            https://download.unity3d.com/download_unity/$H/LinuxEditorTargetInstaller/UnitySetup-Android-Support-for-Editor-$V.tar.xz \
+            https://netstorage.unity3d.com/unity/$H/LinuxEditorTargetInstaller/UnitySetup-Android-Support-for-Editor-$V.tar.xz \
+            https://beta.unity3d.com/download/$H/LinuxEditorTargetInstaller/UnitySetup-Android-Support-for-Editor-$V.tar.xz ; do
+            echo "trying $URL"
+            curl -sSL -A "Mozilla/5.0" -o a.tar.xz "$URL" || true
+            ls -la a.tar.xz; head -c 200 a.tar.xz | strings | head -3
+            if [ $(stat -c%s a.tar.xz) -gt 1000000 ]; then echo OK; break; fi
+          done
+          if [ $(stat -c%s a.tar.xz) -gt 1000000 ]; then
+            tar -xJf a.tar.xz --wildcards '*il2cpp/Release/Symbols/arm64-v8a/libunity*' || true
+          else
+            for URL in https://download.unity3d.com/download_unity/$H/TargetSupportInstaller/UnitySetup-Android-Support-for-Editor-$V.exe https://netstorage.unity3d.com/unity/$H/TargetSupportInstaller/UnitySetup-Android-Support-for-Editor-$V.exe; do
+              echo "trying $URL"; curl -sSL -A "Mozilla/5.0" -o a.exe "$URL" || true; ls -la a.exe
+              if [ $(stat -c%s a.exe) -gt 1000000 ]; then break; fi
+            done
+            sudo apt-get install -y -qq p7zip-full >/dev/null 2>&1 || true
+            7z x -y a.exe -o/tmp/u/x '*il2cpp*Release*Symbols*arm64-v8a*libunity*' -r >/dev/null || 7z x -y a.exe -o/tmp/u/x >/dev/null || true
+          fi
+          find /tmp/u -name 'libunity*sym*' -exec ls -la {} \;
       - name: symbolize
         run: |
-          S=$(find /tmp/u -name 'libunity.sym.so' | head -1)
+          S=$(find /tmp/u -name 'libunity*sym*' | head -1)
           mkdir -p out
           echo "symbols: $S" > out/sym.txt
           readelf -n "$S" | grep -i "build id" >> out/sym.txt || true
