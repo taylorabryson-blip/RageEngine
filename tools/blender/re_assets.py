@@ -104,7 +104,7 @@ def write_obj(o, name, scale=1.0, center=True):
     for v in vs:
         d = v - c; L.append('vt %.4f %.4f' % (math.atan2(d.y, d.x) / (2 * math.pi) + 0.5, (v.z - z0) / max(1e-6, z1 - z0)))
     for t in me.loop_triangles:
-        a, b, cc = (i + 1 for i in t.vertices); L.append('f %d/%d %d/%d %d/%d' % (a, a, b, b, cc, cc))
+        a, b, cc = (i + 1 for i in t.vertices); L.append('f %d/%d %d/%d %d/%d' % (a, a, cc, cc, b, b))   # 0.56: reversed (the Y/Z swap mirrors)
     open(os.path.join(OUT, name + '.obj'), 'w').write('\n'.join(L) + '\n')
     print('wrote', name, len(vs), 'verts', len(me.loop_triangles), 'tris')
 

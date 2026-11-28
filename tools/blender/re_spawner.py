@@ -71,7 +71,7 @@ def planar_uv(o, axis_u, axis_v, rect):
         uv[li].uv = (u, v)
 
 def write_obj(o, name, scale=0.01):
-    """per-loop UVs, Blender Z-up -> Unity Y-up (axis swap = handedness flip, winding kept), origin = grip centre"""
+    """per-loop UVs, Blender Z-up -> Unity Y-up (axis swap = handedness flip, so the winding is reversed), origin = grip centre"""
     me = o.data; me.calc_loop_triangles()
     uvl = me.uv_layers.active.data if me.uv_layers else None
     L = ['# ' + name + ' - Rage Engine NPC Spawner (Blender)']
@@ -83,7 +83,7 @@ def write_obj(o, name, scale=0.01):
     k = 0
     for t in me.loop_triangles:
         a, b, c = (i + 1 for i in t.vertices)
-        L.append('f %d/%d %d/%d %d/%d' % (a, k + 1, b, k + 2, c, k + 3)); k += 3
+        L.append('f %d/%d %d/%d %d/%d' % (a, k + 1, c, k + 3, b, k + 2)); k += 3   # 0.56: reversed - the Y/Z swap mirrors, so keeping Blender's order put every face inside-out in Unity
     open(os.path.join(OUT, name + '.obj'), 'w').write('\n'.join(L) + '\n')
     print('wrote', name, len(me.vertices), 'verts', len(me.loop_triangles), 'tris')
 
