@@ -1,0 +1,41 @@
+name: symbolize-quest-crash
+on:
+  workflow_dispatch:
+  push:
+    paths: ['tools/symbolize/**']
+permissions:
+  contents: write
+jobs:
+  sym:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unity 2021.3.38f1 Android symbols
+        run: |
+          set -x
+          mkdir -p /tmp/u && cd /tmp/u
+          URL=https://download.unity3d.com/download_unity/7a2fa5d8d101/LinuxEditorTargetInstaller/UnitySetup-Android-Support-for-Editor-2021.3.38f1.tar.xz
+          curl -sSL -o a.tar.xz "$URL" || true
+          ls -la
+          tar -tJf a.tar.xz | grep -i "il2cpp/Release/Symbols/arm64-v8a" | head || true
+          tar -xJf a.tar.xz --wildcards '*il2cpp/Release/Symbols/arm64-v8a/libunity.sym.so' || true
+          find . -name 'libunity.sym.so' -exec ls -la {} \;
+      - name: symbolize
+        run: |
+          S=$(find /tmp/u -name 'libunity.sym.so' | head -1)
+          mkdir -p out
+          echo "symbols: $S" > out/sym.txt
+          readelf -n "$S" | grep -i "build id" >> out/sym.txt || true
+          which llvm-symbolizer llvm-addr2line addr2line >> out/sym.txt 2>&1 || true
+          SYMB=$(ls /usr/bin/llvm-symbolizer* 2>/dev/null | head -1)
+          for f in tools/symbolize/*_unity.txt; do
+            echo "== $f" >> out/sym.txt
+            while read a; do
+              echo "-- $a" >> out/sym.txt
+              $SYMB --obj="$S" --functions=linkage --demangle --inlines "$a" >> out/sym.txt 2>&1 || true
+            done < "$f"
+          done
+          cat out/sym.txt
+      - name: publish
+        run: |
+          cd out && git init -q && git checkout -q -b symbolize-out && git add -A && git -c user.name=ci -c user.email=ci@x commit -qm "symbolized" && git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" symbolize-out
