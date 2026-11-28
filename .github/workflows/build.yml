@@ -103,8 +103,13 @@ jobs:
           else echo "MISSING sound: tooth crack" | tee -a build.log; fi
           # 0.54: the Noisemaker - a real wind-up alarm clock (ring loop + the ticking as it's wound), CC BY 4.0
           if fs https://freesound.org/people/joedeshon/sounds/78562/ /tmp/au/clock.mp3; then
-            ffmpeg -nostdin -loglevel error -y -i /tmp/au/clock.mp3 -ss 4 -t 4 -ac 1 -ar 22050 -af "loudnorm=I=-16:TP=-1.5,afade=t=in:d=0.03,afade=t=out:st=3.97:d=0.03" -c:a pcm_s16le $S/NRE_AlarmRing_1.wav || echo "clock ring cut failed" | tee -a build.log
-            ffmpeg -nostdin -loglevel error -y -sseof -2.2 -i /tmp/au/clock.mp3 -t 1.4 -ac 1 -ar 22050 -af "loudnorm=I=-20:TP=-2,afade=t=out:st=1.25:d=0.15" -c:a pcm_s16le $S/NRE_ClockWind_1.wav || echo "clock tick cut failed" | tee -a build.log
+            ffprobe -v error -show_entries format=duration:stream=channels -of default=nw=1 /tmp/au/clock.mp3 | tr '\n' ' ' | sed 's/^/clock source: /' | tee -a build.log; echo | tee -a build.log
+            for st in 1 3 6 10 14 18; do ffmpeg -nostdin -hide_banner -ss $st -t 1 -i /tmp/au/clock.mp3 -af "pan=mono|c0=c0,volumedetect" -f null - 2>&1 | grep -o "mean_volume: [-0-9.]* dB" | sed "s/^/clock L @${st}s /" | tee -a build.log; done
+            # left channel only (a stereo pair can cancel itself when folded to mono), from the loudest stretch of ringing
+            best=1; bv=-99; for st in 1 3 6 10 14 18; do v=$(ffmpeg -nostdin -hide_banner -ss $st -t 4 -i /tmp/au/clock.mp3 -af "pan=mono|c0=c0,volumedetect" -f null - 2>&1 | grep -o "mean_volume: [-0-9.]*" | grep -o "[-0-9.]*$"); [ -n "$v" ] && awk "BEGIN{exit !($v > $bv)}" && { bv=$v; best=$st; }; done; echo "clock ring cut from ${best}s (mean ${bv} dB)" | tee -a build.log
+            ffmpeg -nostdin -loglevel error -y -ss $best -t 4 -i /tmp/au/clock.mp3 -ar 22050 -af "pan=mono|c0=c0,loudnorm=I=-16:TP=-1.5,afade=t=in:d=0.03,afade=t=out:st=3.97:d=0.03" -c:a pcm_s16le $S/NRE_AlarmRing_1.wav || echo "clock ring cut failed" | tee -a build.log
+            ffmpeg -nostdin -hide_banner -i $S/NRE_AlarmRing_1.wav -af volumedetect -f null - 2>&1 | grep -o "mean_volume: [-0-9.]* dB" | sed 's/^/ring result /' | tee -a build.log
+            ffmpeg -nostdin -loglevel error -y -sseof -2.2 -i /tmp/au/clock.mp3 -t 1.4 -ar 22050 -af "pan=mono|c0=c0,loudnorm=I=-20:TP=-2,afade=t=out:st=1.25:d=0.15" -c:a pcm_s16le $S/NRE_ClockWind_1.wav || echo "clock tick cut failed" | tee -a build.log
             echo "NRE_AlarmRing_1, NRE_ClockWind_1: \"alarm_clock_ringing_01.wav\" by joedeshon of Freesound.org https://freesound.org/s/78562/ - CC BY 4.0" >> /tmp/au/credits.txt
           else echo "MISSING sound: alarm clock" | tee -a build.log; fi
           # 0.54: the NPC Scanner beep - a real store scanner recording (edited), CC0
