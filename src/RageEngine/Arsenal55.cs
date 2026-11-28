@@ -81,6 +81,7 @@ namespace RageEngine
             new Def55(HollowEyeId55, "The Eye", Fit55.Grip, 4, new Part55("RE_HollowEye_Bronze", "gunmetal.png", Dark55, 0.7f), new Part55("RE_HollowEye_Shell", null, new Color(0.16f, 0.08f, 0.24f), 0.97f),
                 new Part55("RE_HollowEye_Core", null, Violet55, 0.9f, false, 3f)),
             new Def55(CompassId55, "Sentari", Fit55.Grip, 4, new Part55("RE_Compass_Brass", "bronze.png", Brass55, 0.75f, true), new Part55("RE_Compass_Card", "compass_card.png", new Color(0.88f, 0.82f, 0.67f), 0.3f),
+                new Part55("RE_Compass_NeedleN", null, new Color(0.6f, 0.08f, 0.06f), 0.7f), new Part55("RE_Compass_NeedleS", "gunmetal.png", Dark55, 0.7f)),
         };
 
         static readonly Dictionary<string, Def55> byId55 = new Dictionary<string, Def55>();
