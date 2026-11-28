@@ -1,5 +1,30 @@
 # Rage Engine changelog
 
+## 0.55
+**Ten new faction weapons** (vanilla handling: each is built on one of the game's own weapons, so it grips, swings and cuts like it):
+- **Outlaws:** Blackwake Saber, a cutlass with a brass knuckle guard.
+- **Wildfolk:** Briarhook Axe, a bearded axe on a thorned ash haft.
+- **Eraden:** King's Oath, a royal longsword with a crowned pommel. Iron Chancellor, a flanged mace.
+- **The Eye:** Observer's Edge, a dark longsword with a violet crystal turning inside an open eye.
+- **Rakta:** Redstone Glaive, a lacquered polearm with a red stone. Ashen Talon, a short blade.
+- **Sentari:** Tidebreaker, a brass-fitted trident. Azure Corsair Saber.
+- **Khar-Tib:** Dune King's Khopesh, bronze and gold with turquoise.
+
+Faction NPCs carry them (respects the "NPC weapons" setting), and the Baron sells them.
+
+**Crystal Hunt treasures:** six new valuables in dungeon chests, sold to the Baron like any other: Contraband Coin, Royal Signet, Heartroot Totem, Imperial Jade Relic, Captain's Pearl and Celestial Sunstone.
+
+**Two rare finds:**
+- **Hollow Eye Crystal:** only in Eye dungeons. Hold the trigger to fire a violet beam that burns whatever it touches. It overheats after a few seconds and has to cool down.
+- **Captain's Compass:** any dungeon. The needle swings toward the nearest treasure, and ticks faster the closer you get.
+
+**Random NPC stats** (NPCs tab, default: Dungeons): each NPC rolls Weak, Normal, Tough or Elite. That sets his health (about half to three times), plus a little of his speed, size and skill. Elites never run. The Seer's Mirror shows the roll.
+
+**Also new**
+- Rakta conch horn and Sentari bosun's pipe noisemakers.
+- Faction noisemakers are now just style: every NPC reacts to them the same way.
+- The Outlaw coin pouch is closed.
+
 ## 0.52
 - **Health bars** (Rage tab):
   - Show: Off / Only when hurt / Enemies / Everyone.
