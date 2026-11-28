@@ -10,7 +10,7 @@ namespace RageEngine
 {
     public sealed partial class RageEngineScript : ThunderScript
     {
-        public const string Version = "0.52.1";
+        public const string Version = "0.54";
         const int MaxTracked = 20;
         const float ScanInterval = 0.5f;
         const float TickInterval = 0.05f;
@@ -20,6 +20,14 @@ namespace RageEngine
         internal sealed class NpcState
         {
             public Creature creature;
+            public int gen54, life54; public bool deadSeen54;   // 0.54: which slot generation / which life of the body this state belongs to
+            // 0.54 combat: exhaustion, defense beats, counters, recovery (Combat54.cs)
+            public float exert54, lastExertAt54, lastAtk54, lastActive54, nextWinded54, nextGassed54, guardBreakUntil54, counterBoostUntil54, recoverUntil54, nextBeat54, counterAt54, counterHit54, lastCounter54;
+            public int atkCount54, hitsSeen54, profile54, repeat54, staggerWas54; public bool dodgeWas54, downWas54, recovering54;
+            public BrainData brainInst54; public BrainModuleMelee melee54; public BrainModuleDefense def54; public BrainModuleHitReaction hit54; public BrainModuleDetection det54; public BrainModuleMove move54;
+            public float[] defO54, meleeO54, detO54; public string percKey54;
+            // 0.54 patrols / noises (Patrol54.cs)
+            public int pat54; public float patUntil54, movedAt54, nextLook54, heardSeen54; public Vector3 home54, patTo54, lastPos54; public bool homeSet54, walking54, alertWas54;
             public Personality personality;
             public bool active;
             // balance & muscles
@@ -196,6 +204,10 @@ namespace RageEngine
             Guard("events.kill", () => EventManager.onCreatureKill += OnCreatureKill);
             Guard("events.slice", () => EventManager.onRagdollSliced += OnRagdollSliced);
             Guard("events.unload", () => EventManager.onLevelUnload += OnLevelUnload);
+            Guard("events.spawn54", () => EventManager.onCreatureSpawn += OnSpawn54);
+            Guard("events.despawn54", () => EventManager.onCreatureDespawn += OnDespawn54);
+            Guard("events.parry54", () => EventManager.onCreatureAttackParry += OnParry54);
+            Guard("audit54", StartupAudit54);
             Debug.Log("[RageEngine] Rage Engine " + Version + " enabled (grounded=" + groundedReactions + ", deaths by other mod=" + DeathsHandledElsewhere + ")");
         }
 
@@ -204,6 +216,9 @@ namespace RageEngine
             Guard("events.kill", () => EventManager.onCreatureKill -= OnCreatureKill);
             Guard("events.slice", () => EventManager.onRagdollSliced -= OnRagdollSliced);
             Guard("events.unload", () => EventManager.onLevelUnload -= OnLevelUnload);
+            Guard("events.spawn54", () => EventManager.onCreatureSpawn -= OnSpawn54);
+            Guard("events.despawn54", () => EventManager.onCreatureDespawn -= OnDespawn54);
+            Guard("events.parry54", () => EventManager.onCreatureAttackParry -= OnParry54);
             ReleaseAll();
             Guard("steal", RestoreStealFlags);
             Guard("slowmo", () => { if (TimeManager.slowMotionState != TimeManager.SlowMotionState.Disabled) TimeManager.StopSlowMotion(); });
@@ -216,6 +231,7 @@ namespace RageEngine
         {
             if (!modEnabled) { if (byCreature.Count > 0) ReleaseAll(); return; }
             if (OrgansOnly) { if (byCreature.Count > 0) ReleaseAll(); Guard("settings", TickSettingsSave); return; }                  // 0.47: only the organs (they run from the hit event)
+            Guard("life54", Flush54);                                                      // 0.54: a body the game handed to someone new drops the old injuries first
             float now = Time.time;
             // muscles every frame while a reaction is running, so the game's own pin updates can't cancel it
             for (int i = 0; i < MaxTracked; i++)
@@ -246,6 +262,10 @@ namespace RageEngine
             Guard("settings", TickSettingsSave);
             Guard("duelspawn", TickDuelSpawns);
             Guard("pending", TickPending);
+            if (test54 != null) Guard("test54", TickTest54);
+            Guard("combat54", TickCombat54);
+            Guard("patrol54", TickPatrol54);
+            Guard("items54", TickItems54);
             if (now >= nextTick)
             {
                 float dt = TickInterval;
@@ -254,6 +274,8 @@ namespace RageEngine
                 {
                     var s = pool[i];
                     if (!s.active || s.creature == null) continue;
+                    if (s.life54 != LifeOf54(s.creature)) continue;                          // 0.54: not his body any more - Flush54 releases it
+                    s.deadSeen54 = s.creature.isKilled;
                     TickNpc42(s, dt);
                     if (s.daze > 0f) s.daze = Mathf.Max(0f, s.daze - 0.08f * recoverySpeed * dt);
                 }
@@ -264,6 +286,7 @@ namespace RageEngine
         {
             base.ScriptLateUpdate();
             if (!modEnabled) return;
+            if (!OrgansOnly) Guard("life54", Flush54);
             Guard("jaw", LateUpdateJaws);
             Guard("eyes", LateUpdateCorpses);
             Guard("gaze", LateUpdateGaze);
@@ -307,6 +330,7 @@ namespace RageEngine
             Reset(s);
             Guard("ik", () => ClearOurIk(c, null));                                       // 0.22: a recycled body may carry an old anchor
             s.active = true; s.creature = c;
+            s.gen54 = ++genSeq54; s.life54 = LifeOf54(c); s.deadSeen54 = false;          // 0.54: this state now belongs to this life of this body
             s.personality = personalitiesEnabled ? Personality.Pick(UnityEngine.Random.value) : Personality.All[0];
             s.brave = UnityEngine.Random.value < s.personality.bravery;
             float glassChance = s.personality.type == PersonalityType.Nervous ? 0.25f : s.personality.type == PersonalityType.Aggressive ? 0.05f : 0.12f;
@@ -376,6 +400,7 @@ namespace RageEngine
         static void Reset(NpcState s)
         {
             Guard("gouged", () => RestoreGouged(s));
+            Wipe54(s);                                                                    // 0.54: every plain field back to a new NPC's value first
             s.stealthKilled = s.punchedThrough = s.neckSnapped = s.paralysed = s.ally = s.castPrevL = s.castPrevR = s.neckGrabL = s.neckGrabR = s.spineShrugged = s.regenClean = s.crawlFlip = s.passedOut = s.knifeOut = s.knifePending = false; s.hasKnife = UnityEngine.Random.value < 0.65f; s.nextKnife49 = 0f; s.occiput = s.gutShots = s.nextVomit = s.vomitUntil = s.nextVomitSpurt = s.chokeBloodSince = s.nextChokeCough = s.convulseUntil = s.nextConvulse = s.hpOverride = 0f; s.hpT = 1f; s.eyeDmg[0] = s.eyeDmg[1] = 0f; s.headSaves = 0; s.saltsT = 0f; ClearKnots(s); s.ribsL = s.ribsR = s.bodyShots = s.faceStage = s.fingersOut = s.ribsOut = 0; s.faceDepth = s.nextShrugLog = s.groundSince = s.nextGroundAct = s.groundSwingUntil = s.faceDmg = s.nextFaceCave = 0f; s.comboPlan = s.comboLast = null; s.nextSpineShrug = 0f; s.neckGrabAt = s.neckSnapUsedAt = s.injectFlashUntil = s.nextRegenStep = s.regenGlowUntil = 0f; s.eyeTintKey = -1f; if (s.fxMark != null) UnityEngine.Object.Destroy(s.fxMark); s.fxMark = null; s.mouthT = s.nextIntegrityTrip = 0f; s.integrity = 100f; System.Array.Clear(s.blackEye, 0, s.blackEye.Length);
             s.energyAt50 = s.brain50 = s.concussUntil50 = s.shockEnd50 = s.nextDumb50 = s.fireAt50 = s.burnTime50 = s.nextChar50 = s.fireOutAt50 = s.flingPeak50 = s.flingAt50 = s.nextFloat50 = 0f; s.throatPunchAt50 = -10f; s.energyPart50 = null; s.charMarks50 = 0; s.shockScarred50 = s.ash50 = s.fireDecided50 = s.fireWins50 = s.fireRoll50 = false;
             s.jawDmg51 = s.nextBump51 = s.nextLife51 = s.aimedFor51 = s.nextAim51 = s.nextBody51 = s.nextLick51 = s.nextNod51 = s.lookedAt51 = 0f; s.brutalSeen51 = Time.time; s.morale51 = 1f; s.bumps51 = s.wounds51 = 0; s.lastWoundPart51 = null; s.bodiesSeen51?.Clear();
@@ -468,10 +493,12 @@ namespace RageEngine
                 Guard("ik", () => ClearOurIk(c, s));
                 Guard("defense", () => DefenseOnRelease(s));
                 Guard("prof", () => ProfOnRelease(s));
+                Guard("combat54", () => CombatOnRelease54(s));                          // 0.54: the game's guard / dodge / riposte / senses values back
                 Guard("bio", () => ClearBio(s));
                 Guard("lab", () => ClearLab(s));
                 Guard("eyetint", () => { if (s.eyeTintKey > -1.5f && s.eyeTintKey != -1f) c.SetColor(s.irisOrig, Creature.ColorModifier.EyesIris, true); s.eyeTintKey = -1f; if (s.fxMark != null) UnityEngine.Object.Destroy(s.fxMark); s.fxMark = null; });
                 Guard("eyes-rest", () => RestoreEyes(s));
+                Guard("gouged", () => RestoreGouged(s));                                 // 0.54: put gouged eyes back on THIS body (Reset runs after the body is gone)
                 Guard("vanilla", () => VanillaOnRelease(s));
                 Guard("face", () => { if (s.faceSmr != null && s.faceShape >= 0) s.faceSmr.SetBlendShapeWeight(s.faceShape, 0f); });
                 Guard("settle", () => Unsettle(s));
@@ -495,6 +522,7 @@ namespace RageEngine
             s.reflexAnchorL = s.reflexAnchorR = null;
             s.boneMeshes.Clear();
             s.active = false; s.creature = null;
+            s.gen54 = ++genSeq54;                                                         // 0.54: anything still holding this state sees it's not his any more
         }
 
         void ReleaseAll()
@@ -642,7 +670,7 @@ namespace RageEngine
 
         void OnLevelUnload(LevelData data, LevelData.Mode mode, EventTime time)
         {
-            if (time == EventTime.OnStart) { Guard("unload", ReleaseAll); Guard("roster", () => SaveRosterIfDirty(true)); }
+            if (time == EventTime.OnStart) { Guard("unload", ReleaseAll); Guard("roster", () => SaveRosterIfDirty(true)); test54 = null; Guard("unload54", Unload54); }
         }
 
         // ---------------- shared helpers ----------------

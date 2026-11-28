@@ -41,6 +41,7 @@ namespace RageEngine
         static readonly List<KeyValuePair<UnityWebRequest, string>> loads28 = new List<KeyValuePair<UnityWebRequest, string>>();
         static bool audioRequested28; static int track28 = -1; static bool loungeOn28;
         static readonly List<KeyValuePair<Creature, float>> toDress28 = new List<KeyValuePair<Creature, float>>();
+        static readonly Dictionary<Creature, int> dressLife54 = new Dictionary<Creature, int>();   // 0.54: whose suit it is
         static bool suitNamesLogged;
 
         static void ResetLounge28()
@@ -230,7 +231,8 @@ namespace RageEngine
                 {
                     if (now < toDress28[i].Value) continue;
                     var c = toDress28[i].Key; toDress28.RemoveAt(i);
-                    if (c != null && !c.isKilled) Guard("suit", () => DressSuit28(c));
+                    if (c != null && !c.isKilled && dressLife54.TryGetValue(c, out int dl) && Same54(c, dl)) Guard("suit", () => DressSuit28(c));
+                    if (c != null) dressLife54.Remove(c);
                 }
         }
 
@@ -249,7 +251,7 @@ namespace RageEngine
 
         static void QueueSuit28(Creature c)
         {
-            if (dressSuit28 && mapSuits && c != null) toDress28.Add(new KeyValuePair<Creature, float>(c, Time.time + 1.5f));
+            if (dressSuit28 && mapSuits && c != null) { toDress28.Add(new KeyValuePair<Creature, float>(c, Time.time + 1.5f)); dressLife54[c] = LifeOf54(c); }
         }
 
         // ------------------------------------------------------------------ suits

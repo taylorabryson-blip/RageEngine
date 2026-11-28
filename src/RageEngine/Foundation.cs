@@ -101,6 +101,7 @@ namespace RageEngine
                 SkinPaint.Restore(c);
                 // jaw pose
                 if (s.jawBroken && c.jaw != null) c.jaw.localRotation = s.jawRest;
+                if (s.jawBroken) try { var speak = c.brain.instance.GetModule<BrainModuleSpeak>(false); if (speak != null) speak.moveMouth = true; } catch { }   // 0.54: the next NPC can talk again
                 s.jawBroken = s.jawTorn = false;
                 // eyes
                 c.autoEyeClipsActive = true;

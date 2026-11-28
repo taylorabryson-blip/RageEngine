@@ -34,6 +34,7 @@ namespace RageEngine
             if (broken) return;
             broken = true;
             RageEngineScript.Guard("glass", () => RageEngineScript.Shatter53(transform, at, vel, mat));
+            RageEngineScript.Emit(at, 16f, Stim.Impact);                                                      // 0.54: breaking glass carries
             Destroy(gameObject);
         }
     }
@@ -144,7 +145,7 @@ namespace RageEngine
                     Guard("map.faction", () => { if (faction >= 0 && faction != 2) cr.SetFaction(faction); });
                     if (kind == 3) QueueMixed(cr);
                     QueueSuit28(cr);
-                    if (comp >= 0) pendingSoldiers.Add(new PendingSoldier { c = cr, at = Time.time + 1.2f, comp = comp });
+                    if (comp >= 0) pendingSoldiers.Add(new PendingSoldier { c = cr, at = Time.time + 1.2f, comp = comp, life = LifeOf54(cr) });
                     Debug.Log($"[RageEngine] map enemy: {id} (faction {faction}){(comp >= 0 ? " - " + CompName[comp] : "")}");
                     MakeHostile28(cr, faction);
                 });

@@ -397,8 +397,8 @@ namespace RageEngine
                 if (cr == null) return;
                 Guard("spawner.faction", () => { if (faction >= 0) cr.SetFaction(faction); });
                 if (mode != 3) MakeHostile28(cr, faction);
-                if (mode == 2) pendingSoldiers.Add(new PendingSoldier { c = cr, at = Time.time + 1.2f, comp = RandomSuperSerum() });
-                if (mode == 1) disarm51.Add((cr, Time.time + 1.5f));
+                if (mode == 2) pendingSoldiers.Add(new PendingSoldier { c = cr, at = Time.time + 1.2f, comp = RandomSuperSerum(), life = LifeOf54(cr) });
+                if (mode == 1) disarm51.Add((cr, Time.time + 1.5f, LifeOf54(cr)));
                 Debug.Log($"[RageEngine] NPC Spawner: {id} as {spawnModes51[mode]} (faction {faction})");
             });
             Haptics.Pulse(h.side, 0.8f, 2);
@@ -406,13 +406,13 @@ namespace RageEngine
             Log($"NPC Spawner: {spawnModes51[mode]} at {pos}");
         }
 
-        static readonly List<(Creature c, float at)> disarm51 = new List<(Creature, float)>();
+        static readonly List<(Creature c, float at, int life)> disarm51 = new List<(Creature, float, int)>();   // 0.54: life = who it was meant for
         static void TickDisarm51()
         {
             for (int i = disarm51.Count - 1; i >= 0; i--)
             {
-                var (c, at) = disarm51[i];
-                if (c == null) { disarm51.RemoveAt(i); continue; }
+                var (c, at, life) = disarm51[i];
+                if (c == null || !Same54(c, life)) { disarm51.RemoveAt(i); continue; }
                 if (Time.time < at) continue;
                 disarm51.RemoveAt(i);
                 foreach (var nh in new[] { c.handLeft, c.handRight })

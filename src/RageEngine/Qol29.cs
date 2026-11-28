@@ -33,7 +33,7 @@ namespace RageEngine
         public static ModOptionString[] quickValues = {
             new ModOptionString("Heal me", null, "heal"), new ModOptionString("Remove all enemies", null, "clear"),
             new ModOptionString("Clear dead bodies", null, "bodies"), new ModOptionString("Clean up blood & gore", null, "gore"),
-            new ModOptionString("Unstuck (back to map start)", null, "unstuck") };
+            new ModOptionString("Unstuck (back to map start)", null, "unstuck"), new ModOptionString("Injury leak test", null, "leaktest") };
         [ModOptionCategory("Rage", 0), ModOptionOrder(20)]
         [ModOption("Quick action", "Pick one, then press Do it.", valueSourceName = nameof(quickValues), defaultValueIndex = 0)]
         public static string quickAction = "heal";
@@ -59,6 +59,7 @@ namespace RageEngine
             var pc = Player.local != null ? Player.local.creature : null;
             switch (a)
             {
+                case "leaktest": StartTest54(); break;                                   // 0.54: spawn, injure, kill, respawn, check (3 rounds)
                 case "heal":
                     if (pc == null) return;
                     pc.Heal(pc.maxHealth); Notify("Healed"); break;

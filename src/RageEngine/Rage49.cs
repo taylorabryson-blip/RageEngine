@@ -93,7 +93,7 @@ namespace RageEngine
         }
 
         // ================================================================== open wounds you can reach into
-        sealed class Wound49 { public Creature c; public RagdollPart part; public Vector3 local; public int region; public float at; public int taken; }
+        sealed class Wound49 { public Creature c; public RagdollPart part; public Vector3 local; public int region; public float at; public int taken; public int life; }   // 0.54: life = whose wound
         static readonly List<Wound49> wounds49 = new List<Wound49>();
         static readonly Dictionary<Creature, int> takenFrom49 = new Dictionary<Creature, int>();   // bit 1 heart, 2 spine
 
@@ -102,10 +102,11 @@ namespace RageEngine
             if (!ripOrgans49 || c == null || part == null) return;
             var chest = ChestPart(c) ?? part;
             int region = Region49(c, chest, p);
+            int life = LifeOf54(c);
             foreach (var w in wounds49)
-                if (w.c == c && w.part == part && (w.part.transform.TransformPoint(w.local) - p).sqrMagnitude < 0.06f * 0.06f) { w.at = Time.time; return; }
+                if (w.c == c && w.life == life && w.part == part && (w.part.transform.TransformPoint(w.local) - p).sqrMagnitude < 0.06f * 0.06f) { w.at = Time.time; return; }
             if (wounds49.Count >= 24) wounds49.RemoveAt(0);
-            wounds49.Add(new Wound49 { c = c, part = part, local = part.transform.InverseTransformPoint(p), region = region, at = Time.time });
+            wounds49.Add(new Wound49 { c = c, part = part, local = part.transform.InverseTransformPoint(p), region = region, at = Time.time, life = life });
         }
 
         sealed class Held49 { public GameObject go; public RagdollHand hand; public float at; }
@@ -117,7 +118,7 @@ namespace RageEngine
             for (int i = wounds49.Count - 1; i >= 0; i--)
             {
                 var w = wounds49[i];
-                if (w.c == null || w.part == null || Time.time - w.at > 180f || w.taken >= 3) wounds49.RemoveAt(i);
+                if (w.c == null || w.part == null || Time.time - w.at > 180f || w.taken >= 3 || !Same54(w.c, w.life)) wounds49.RemoveAt(i);   // 0.54: his body went to someone else
             }
             var pc = Player.local != null ? Player.local.creature : null;
             if (pc == null) return;
@@ -142,6 +143,7 @@ namespace RageEngine
                 Wound49 best = null; float bd = 0.13f * 0.13f;
                 foreach (var w in wounds49)
                 {
+                    if (!Same54(w.c, w.life)) continue;                                 // 0.54
                     float d2 = (w.part.transform.TransformPoint(w.local) - palm).sqrMagnitude;
                     if (d2 < bd) { bd = d2; best = w; }
                 }
@@ -218,14 +220,14 @@ namespace RageEngine
             {
                 if (s != null) { s.finalKill = true; s.dying = false; s.noGasp = spine; if (!spine) Scream(s, true); AllowFallAlways(s, 5f); }
                 if (spine) { if (!c.isKilled) Guard("kill", () => c.Kill()); }
-                else pendingKill49.Add((c, Time.time + Random.Range(0.8f, 2f)));
+                else pendingKill49.Add((c, Time.time + Random.Range(0.8f, 2f), LifeOf54(c)));
             }
             else if (s != null)
             {
                 Scream(s, true);
                 if (name == "RE_Organ_Lung") Speak(s, "choke");
                 StartClutch(s, w.part, p, null, false, true); if (s.clutching) s.clutchUntil = Time.time + 4f;
-                if (Random.value < 0.35f) pendingKill49.Add((c, Time.time + Random.Range(4f, 9f)));
+                if (Random.value < 0.35f) pendingKill49.Add((c, Time.time + Random.Range(4f, 9f), LifeOf54(c)));
             }
             RageMoment(spine ? "spine ripped out" : "organ ripped out");
             Log($"{c.name}: {(spine ? "SPINE" : name.Substring(9).ToUpper())} RIPPED OUT by hand");
@@ -246,13 +248,13 @@ namespace RageEngine
             if (rb != null) { rb.isKinematic = false; rb.velocity = v; rb.angularVelocity = Random.insideUnitSphere * 3f; }
         }
 
-        static readonly List<(Creature c, float at)> pendingKill49 = new List<(Creature, float)>();
+        static readonly List<(Creature c, float at, int life)> pendingKill49 = new List<(Creature, float, int)>();   // 0.54: life = who it was meant for
         static void TickPendingKill49()
         {
             for (int i = pendingKill49.Count - 1; i >= 0; i--)
             {
-                var (c, at) = pendingKill49[i];
-                if (c == null || c.isKilled) { pendingKill49.RemoveAt(i); continue; }
+                var (c, at, life) = pendingKill49[i];
+                if (c == null || c.isKilled || !Same54(c, life)) { pendingKill49.RemoveAt(i); continue; }   // 0.54: never kills the next NPC in that body
                 if (Time.time < at) continue;
                 pendingKill49.RemoveAt(i);
                 var cc = c; Guard("kill", () => cc.Kill());
@@ -262,7 +264,7 @@ namespace RageEngine
         // ================================================================== punch through the chest
         sealed class Impale49
         {
-            public NpcState s; public Creature c; public RagdollHand hand; public RagdollPart chest;
+            public NpcState s; public Creature c; public RagdollHand hand; public RagdollPart chest; public int gen, life;   // 0.54
             public Vector3 frontLocal, normalLocal, offsetInHand;
             public float start; public bool done; public float restoreAt;
             public readonly List<(Collider a, Collider b)> ignored = new List<(Collider, Collider)>();
@@ -283,7 +285,7 @@ namespace RageEngine
             if (hand == null || hand.grabbedHandle != null) return false;
             var c = s.creature;
             var chest = ChestPart(c) ?? part;
-            var im = new Impale49 { s = s, c = c, hand = hand, chest = chest, start = Time.time };
+            var im = new Impale49 { s = s, c = c, hand = hand, chest = chest, start = Time.time, gen = s.gen54, life = LifeOf54(c) };
             Vector3 n = -dir.normalized;
             im.frontLocal = chest.transform.InverseTransformPoint(point);
             im.normalLocal = chest.transform.InverseTransformDirection(n);
@@ -390,6 +392,12 @@ namespace RageEngine
                     impales49.RemoveAt(i); continue;
                 }
                 var c = im.c;
+                if (c != null && (!Same54(c, im.life) || !Owns54(im.s, im.gen)))
+                {   // 0.54: his body went to someone else - let go without touching the new NPC
+                    foreach (var (a, b) in im.ignored) if (a != null && b != null) Physics.IgnoreCollision(a, b, false);
+                    if (im.graspL != null) Object.Destroy(im.graspL.gameObject); if (im.graspR != null) Object.Destroy(im.graspR.gameObject);
+                    impales49.RemoveAt(i); continue;
+                }
                 if (c == null || im.hand == null || im.chest == null || im.s.creature != c) { Finish49(im, false); continue; }
                 Vector3 front = im.chest.transform.TransformPoint(im.frontLocal), n = im.chest.transform.TransformDirection(im.normalLocal);
                 Vector3 palm = im.hand.transform.position;
@@ -569,14 +577,14 @@ namespace RageEngine
         // ================================================================== an empty eye socket
         /// 0.49: the eyeball itself is gone from the socket - every eye transform and eye bone on that side is collapsed
         /// (re-applied every frame, the animator can't put it back) and a dark wet hole sits where it was.
-        sealed class EyeHide49 { public Creature c; public List<(Transform t, Vector3 scale)> parts = new List<(Transform, Vector3)>(); public GameObject hole; }
+        sealed class EyeHide49 { public Creature c; public List<(Transform t, Vector3 scale)> parts = new List<(Transform, Vector3)>(); public GameObject hole; public int life; }   // 0.54: life = whose eye
         static readonly List<EyeHide49> eyeHides49 = new List<EyeHide49>();
         static Material socketMat49;
 
         internal static void HideEye49(Creature c, CreatureEye e, Vector3 ep, Transform head)
         {
             if (c == null || e == null) return;
-            var h = new EyeHide49 { c = c };
+            var h = new EyeHide49 { c = c, life = LifeOf54(c) };
             var seen = new HashSet<Transform>();
             void Add(Transform t) { if (t != null && seen.Add(t)) h.parts.Add((t, t.localScale)); }
             Add(e.transform);
@@ -626,6 +634,12 @@ namespace RageEngine
             {
                 var h = eyeHides49[i];
                 if (h.c == null) { if (h.hole != null) Object.Destroy(h.hole); eyeHides49.RemoveAt(i); continue; }
+                if (!Same54(h.c, h.life))
+                {   // 0.54: the body belongs to somebody new - give the eye back instead of hiding it on him
+                    foreach (var (t, sc) in h.parts) if (t != null) t.localScale = sc;
+                    if (h.hole != null) Object.Destroy(h.hole);
+                    eyeHides49.RemoveAt(i); continue;
+                }
                 foreach (var (t, _) in h.parts) if (t != null && t.localScale != Vector3.zero) t.localScale = Vector3.zero;
             }
         }

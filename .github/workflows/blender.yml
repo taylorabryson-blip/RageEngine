@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['tools/blender/**', '.github/workflows/blender.yml', 'mod/RageEngine/Textures/Spawner/**']
+    paths: ['tools/blender/**', '.github/workflows/blender.yml', 'mod/RageEngine/Textures/Spawner/**', 'mod/RageEngine/Textures/Items54/**']
 permissions:
   contents: write
 jobs:
@@ -29,6 +29,7 @@ jobs:
           mkdir -p out
           /tmp/blender/blender -b --factory-startup -P tools/blender/re_assets.py -- $PWD/out 2>&1 | tee out/blender.log | grep -E "wrote|DONE|Error|Traceback|line [0-9]+" || true
           /tmp/blender/blender -b --factory-startup -P tools/blender/re_spawner.py -- $PWD/out $PWD/mod/RageEngine/Textures/Spawner 2>&1 | tee out/spawner.log | grep -E "wrote|DONE|Error|Traceback|line [0-9]+" || true
+          /tmp/blender/blender -b --factory-startup -P tools/blender/re_items54.py -- $PWD/out $PWD/mod/RageEngine/Textures/Items54 2>&1 | tee out/items54.log | grep -E "wrote|DONE|tris|Error|Traceback|line [0-9]+" || true
           ls -la out
       - name: Publish to branch blender-out
         run: |

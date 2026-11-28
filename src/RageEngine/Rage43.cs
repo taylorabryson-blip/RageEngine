@@ -496,8 +496,8 @@ namespace RageEngine
             if (m != null && m != s.profMelee43) { s.profMelee43 = m; s.profAnim43 = m.animationSpeedMultiplier; s.profDelay43 = m.nextAttackDelay; }
             if (m != null)
             {
-                m.animationSpeedMultiplier = s.profAnim43 * Mathf.Lerp(0.93f, 1.08f, s.prof43) * WearAnim44(s);      // within the game's own animations; slower as he's hurt
-                m.nextAttackDelay = s.profDelay43 * Mathf.Lerp(1.35f, 0.8f, s.prof43) * WearDelay44(s);
+                m.animationSpeedMultiplier = s.profAnim43 * Mathf.Lerp(0.93f, 1.08f, s.prof43) * WearAnim44(s) * ExertAnim54(s);   // 0.54: tired = slower, a counter = snappier      // within the game's own animations; slower as he's hurt
+                m.nextAttackDelay = s.profDelay43 * Mathf.Lerp(1.35f, 0.8f, s.prof43) * WearDelay44(s) * ExertDelay54(s);   // 0.54: tired / recovering = longer pauses
             }
             var h = inst.GetModule<BrainModuleHitReaction>(false);
             if (h != null && h != s.profHit43)

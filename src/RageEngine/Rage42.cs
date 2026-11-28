@@ -23,6 +23,7 @@ namespace RageEngine
     public sealed class EyeDangle42 : MonoBehaviour
     {
         public Transform head; public Vector3 socketLocal; public float len = 0.06f; public float dropAt; public LineRenderer nerve;
+        public Creature owner; public int life;                                  // 0.54: whose eye it is
         Vector3 pos, vel, lastAnchor; bool started, dropped;
 
         void Start() { pos = transform.position; if (head != null) lastAnchor = head.TransformPoint(socketLocal); started = true; }
@@ -31,7 +32,7 @@ namespace RageEngine
         {
             if (!started || dropped) return;
             float dt = Mathf.Min(Time.deltaTime, 0.04f);
-            if (head == null || !head.gameObject.activeInHierarchy) { Drop(Vector3.zero); return; }
+            if (head == null || !head.gameObject.activeInHierarchy || (owner != null && !RageEngineScript.Same54(owner, life))) { Drop(Vector3.zero); return; }
             Vector3 anchor = head.TransformPoint(socketLocal);
             Vector3 anchorVel = (anchor - lastAnchor) / Mathf.Max(dt, 0.0001f); lastAnchor = anchor;
             if (Time.time >= dropAt || anchorVel.sqrMagnitude > 7f * 7f) { Drop(anchorVel); return; }      // a hard jerk of the head tears it off
@@ -214,6 +215,7 @@ namespace RageEngine
             lr.SetPosition(0, ep); lr.SetPosition(1, go.transform.position);
             var d = go.AddComponent<EyeDangle42>();
             d.head = head; d.socketLocal = head.InverseTransformPoint(ep); d.nerve = lr; d.len = Random.Range(0.045f, 0.07f);
+            if (s != null && s.creature != null) { d.owner = s.creature; d.life = s.life54; }
             d.dropAt = Time.time + Random.Range(6f, 18f);
             eyes42.Add(go); eyes42.Add(lineGo);
             Object.Destroy(lineGo, 60f);

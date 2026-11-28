@@ -128,7 +128,7 @@ namespace RageEngine
             var rec = s.identity;
             if (rec == null) return;
             var c = s.creature;
-            bool dead = s.diedFinal || (c != null && c.isKilled);
+            bool dead = s.diedFinal || s.deadSeen54 || (c != null && c.isKilled && LifeOf54(c) == s.life54);   // 0.54: a body re-used before we looked still died
             if (dead) { rec.defeated = true; Log($"{rec.name} is dead - won't be back"); }
             else if (s.lastHitTime > 0f) { rec.escapes++; rec.scars |= s.scarMask | (int)s.brokenParts; if (ppPersistence == "Persistent") rec.ppZones |= DisabledZoneMask(s); Log($"{rec.name} got away (escapes: {rec.escapes}) - he'll remember this"); }
             activeIds.Remove(rec.id);

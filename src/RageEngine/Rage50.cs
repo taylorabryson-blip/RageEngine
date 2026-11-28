@@ -391,7 +391,7 @@ namespace RageEngine
                                 if (cr != null && !cr.isKilled && superDone50.Add(cr))
                                 {
                                     int comp = RandomSuperSerum(); var cc = cr;
-                                    pendingSoldiers.Add(new PendingSoldier { c = cc, at = Time.time + 1.0f, comp = comp });
+                                    pendingSoldiers.Add(new PendingSoldier { c = cc, at = Time.time + 1.0f, comp = comp, life = LifeOf54(cc) });
                                     Debug.Log($"[RageEngine] super wave: {cr.name} gets {CompName[comp]}");
                                 }
                         }

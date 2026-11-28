@@ -19,7 +19,7 @@ namespace RageEngine
             public Item item; public int kind; public int comp; public DevState state;
             public Transform root, plunger, liquid, needle;
             public Vector3 plungerStart; public float liquidLen, travel, t0, refillT = -1f;
-            public NpcState target; public RagdollPart site; public Vector3 siteLocal;
+            public NpcState target; public RagdollPart site; public Vector3 siteLocal; public int targetGen;   // 0.54: which NPC the syringe went into
             public int tox = -1, uses; public float nextOil; public int custom = -1; public int special;          // custom = Serum Lab slot (0-5)                                    // 0.25: toxin oil bottles
         }
         static readonly Dictionary<Item, Device> devices = new Dictionary<Item, Device>();
@@ -224,7 +224,7 @@ namespace RageEngine
             var col = hit.sourceCollider;
             var it = col != null ? col.GetComponentInParent<Item>() : null;
             if (it == null || !devices.TryGetValue(it, out var d) || d.kind == 4 || d.state != DevState.Full || (d.comp < 0 && d.special == 0 && (d.custom < 0 || recipes[d.custom] == null))) return;
-            d.state = DevState.Injecting; d.t0 = Time.time; d.target = s; d.site = part; d.siteLocal = part.transform.InverseTransformPoint(hit.contactPoint);
+            d.state = DevState.Injecting; d.t0 = Time.time; d.target = s; d.targetGen = s.gen54; d.site = part; d.siteLocal = part.transform.InverseTransformPoint(hit.contactPoint);
             Sfx.Play("NRE_Inject", it.transform, 1f);
             s.bioSite = part; s.bioSiteLocal = d.siteLocal;
             if (d.custom >= 0 || d.special > 0 || !IsSerum((Comp)d.comp) || d.comp == (int)Comp.HeroX)
@@ -248,7 +248,7 @@ namespace RageEngine
                 d.state = DevState.Empty;
                 var s = d.target; int comp = d.comp;
                 d.comp = -1;
-                if (s != null && s.active && s.creature != null && dose > 0.05f)
+                if (s != null && s.active && s.creature != null && s.gen54 == d.targetGen && dose > 0.05f)
                 {
                     Vector3 site = d.site != null ? d.site.transform.TransformPoint(d.siteLocal) : s.creature.transform.position;
                     if (d.special == 1) ApplyLoyalty(s, dose);

@@ -29,7 +29,7 @@ namespace RageEngine
         public static string duelSerum = "-1";
         public static void SpawnDuelButton(string _) => Guard("duel", () => instance?.SpawnDuel());
 
-        sealed class PendingSoldier { public Creature c; public float at; public int comp; }
+        sealed class PendingSoldier { public Creature c; public float at; public int comp; public int life; }   // 0.54: life = who the serum is for
         static readonly List<PendingSoldier> pendingSoldiers = new List<PendingSoldier>();
         static bool factionsLogged;
 
@@ -61,7 +61,7 @@ namespace RageEngine
                 {
                     if (cr == null) return;
                     Guard("duel.faction", () => { if (faction >= 0 && faction != 2) cr.SetFaction(faction); });
-                    pendingSoldiers.Add(new PendingSoldier { c = cr, at = Time.time + 1.2f, comp = comp });
+                    pendingSoldiers.Add(new PendingSoldier { c = cr, at = Time.time + 1.2f, comp = comp, life = LifeOf54(cr) });
                     Debug.Log($"[RageEngine] super soldier spawned: {id} (faction {faction}) - {CompName[comp]}");
                     MakeHostile28(cr, faction);
                 });
@@ -87,7 +87,7 @@ namespace RageEngine
             for (int i = pendingSoldiers.Count - 1; i >= 0; i--)
             {
                 var p = pendingSoldiers[i];
-                if (p.c == null || p.c.isKilled || now > p.at + 15f) { pendingSoldiers.RemoveAt(i); continue; }
+                if (p.c == null || p.c.isKilled || now > p.at + 15f || (p.life > 0 && !Same54(p.c, p.life))) { pendingSoldiers.RemoveAt(i); continue; }
                 if (now < p.at) continue;
                 if (!TryGet(p.c, out var s)) continue;                                   // the regular scan picks him up
                 pendingSoldiers.RemoveAt(i);

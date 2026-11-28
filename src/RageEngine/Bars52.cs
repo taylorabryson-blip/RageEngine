@@ -35,7 +35,7 @@ namespace RageEngine
         sealed class Bar52
         {
             public GameObject root; public Transform frame, bg, chip, fill; public readonly List<Transform> ticks = new List<Transform>();
-            public string style, size; public float chipHp = 1f, shownHp = 1f, deadAt = -1f, lastHp = 1f, hurtAt = -100f;
+            public string style, size; public float chipHp = 1f, shownHp = 1f, deadAt = -1f, lastHp = 1f, hurtAt = -100f; public int life;   // 0.54: whose bar
             public MaterialPropertyBlock mpb = new MaterialPropertyBlock();
         }
         static readonly Dictionary<Creature, Bar52> bars52 = new Dictionary<Creature, Bar52>();
@@ -116,7 +116,8 @@ namespace RageEngine
                 var s = pool[i];
                 if (!s.active || s.creature == null) continue;
                 var c = s.creature;
-                if (!bars52.TryGetValue(c, out var b)) { b = new Bar52(); bars52[c] = b; }
+                if (bars52.TryGetValue(c, out var old) && old.life != s.life54) { if (old.root != null) Object.Destroy(old.root); bars52.Remove(c); }   // 0.54: a new person gets a new, full bar
+                if (!bars52.TryGetValue(c, out var b)) { b = new Bar52 { life = s.life54 }; bars52[c] = b; }
                 if (b.root == null || b.style != barStyle52 || b.size != barSize52) Build52(b);
                 float hp = c.isKilled ? 0f : Mathf.Clamp01(HpFrac(c));
                 if (hp < b.lastHp - 0.001f) b.hurtAt = now;

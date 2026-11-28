@@ -85,7 +85,7 @@ namespace ThunderRoad
         public Level level;
         public virtual System.Collections.IEnumerator OnPlayerSpawnCoroutine() { yield break; }
     }
-    public class Level : MonoBehaviour { public static Level current; public static Level master; public LevelData data; }
+    public class Level : MonoBehaviour { public static Level current; public static Level master; public LevelData data; public static bool IsDungeon => false; }
     public static class LevelManager { public static string GetCurrentLevel() => null; }
     public class WaveSpawner : MonoBehaviour
     {
@@ -266,6 +266,9 @@ namespace ThunderRoad
         public enum State { Idle = 0, Follow = 1, Patrol = 2, Investigate = 3, Alert = 4, Combat = 5, Grappled = 6, Custom = 7 }
         public State state;
         public BrainData instance;
+        public enum Stagger { None = 0, LightAndMedium = 1, Full = 2 }
+        public Stagger currentStagger; public bool isAttacking, isDodging, isDefending; public Creature currentTarget;
+        public void SetState(State newState) { }
         public void Load(string brainId) { }
         public void Stop() { }
     }
@@ -283,7 +286,8 @@ namespace ThunderRoad
     }
     public class BrainModuleRanged : BrainData.Module { }
     public class BrainModuleAttack : BrainData.Module { }
-    public class BrainModuleMelee : BrainModuleAttack { public bool meleeEnabled; public float animationSpeedMultiplier, lastAttackStartTime, lastAttackEndTime, nextAttackDelay; }
+    public class BrainModuleMelee : BrainModuleAttack { public bool meleeEnabled; public float animationSpeedMultiplier, lastAttackStartTime, lastAttackEndTime, nextAttackDelay;
+        public Vector2 recoilNothingRiposteChance, minMaxRiposteDelay; public float riposteSpeedAdditiveModifier, lastRiposteTime; public Transform targetTransform; public void AttackTarget(Transform target) { } }
     public class Imbue : ThunderBehaviour { public static bool infiniteImbue; }
     public class RagdollHandClimb : ThunderBehaviour { public static bool climbFree; }
     public enum LayerName { }
@@ -297,7 +301,12 @@ namespace ThunderRoad
     {
         public void StartThrow(Transform target, bool grabRock, ThunderRoad.AI.Action.AttackThrow node = null, float aimDelay = -1f) { }
     }
-    public class BrainModuleDefense : BrainData.Module { public bool parryEnabled; public float aboutToBeHitTiming, parryDetectionRadius, positionSpeed, rotationSpeed, parryAdjustSpeed, armSpringMultiplier; }
+    public class BrainModuleDefense : BrainData.Module { public bool parryEnabled; public float aboutToBeHitTiming, parryDetectionRadius, positionSpeed, rotationSpeed, parryAdjustSpeed, armSpringMultiplier;
+        public bool dodgeEnabled, sideDodgeEnabled; public Vector2 minMaxDodgeCooldown; public float defenseMaxDistance, heldDefenseMinRadius, heldDefenseMaxRadius, dynamicHeightOffset, parryHorizontalMaxAngle, shieldRiposteChance, riposteBlockRequirement, nextAllowedDodgeTime; }
+    public class BrainModuleDetection : BrainData.Module { public float sightDetectionHorizontalFov, sightDetectionVerticalFov, hearMaxDistance, hearRememberDuration, alertednessLossPerSec; public bool canHear; }
+    public class BrainModuleMove : BrainData.Module { public bool allowMove; public float navReachDistance;
+        public ThunderRoad.AI.State UpdateMoveCycle(Vector3 targetPosition, float targetMinRadius, float targetMaxRadius, float moveSpeedRatio, float runSpeedRatio, float targetRadiusAngle, bool unobstructedPathFirst, float repathMinDelay, float repathMaxDelay) => default;
+        public void StopMove() { } }
     public class BrainModuleEquipment : BrainData.Module { public bool allowArmGrabDisarm; public bool allowArmStabDisarm; }
     public class BrainModuleElectrocute : BrainData.Module { public Coroutine coroutine; public float lastElectrocuteTime; }
     public class BrainModuleExpression : BrainData.Module { public bool SetFaceExpression(FaceAnimator.Expression expression, int faceIndex = 0, float? neutralExpressionTime = null) => false; }
@@ -307,6 +316,7 @@ namespace ThunderRoad
     {
         public float recoverySpeed;
         public bool cancelGetUp;
+        public float staggerLight, staggerMedium, parryRecoilCooldown, lastParryRecoilTime;
         public void TestStun(float duration) { }
         public class PushBehaviour
         {
@@ -409,6 +419,12 @@ namespace ThunderRoad
         public delegate void RagdollSlicedEvent(RagdollPart part, EventTime eventTime);
         public delegate void LevelLoadEvent(LevelData levelData, LevelData.Mode mode, EventTime eventTime);
         public static event CreatureKillEvent onCreatureKill;
+        public delegate void CreatureSpawnedEvent(Creature creature);
+        public delegate void CreatureDespawnedEvent(Creature creature, EventTime eventTime);
+        public delegate void CreatureParryEvent(Creature parriedCreature, Item parriedItem, Creature parryingCreature, Item parryingItem, CollisionInstance collisionInstance);
+        public static event CreatureSpawnedEvent onCreatureSpawn;
+        public static event CreatureDespawnedEvent onCreatureDespawn;
+        public static event CreatureParryEvent onCreatureAttackParry;
         public static event RagdollSlicedEvent onRagdollSliced;
         public static event LevelLoadEvent onLevelUnload;
     }
@@ -458,6 +474,11 @@ namespace ThunderRoad
     public abstract class ModOptionParameter { public string title; public object value; }
     public class ModOptionString : ModOptionParameter { public ModOptionString(string title, string titleLocalizationId, string value) { } }
     public class ModOptionFloatValues : ModOptionAttribute { public ModOptionFloatValues(float startRange, float endRange, float step) { } }
+}
+
+namespace ThunderRoad.AI
+{
+    public enum State { SUCCESS = 0, FAILURE = 1, RUNNING = 2 }
 }
 
 namespace ThunderRoad.AI.Action

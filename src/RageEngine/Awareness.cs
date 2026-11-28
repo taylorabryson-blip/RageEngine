@@ -22,7 +22,7 @@ using UnityEngine;
 
 namespace RageEngine
 {
-    internal enum Stim : byte { Impact, Scream, Death, Clash, Gunshot, Explosion, NearMiss }
+    internal enum Stim : byte { Impact, Scream, Death, Clash, Gunshot, Explosion, NearMiss, Noise }   // 0.54: Noise = the Noisemaker
 
     public sealed partial class RageEngineScript
     {
@@ -56,7 +56,7 @@ namespace RageEngine
                 if (!s.active || s.creature == null || s.creature == source || s.creature.isKilled) continue;
                 var head = s.creature.ragdoll != null ? s.creature.ragdoll.headPart : null;
                 Vector3 ear = head != null ? head.transform.position : s.creature.transform.position;
-                float hearing = (s.personality != null ? s.personality.hearingMult : 1f) * (HasTag(s, Tag.Blind) ? 1.5f : 1f);
+                float hearing = (s.personality != null ? s.personality.hearingMult : 1f) * (HasTag(s, Tag.Blind) ? 1.5f : 1f) * Hear54();   // 0.54: NPC hearing setting
                 float d = Vector3.Distance(ear, pos);
                 float r = radius * hearing;
                 if (d > r) continue;
@@ -133,7 +133,7 @@ namespace RageEngine
                 float d = to.magnitude;
                 float range = Mathf.Lerp(12f, 28f, s.trAwareness) * (s.blindEyes != 0 ? 0.6f : 1f);
                 Vector3 fwd = c.centerEyes != null ? c.centerEyes.forward : c.transform.forward;
-                bool inView = canSee && d < range && (d < 1.5f || Vector3.Angle(fwd, to) < 75f);
+                bool inView = canSee && d < range && (d < 1.5f || Vector3.Angle(fwd, to) < SightHalf54());   // 0.54: NPC field of view setting
                 if (inView)
                 {
                     int n = Physics.RaycastNonAlloc(eye, to / Mathf.Max(d, 0.01f), sightHits, d - 0.2f, ~0, QueryTriggerInteraction.Ignore);
