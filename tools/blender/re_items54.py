@@ -1,8 +1,10 @@
 # Rage Engine 0.54 items - blender -b -P re_items54.py -- <outdir> <texdir>
-#  Noisemaker: a beat-up twin-bell wind-up alarm clock (red enamel case, brass bells / bezel / handle / feet / keys,
-#              paper dial, hands, a separate hammer that swings between the bells when it rings).
-#  NPC Scanner: a rugged handheld field scanner (safety-orange shell, rubber corner bumpers and grips, sensor window
-#              on top, recessed LCD, SCAN and PAGE keys).
+# Medieval, one noisemaker per faction + the Seer's Mirror:
+#  Eraden hand bell (bronze bell, turned wooden handle, iron clapper that swings)
+#  Outlaw coin pouch (cinched leather purse, drawstring, gold coins spilling out)
+#  Wildfolk bone rattle (painted hide drum on a bone handle, beads and teeth on cords)
+#  Eye resonance fork (bronze two-pronged ritual fork, eye boss with a glowing gem, wooden grip)
+#  Seer's Mirror (arched bronze hand mirror, dark glass that shows what Rage Engine knows about an NPC)
 # One OBJ per material (Y up, metres, Unity winding, real UVs), origin where the hand holds it, + Cycles previews.
 import bpy, bmesh, math, os, sys
 from mathutils import Vector, Matrix
@@ -178,133 +180,189 @@ def render(grp, path, cam_dist=40, poses=None):
     sc.render.filepath = path
     bpy.ops.render.render(write_still=True)
 
-# ============================================================================================ NOISEMAKER (alarm clock)
-reset()
-R, DEP = 3.8, 3.2                      # case radius, depth (cm); front face is -y
-FY = -DEP / 2
-case = cyl('case', R, DEP, (0, 0, 0), 40, 'Y', 0.45)
-back = cyl('back', R - 0.45, 0.5, (0, DEP / 2 + 0.2, 0), 40, 'Y', 0.15)
-body = join('Body', [case, back]); apply_all(body); box_uv(body, 0.15)
-
-bezel = ring('bezel', R + 0.12, R - 0.42, 0.55, (0, FY - 0.12, 0), 40)
-bells, posts = [], []
-for sx in (-1, 1):
-    tilt = Matrix.Rotation(math.radians(-sx * 28), 4, 'Y')
-    centre = Vector((sx * 2.55, 0.2, 3.55))
-    bm = bmesh.new(); bmesh.ops.create_uvsphere(bm, u_segments=20, v_segments=10, radius=1.75)
-    bmesh.ops.delete(bm, geom=[v for v in bm.verts if v.co.z < -0.05], context='VERTS')        # a dome, open underneath
-    bmesh.ops.transform(bm, matrix=tilt, verts=bm.verts); bmesh.ops.translate(bm, vec=centre, verts=bm.verts)
-    b = obj_from_bm('bell', bm); m = b.modifiers.new('solid', 'SOLIDIFY'); m.thickness = 0.12; bells.append(b)
-    knob = sphere('nut', 0.28, centre + tilt @ Vector((0, 0, 1.78)), 10, 6); bells.append(knob)
-    posts.append(tube('post', [(sx * 1.6, 0.2, 2.9), tuple(centre + tilt @ Vector((0, 0, 0.6)))], 0.16, 8))
-handle = tube('handle', [(-1.35, 0.4, 3.55)] + [(math.cos(math.radians(a)) * -1.35, 0.4, 3.55 + math.sin(math.radians(a)) * 1.9) for a in range(15, 180, 15)] + [(1.35, 0.4, 3.55)], 0.2, 8)
-feet = []
-for sx in (-1, 1):
-    feet.append(tube('leg', [(sx * 2.2, 0.0, -3.0), (sx * 2.7, 0.0, -4.1)], 0.2, 8))
-    feet.append(sphere('foot', 0.42, (sx * 2.75, 0.0, -4.2), 12, 6, (1, 1, 0.7)))
-keys = []
-for sx in (-1, 1):
-    keys.append(tube('stem', [(sx * 1.4, DEP / 2 + 0.3, -0.5), (sx * 1.4, DEP / 2 + 1.0, -0.5)], 0.14, 8))
-    keys.append(box('wing', (1.5, 0.18, 0.9), (sx * 1.4, DEP / 2 + 1.05, -0.5), 0.08, 2))
-cap = cyl('cap', 0.28, 0.25, (0, FY - 0.36, 0), 16, 'Y', 0.05)
-brass = join('Brass', [bezel] + bells + posts + [handle] + feet + keys + [cap]); apply_all(brass); box_uv(brass, 0.25)
-
-face = flat_disc('Face', R - 0.42, FY - 0.04, 40)
-planar_uv(face, 0, 2, (-(R - 0.42), -(R - 0.42), R - 0.42, R - 0.42))
-
-def hand(name, length, width, angle, y, tip=True):
-    bm = bmesh.new(); h = width / 2
-    pts = [(-h, -0.5), (h, -0.5), (h * 0.8, length - (width if tip else 0)), (0, length), (-h * 0.8, length - (width if tip else 0))]
-    vs = [bm.verts.new((x, y, z)) for x, z in pts]
-    f = bm.faces.new(vs); f.normal_flip()
-    ext = bmesh.ops.extrude_face_region(bm, geom=[f]); bmesh.ops.translate(bm, vec=Vector((0, 0.05, 0)), verts=[v for v in ext['geom'] if isinstance(v, bmesh.types.BMVert)])
-    bmesh.ops.rotate(bm, verts=bm.verts, cent=(0, y, 0), matrix=Matrix.Rotation(math.radians(-angle), 3, 'Y'))
+# ============================================================================================ shared shapes
+def lathe(name, prof, segs=32, z_axis=True):
+    """revolve a profile [(r, z), ...] around Z; r == 0 at an end closes it"""
+    bm = bmesh.new(); rings = []
+    for r, z in prof:
+        if r <= 1e-4: rings.append([bm.verts.new((0, 0, z))])
+        else: rings.append([bm.verts.new((math.cos(2 * math.pi * k / segs) * r, math.sin(2 * math.pi * k / segs) * r, z)) for k in range(segs)])
+    for a, b in zip(rings, rings[1:]):
+        if len(a) == 1 and len(b) == 1: continue
+        if len(a) == 1:
+            for k in range(segs): bm.faces.new((a[0], b[k], b[(k + 1) % segs]))
+        elif len(b) == 1:
+            for k in range(segs): bm.faces.new((a[k], b[0], a[(k + 1) % segs]))
+        else:
+            for k in range(segs): bm.faces.new((a[k], b[k], b[(k + 1) % segs], a[(k + 1) % segs]))
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-4)
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     return obj_from_bm(name, bm)
-hands = join('Hands', [hand('hour', 1.9, 0.32, 300, FY - 0.14), hand('minute', 2.8, 0.22, 52, FY - 0.2)]); box_uv(hands)
-alarm = hand('Alarm', 1.35, 0.14, 205, FY - 0.26); box_uv(alarm)
 
-# hammer: separate so it can swing between the bells; exported around its pivot
-PIV = Vector((0, 0.35, 3.25))
-hammer = join('Hammer', [tube('rod', [(0, 0.35, 3.25), (0, 0.35, 4.75)], 0.09, 8), sphere('ball', 0.3, (0, 0.35, 4.85), 12, 6)]); box_uv(hammer, 0.25)
+def outline_face(name, pts, y, thick=0.0):
+    """a flat face from an outline in the XZ plane at depth y (front = -y); optional extrude to +y"""
+    bm = bmesh.new(); vs = [bm.verts.new((x, y, z)) for x, z in pts]
+    f = bm.faces.new(vs)
+    if f.normal.y > 0: f.normal_flip()
+    if thick > 0:
+        ext = bmesh.ops.extrude_face_region(bm, geom=[f]); bmesh.ops.translate(bm, vec=Vector((0, thick, 0)), verts=[v for v in ext['geom'] if isinstance(v, bmesh.types.BMVert)])
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bmesh.ops.triangulate(bm, faces=bm.faces)
+    return obj_from_bm(name, bm)
 
-grip = Vector((0, 0, 0))
-tris = 0
-for o, n in ((body, 'RE_Noise_Body'), (brass, 'RE_Noise_Brass'), (face, 'RE_Noise_Face'), (hands, 'RE_Noise_Hands'), (alarm, 'RE_Noise_Alarm')):
-    for p in o.data.polygons: p.use_smooth = n not in ('RE_Noise_Face', 'RE_Noise_Hands', 'RE_Noise_Alarm')
-    tris += write_obj(o, n)
-for p in hammer.data.polygons: p.use_smooth = True
-tris += write_obj(hammer, 'RE_Noise_Hammer', origin=PIV)
-print('NOISEMAKER tris', tris, 'hammer pivot (unity m)', PIV.x * 0.01, PIV.z * 0.01, PIV.y * 0.01)
+def look(o, n):
+    for p in o.data.polygons: p.use_smooth = n
 
-body.data.materials.append(matimg('enamel', os.path.join(TEX, 'noise_body.png'), 0.35))
-brass.data.materials.append(matimg('brass', os.path.join(TEX, 'noise_brass.png'), 0.32, metal=1.0))
-face.data.materials.append(matimg('dial', os.path.join(TEX, 'noise_face.png'), 0.7))
-hands.data.materials.append(matcol('black', (0.03, 0.03, 0.03), 0.4, 0.6))
-alarm.data.materials.append(matcol('red', (0.6, 0.06, 0.05), 0.4))
-hammer.data.materials.append(matimg('brass2', os.path.join(TEX, 'noise_brass.png'), 0.32, metal=1.0))
-render([body, brass, face, hands, alarm, hammer], os.path.join(OUT, 'noisemaker_preview.png'), 44,
-       (((0, 0, math.radians(-18)), (-7.5, 0, 0.5), 1.0),
-        ((math.radians(-8), 0, math.radians(150)), (8.5, 8, 4.5), 0.62),
-        ((0, 0, math.radians(-80)), (9.0, 8, -6.0), 0.62)))
-print('NOISEMAKER DONE')
+def poses(a, b, c): return (a, b, c)
+STD = (((0, 0, math.radians(-18)), (-7.5, 0, 0.5), 1.0), ((math.radians(-10), 0, math.radians(150)), (8.5, 8, 4.5), 0.62), ((0, 0, math.radians(-80)), (9.0, 8, -6.0), 0.62))
+def T(f): return os.path.join(TEX, f)
 
-# ============================================================================================ NPC SCANNER
+# ============================================================================================ ERADEN HAND BELL (handle up, bell down)
 reset()
-W, H, D = 7.4, 15.5, 3.0
-FY = -D / 2
-shell = box('shell', (W, D, H), (0, 0, 0), 0.6, 4)
-head = box('head', (W + 0.5, D + 0.5, 2.6), (0, 0, H / 2 - 0.9), 0.55, 4)
-SCR_W, SCR_H, SCR_Z = 6.0, 4.3, 3.0
-bezel_cut = box('cut', (SCR_W, 2.0, SCR_H), (0, FY - 0.6, SCR_Z), 0.15, 2)
-shell = join('ShellJ', [shell, head]); apply_all(shell)
-boolean(shell, bezel_cut)
-pad = box('pad', (5.4, 0.3, 3.2), (0, FY + 0.05, -2.3), 0.3, 3); apply_all(pad)
-boolean(shell, pad)                                     # key well
-box_uv(shell, 0.12)
-
-bumpers = []
-for sx in (-1, 1):
-    for sz in (-1, 1):
-        z = H / 2 - 0.9 if sz > 0 else -H / 2 + 0.9
-        bumpers.append(box('bump', (1.6, D + 0.7, 1.9), (sx * (W / 2 - 0.35), 0, z), 0.5, 3))
-    for i in range(6):
-        bumpers.append(box('grip', (0.35, D * 0.8, 0.55), (sx * (W / 2 + 0.05), 0, -1.5 - i * 0.85), 0.12, 2))
-frame = box('frame', (SCR_W + 0.7, 0.3, SCR_H + 0.7), (0, FY - 0.02, SCR_Z), 0.2, 2)
-apply_all(frame); boolean(frame, box('fcut', (SCR_W - 0.1, 1.0, SCR_H - 0.1), (0, FY - 0.1, SCR_Z)))
-eyelet = tube('eyelet', [(-0.7, 0, -H / 2 - 0.1), (-0.7, 0, -H / 2 - 0.9), (0.7, 0, -H / 2 - 0.9), (0.7, 0, -H / 2 - 0.1)], 0.22, 8)
-rubber = join('Rubber', bumpers + [frame, eyelet]); apply_all(rubber); box_uv(rubber, 0.2)
-
-kscan = box('kscan', (3.6, 0.5, 1.7), (0, FY - 0.1, -1.6), 0.3, 3)
-kpage = box('kpage', (2.2, 0.5, 1.1), (0, FY - 0.1, -3.55), 0.25, 3)
-apply_all(kscan); apply_all(kpage)
-planar_uv(kscan, 0, 2, (-1.8, -1.6 - 0.85, 1.8, -1.6 + 0.85))
-for l in kscan.data.uv_layers.active.data: l.uv = (l.uv[0] * 0.5, l.uv[1])
-planar_uv(kpage, 0, 2, (-1.1, -3.55 - 0.55, 1.1, -3.55 + 0.55))
-for l in kpage.data.uv_layers.active.data: l.uv = (0.5 + l.uv[0] * 0.5, l.uv[1])
-keys = join('Keys', [kscan, kpage])
-
-lens = box('Lens', (4.4, 1.6, 0.25), (0, 0, H / 2 + 0.42), 0.12, 2); apply_all(lens); box_uv(lens)
-bm = bmesh.new(); bmesh.ops.create_grid(bm, x_segments=1, y_segments=1, size=0.5)
-for v in bm.verts: v.co = Vector((v.co.x * SCR_W, FY - 0.0, v.co.y * SCR_H + SCR_Z))
-for f in bm.faces: f.normal_flip()
-screen = obj_from_bm('Screen', bm)
-planar_uv(screen, 0, 2, (-SCR_W / 2, SCR_Z - SCR_H / 2, SCR_W / 2, SCR_Z + SCR_H / 2))
-
-grip = Vector((0, 0, -2.5))
+bell = lathe('bell', [(3.3, -11.0), (3.35, -10.75), (3.05, -10.2), (2.55, -8.6), (2.25, -7.2), (2.05, -6.2), (1.6, -5.4), (1.0, -5.05), (0.0, -4.95),
+                      (0.0, -5.25), (0.85, -5.3), (1.45, -5.65), (1.85, -6.3), (2.05, -7.3), (2.35, -8.7), (2.8, -10.2), (3.05, -10.9), (3.3, -11.0)], 36)
+collar = lathe('collar', [(0.0, -5.2), (1.15, -5.2), (1.2, -4.6), (0.9, -4.3), (0.95, -3.9), (0.0, -3.9)], 24)
+cap = lathe('cap', [(0.0, 5.1), (0.85, 5.1), (1.05, 5.6), (0.9, 6.2), (0.0, 6.4)], 24)
+bodyB = join('BellBody', [bell, collar, cap]); box_uv(bodyB, 0.2)
+handle = lathe('handle', [(0.0, -3.95), (0.75, -3.95), (0.95, -3.2), (0.8, -2.0), (0.95, -0.5), (1.05, 1.5), (1.0, 3.2), (0.8, 4.3), (0.9, 5.1), (0.0, 5.15)], 24)
+box_uv(handle, 0.2)
+PIVB = Vector((0, 0, -5.45))
+clapper = join('Clapper', [tube('rod', [(0, 0, -5.45), (0, 0, -9.6)], 0.14, 8), sphere('ball', 0.55, (0, 0, -9.9), 14, 8)]); box_uv(clapper, 0.25)
 tris = 0
-for o, n in ((shell, 'RE_Scan_Shell'), (rubber, 'RE_Scan_Rubber'), (keys, 'RE_Scan_Keys'), (lens, 'RE_Scan_Lens'), (screen, 'RE_Scan_Screen')):
-    for p in o.data.polygons: p.use_smooth = n in ('RE_Scan_Shell', 'RE_Scan_Rubber')
-    tris += write_obj(o, n, origin=grip)
-print('SCANNER tris', tris)
+for o, n in ((bodyB, 'RE_Bell_Body'), (handle, 'RE_Bell_Handle')): look(o, True); tris += write_obj(o, n)
+look(clapper, True); tris += write_obj(clapper, 'RE_Bell_Clapper', origin=PIVB)
+print('BELL tris', tris, 'clapper pivot (unity m)', PIVB.x * 0.01, PIVB.z * 0.01, PIVB.y * 0.01)
+bodyB.data.materials.append(matimg('bronze', T('bronze.png'), 0.3, metal=1.0)); handle.data.materials.append(matimg('wood', T('wood.png'), 0.55))
+clapper.data.materials.append(matimg('iron', T('iron.png'), 0.5, metal=0.8))
+render([bodyB, handle, clapper], os.path.join(OUT, 'bell_preview.png'), 52, (((0, 0, math.radians(-18)), (-7.5, 0, 1.5), 1.0), ((math.radians(-30), 0, math.radians(150)), (8.5, 8, 5.5), 0.6), ((math.radians(90), 0, 0), (9.0, 8, -7.0), 0.6)))
+print('BELL DONE')
 
-shell.data.materials.append(matimg('abs', os.path.join(TEX, 'scanner_shell.png'), 0.55))
-rubber.data.materials.append(matimg('rub', os.path.join(TEX, 'scanner_rubber.png'), 0.85))
-keys.data.materials.append(matimg('keys', os.path.join(TEX, 'scanner_keys.png'), 0.7))
-lens.data.materials.append(matcol('lens', (0.9, 0.08, 0.05), 0.1, 0, 4.0))
-screen.data.materials.append(matimg('lcd', os.path.join(TEX, 'scanner_demo.png'), 0.3, 0.9))
-render([shell, rubber, keys, lens, screen], os.path.join(OUT, 'scanner_preview.png'), 56,
-       (((0, math.radians(4), math.radians(-14)), (-8.0, 0, -0.5), 1.0),
-        ((math.radians(-48), math.radians(8), math.radians(32)), (9.5, 8, 5.5), 0.55),
-        ((0, 0, math.radians(-76)), (10.0, 8, -7.5), 0.55)))
-print('SCANNER DONE')
+# ============================================================================================ OUTLAW COIN POUCH
+reset()
+bm = bmesh.new(); bmesh.ops.create_uvsphere(bm, u_segments=28, v_segments=16, radius=1.0)
+for v in bm.verts:
+    x, y, z = v.co; rho = math.hypot(x, y); a = math.atan2(y, x)
+    zz = z if z >= -0.2 else -0.2 + (z + 0.2) * 0.55                             # sits flat-ish
+    if rho < 1e-5: v.co = Vector((0, 0, 3.0 if z > 0 else zz * 3.4)); continue  # top pole sinks in: a cinched mouth
+    lump = 0.25 * math.sin(a * 3 + z * 4) * math.cos(z * 3.1) + 0.15 * math.sin(a * 5 - 1.3)
+    if z <= 0.45: R = (3.3 + lump) * rho
+    else:
+        t = (z - 0.45) / 0.55; R0 = 3.3 * math.sqrt(1 - 0.45 ** 2)
+        R = R0 * (1 - t / 0.8) + 1.05 * (t / 0.8) if t < 0.8 else 1.05 + (t - 0.8) * 5.5 + 0.35 * math.sin(a * 7)
+    v.co = Vector((math.cos(a) * R, math.sin(a) * R, zz * 3.4))
+sack = obj_from_bm('Sack', bm); box_uv(sack, 0.18)
+rope = join('Rope', [tube('tie', [(math.cos(2 * math.pi * k / 20) * 1.15, math.sin(2 * math.pi * k / 20) * 1.15, 2.95) for k in range(21)], 0.2, 8),
+                     tube('end1', [(1.1, -0.3, 2.9), (1.8, -0.6, 2.0), (2.1, -0.7, 0.8)], 0.17, 8), sphere('k1', 0.32, (2.1, -0.7, 0.7), 10, 6),
+                     tube('end2', [(1.0, 0.4, 2.9), (1.5, 0.9, 1.9), (1.6, 1.2, 0.9)], 0.17, 8), sphere('k2', 0.32, (1.6, 1.2, 0.8), 10, 6)])
+box_uv(rope, 0.4)
+coins = []
+for (x, y, z), (rx, ry) in (((0.3, -0.3, 3.35), (25, 10)), ((-0.5, 0.4, 3.25), (-35, 20)), ((2.95, -1.7, -1.3), (88, 0))):
+    c = cyl('coin', 1.0, 0.17, (0, 0, 0), 20, 'Z', 0.03); apply_all(c)
+    planar_uv(c, 0, 1, (-1, -1, 1, 1))
+    c.rotation_euler = (math.radians(rx), math.radians(ry), 0); c.location = (x, y, z)
+    bpy.context.view_layer.objects.active = c; c.select_set(True); bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    coins.append(c)
+coinsO = join('Coins', coins)
+tris = 0
+for o, n in ((sack, 'RE_Pouch_Leather'), (rope, 'RE_Pouch_Rope'), (coinsO, 'RE_Pouch_Coins')): look(o, n != 'RE_Pouch_Coins'); tris += write_obj(o, n)
+print('POUCH tris', tris)
+sack.data.materials.append(matimg('leather', T('leather.png'), 0.7)); rope.data.materials.append(matimg('rope', T('rope.png'), 0.8))
+coinsO.data.materials.append(matimg('coin', T('coin.png'), 0.3, metal=1.0))
+render([sack, rope, coinsO], os.path.join(OUT, 'pouch_preview.png'), 44, STD)
+print('POUCH DONE')
+
+# ============================================================================================ WILDFOLK BONE RATTLE (head up, bone handle down)
+reset()
+HZ = 4.2
+head = sphere('head', 1.0, (0, 0, 0), 28, 16, (3.8, 2.0, 4.4)); 
+for v in head.data.vertices: v.co.z += HZ
+planar_uv(head, 0, 2, (-3.8, HZ - 4.4, 3.8, HZ + 4.4))
+lace = tube('lace', [(math.sin(2 * math.pi * k / 28) * 3.85, 0, HZ + math.cos(2 * math.pi * k / 28) * 4.45) for k in range(29)], 0.22, 8)
+box_uv(lace, 0.4)
+bone = lathe('bone', [(0.0, -11.6), (1.0, -11.4), (1.25, -10.8), (0.95, -10.1), (0.62, -9.2), (0.55, -6.0), (0.6, -2.4), (0.85, -1.2), (1.05, -0.4), (0.7, 0.2), (0.0, 0.3)], 18)
+for v in bone.data.vertices:                                                     # knuckled ends, a little irregular
+    v.co.x *= 1.0 + 0.12 * math.sin(v.co.z * 1.7); v.co.y *= 1.0 + 0.1 * math.cos(v.co.z * 2.3)
+teeth, beads = [], []
+for i, (x, y) in enumerate(((-1.6, -0.4), (0.2, -0.6), (1.7, -0.3))):
+    top = Vector((x, y, HZ - 4.25 + abs(x) * 0.25)); cord = []
+    for k in range(5): cord.append((x + 0.15 * math.sin(k), y, top.z - k * 1.1))
+    lace = join('lace', [lace, tube('cord', cord, 0.07, 6)])
+    for k in range(3):
+        beads.append(sphere('bead', 0.34, (x + 0.15 * math.sin(k + 1), y, top.z - 1.0 - k * 1.0), 10, 6))
+    bm = bmesh.new(); bmesh.ops.create_cone(bm, cap_ends=True, segments=8, radius1=0.32, radius2=0.0, depth=1.3)
+    bmesh.ops.rotate(bm, verts=bm.verts, cent=(0, 0, 0), matrix=Matrix.Rotation(math.radians(180 + (i - 1) * 12), 3, 'X'))
+    bmesh.ops.translate(bm, vec=Vector((x, y, top.z - 4.6)), verts=bm.verts); teeth.append(obj_from_bm('tooth', bm))
+boneO = join('Bone', [bone] + teeth); box_uv(boneO, 0.2)
+beadO = join('Beads', beads); box_uv(beadO)
+box_uv(lace, 0.4)
+GR = Vector((0, 0, -5.5))
+tris = 0
+for o, n in ((head, 'RE_Rattle_Hide'), (boneO, 'RE_Rattle_Bone'), (lace, 'RE_Rattle_Lace'), (beadO, 'RE_Rattle_Beads')): look(o, True); tris += write_obj(o, n, origin=GR)
+print('RATTLE tris', tris)
+head.data.materials.append(matimg('hide', T('hide.png'), 0.75)); boneO.data.materials.append(matimg('bone', T('bone.png'), 0.6))
+lace.data.materials.append(matimg('lace', T('leather.png'), 0.8)); beadO.data.materials.append(matcol('bead', (0.62, 0.12, 0.08), 0.35))
+render([head, boneO, lace, beadO], os.path.join(OUT, 'rattle_preview.png'), 58, (((0, 0, math.radians(-12)), (-7.5, 0, 2.5), 1.0), ((math.radians(-10), 0, math.radians(130)), (9.5, 8, 6.5), 0.55), ((0, 0, math.radians(-80)), (10.0, 8, -7.5), 0.55)))
+print('RATTLE DONE')
+
+# ============================================================================================ EYE RESONANCE FORK (prongs up, grip down)
+reset()
+parts = []
+for sx in (-1, 1):
+    pr = box('prong', (0.62, 0.62, 9.0), (sx * 1.25, 0, 6.6), 0.12, 2); apply_all(pr)
+    for v in pr.data.vertices:                                                   # taper to the tips, bowed slightly outward
+        t = (v.co.z - 2.1) / 9.0; v.co.x = sx * 1.25 + (v.co.x - sx * 1.25) * (1 - 0.35 * t) + sx * 0.15 * math.sin(t * math.pi)
+        v.co.y *= (1 - 0.35 * t)
+    parts.append(pr)
+yoke = tube('yoke', [(-1.25, 0, 2.4)] + [(-1.25 * math.cos(math.radians(a)), 0, 2.4 - 1.25 * math.sin(math.radians(a))) for a in range(15, 180, 15)] + [(1.25, 0, 2.4)], 0.36, 10)
+parts.append(yoke)
+# the eye: a vesica-shaped boss on the yoke
+eye = []
+for k in range(25):
+    a = 2 * math.pi * k / 24
+    eye.append((math.cos(a) * 1.7, -0.45, 1.35 + math.sin(a) * 0.8 * abs(math.cos(a)) ** 0.0 * (0.55 + 0.45 * math.cos(a) ** 2)))
+parts.append(tube('eyerim', eye, 0.16, 8))
+parts.append(cyl('stem', 0.5, 2.2, (0, 0, 0.1), 16, 'Z', 0.08))
+parts.append(lathe('pommel', [(0.0, -9.2), (0.9, -9.1), (1.15, -8.5), (0.85, -7.9), (0.95, -7.5), (0.0, -7.4)], 20))
+parts.append(lathe('guard', [(0.0, -1.2), (1.15, -1.2), (1.3, -0.8), (0.95, -0.3), (0.0, -0.3)], 20))
+bronzeF = join('Bronze', parts); box_uv(bronzeF, 0.25)
+grip = lathe('grip', [(0.0, -7.6), (0.82, -7.6), (0.95, -6.0), (1.0, -4.3), (0.92, -2.6), (0.82, -1.1), (0.0, -1.1)], 20); box_uv(grip, 0.25)
+gem = sphere('Gem', 0.62, (0, -0.55, 1.35), 16, 8, (1.0, 0.45, 0.62)); box_uv(gem)
+GF = Vector((0, 0, -4.3))
+tris = 0
+for o, n in ((bronzeF, 'RE_Fork_Bronze'), (grip, 'RE_Fork_Grip'), (gem, 'RE_Fork_Gem')): look(o, True); tris += write_obj(o, n, origin=GF)
+print('FORK tris', tris)
+bronzeF.data.materials.append(matimg('bronzef', T('bronze.png'), 0.3, metal=1.0)); grip.data.materials.append(matimg('wrap', T('leather_wrap.png'), 0.75))
+gem.data.materials.append(matcol('gem', (0.35, 0.15, 0.85), 0.1, 0, 3.0))
+render([bronzeF, grip, gem], os.path.join(OUT, 'fork_preview.png'), 60, (((0, 0, math.radians(-15)), (-7.5, 0, 0.5), 1.0), ((math.radians(-10), 0, math.radians(140)), (9.5, 8, 6.0), 0.55), ((0, 0, math.radians(-80)), (10.0, 8, -7.5), 0.55)))
+print('FORK DONE')
+
+# ============================================================================================ SEER'S MIRROR (arched glass up, handle down)
+reset()
+MW, MS = 8.0, 6.0                       # glass width, height of the straight sides; arch radius = MW/2 on top
+def arch(w, s, inset=0.0, steps=24):
+    hw = w / 2 - inset; pts = [(-hw, inset), (hw, inset), (hw, s)]
+    for k in range(1, steps):
+        a = math.pi * k / steps; pts.append((hw * math.cos(a), s + hw * math.sin(a)))
+    pts.append((-hw, s)); return pts
+glass = outline_face('Glass', arch(MW, MS), -0.62)
+MH = MS + MW / 2
+planar_uv(glass, 0, 2, (-MW / 2, 0, MW / 2, MH))
+ring = [(x, -0.4, z) for x, z in arch(MW + 0.5, MS, 0.0, 28)]; ring.append(ring[0])
+frame = [tube('frame', ring, 0.42, 10)]
+inner = [(x, -0.55, z) for x, z in arch(MW, MS, 0.12, 28)]; inner.append(inner[0])
+frame.append(tube('bead', inner, 0.14, 6))
+frame.append(outline_face('back', arch(MW + 0.6, MS, -0.05), -0.45, 0.55))
+frame.append(sphere('fin', 0.55, (0, 0, MH + 0.75), 12, 8)); frame.append(cyl('finc', 0.25, 0.8, (0, 0, MH + 1.4), 10, 'Z', 0.05))
+for sx in (-1, 1): frame.append(sphere('orb', 0.42, (sx * (MW / 2 + 0.25), -0.2, MS), 10, 6))
+frame.append(lathe('collar', [(0.0, -1.6), (0.95, -1.6), (1.2, -1.0), (0.9, -0.4), (1.3, 0.1), (0.0, 0.25)], 20))
+frame.append(lathe('pommel', [(0.0, -11.2), (0.9, -11.0), (1.15, -10.4), (0.85, -9.8), (0.0, -9.7)], 20))
+bronzeM = join('Frame', frame); box_uv(bronzeM, 0.25)
+wrap = lathe('wrap', [(0.0, -9.9), (0.8, -9.9), (0.9, -8.0), (0.92, -5.8), (0.88, -3.6), (0.82, -1.5), (0.0, -1.5)], 20); box_uv(wrap, 0.25)
+GM = Vector((0, 0, -5.8))
+tris = 0
+for o, n in ((bronzeM, 'RE_Mirror_Frame'), (wrap, 'RE_Mirror_Grip'), (glass, 'RE_Mirror_Glass')): look(o, n != 'RE_Mirror_Glass'); tris += write_obj(o, n, origin=GM)
+print('MIRROR tris', tris, 'glass rect (unity m, relative to grip)', -MW / 200, (0 - GM.z) / 100, MW / 200, (MH - GM.z) / 100)
+bronzeM.data.materials.append(matimg('bronzem', T('bronze.png'), 0.3, metal=1.0)); wrap.data.materials.append(matimg('wrapm', T('leather_wrap.png'), 0.75))
+glass.data.materials.append(matimg('glass', T('seer_demo.png'), 0.2, 1.2))
+render([bronzeM, wrap, glass], os.path.join(OUT, 'mirror_preview.png'), 62, (((0, 0, math.radians(-14)), (-7.5, 0, 0.0), 1.0), ((math.radians(-10), 0, math.radians(150)), (9.5, 8, 6.0), 0.55), ((0, 0, math.radians(-78)), (10.0, 8, -7.5), 0.55)))
+print('MIRROR DONE')
