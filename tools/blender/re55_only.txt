@@ -1,1 +1,1 @@
-musket,blunder,tane
+musket,blunder,tane,naginata,xbow,blowgun,balls,bolas,caltrops,crystal,conch,pipe
